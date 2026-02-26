@@ -128,8 +128,7 @@
                                 --</span>
                             <div class="upload-wrapper" style="position: relative;">
                                 <input type="file" id="img-file" accept="image/*" style="display: none;">
-                                <button type="button" class="btn btn-secondary btn-block"
-                                    onclick="document.getElementById('img-file').click()">
+                                <button type="button" class="btn btn-secondary btn-block" id="upload-btn-trigger">
                                     <i class="fa-solid fa-upload"></i> Escolher Foto do Computador
                                 </button>
                                 <div id="file-name"
@@ -173,8 +172,12 @@
         const galleryEl = document.getElementById('admin-gallery');
         const form = document.getElementById('add-project-form');
         const fileInput = document.getElementById('img-file');
-        const fileNameEl = document.getElementById('file-name');
+        const uploadBtnTrigger = document.getElementById('upload-btn-trigger');
         let selectedBase64 = null;
+
+        uploadBtnTrigger.addEventListener('click', () => {
+            fileInput.click();
+        });
 
         fileInput.addEventListener('change', function () {
             if (this.files && this.files[0]) {
@@ -214,8 +217,16 @@
         }
 
         function saveGallery(items) {
-            localStorage.setItem('stark_gallery', JSON.stringify(items));
-            renderAdminGallery();
+            try {
+                localStorage.setItem('stark_gallery', JSON.stringify(items));
+                renderAdminGallery();
+            } catch (e) {
+                if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+                    alert('Erro: Limite de armazenamento atingido. Tente usar fotos menores ou remova itens antigos.');
+                } else {
+                    alert('Erro ao salvar galeria: ' + e.message);
+                }
+            }
         }
 
         function renderAdminGallery() {

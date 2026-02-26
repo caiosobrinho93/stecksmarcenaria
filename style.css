@@ -603,8 +603,10 @@ img {
 .service-card:active {
     transform: scale(0.98);
     border-color: var(--primary);
-    box-shadow: 0 0 20px var(--primary), 0 0 40px rgba(242, 201, 76, 0.4);
+    box-shadow: 0 0 30px var(--primary), 0 0 60px rgba(242, 201, 76, 0.6);
+    filter: brightness(1.2);
     z-index: 5;
+    transition: all 0.1s ease;
 }
 
 .service-card h3 {
