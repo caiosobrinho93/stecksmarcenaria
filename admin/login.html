@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stecks Marcenaria | Login</title>
+    <title>State Marcenaria | Login</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800&family=Inter:wght@400;500&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="../style.css">
@@ -74,8 +74,8 @@
             const pass = document.getElementById('password').value;
 
             // Simple demo credentials
-            if (user === 'admin' && pass === 'stecks2026') {
-                localStorage.setItem('stecks_admin_session', 'active');
+            if (user === 'admin' && pass === 'state2026') {
+                localStorage.setItem('state_admin_session', 'active');
                 window.location.href = 'dashboard.html';
             } else {
                 document.getElementById('error').style.display = 'block';

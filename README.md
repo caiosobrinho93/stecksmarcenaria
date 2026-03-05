@@ -1,6 +1,6 @@
-# Stecks Marcenaria - Website Premium
+# State Marcenaria - Website Premium
 
-Landing page elegante e responsiva para a **Stecks Marcenaria**, focada em móveis de alto padrão e integração tecnológica (Smart Home).
+Landing page elegante e responsiva para a **State Marcenaria**, focada em móveis de alto padrão e integração tecnológica (Smart Home).
 
 ## 🚀 Tecnologias
 - HTML5 Semântico
