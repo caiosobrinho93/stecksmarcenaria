@@ -293,10 +293,11 @@ input, button, textarea {
 
 .n-link {
     font-family: var(--font-mono);
-    font-size: 0.8rem;
-    color: var(--text-muted);
+    font-size: 0.9rem;
+    color: var(--text-primary);
     position: relative;
     padding-bottom: 4px;
+    transition: var(--transition-smooth);
 }
 
 .n-link::after {
@@ -308,10 +309,12 @@ input, button, textarea {
     height: 1px;
     background: var(--brand-yellow);
     transition: var(--transition-smooth);
+    box-shadow: 0 0 5px rgba(234, 179, 8, 0.5);
 }
 
 .n-link.active, .n-link:hover {
     color: var(--brand-yellow);
+    text-shadow: 0 0 10px rgba(234, 179, 8, 0.5);
 }
 
 .n-link.active::after, .n-link:hover::after {
@@ -1474,4 +1477,137 @@ input, button, textarea {
 /* Phase 6 Global Enhancements */
 .btn-solid-yellow:hover {
     box-shadow: 0 10px 30px rgba(234, 179, 8, 0.5), 0 0 15px rgba(234, 179, 8, 0.6) !important;
+}
+
+/* Phase 7 Content Expansions */
+
+/* About Section */
+.section-about {
+    padding: 100px 0;
+    background: var(--bg-surface);
+}
+
+.about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+}
+
+.about-desc {
+    color: var(--text-secondary);
+    font-size: 1.05rem;
+    line-height: 1.8;
+    margin-bottom: 20px;
+}
+
+.about-desc strong, .about-desc em {
+    color: var(--text-primary);
+}
+
+.about-image {
+    position: relative;
+}
+
+.styled-img {
+    border-radius: 4px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.floating-badge {
+    position: absolute;
+    bottom: -20px;
+    right: -20px;
+    background: var(--brand-yellow);
+    color: var(--text-dark);
+    padding: 15px 25px;
+    font-family: var(--font-head);
+    font-weight: 800;
+    letter-spacing: 2px;
+    font-size: 0.8rem;
+    box-shadow: 0 10px 20px rgba(234, 179, 8, 0.3);
+}
+
+/* Materials Section */
+.section-materials {
+    padding: 100px 0;
+    background: var(--bg-surface-light);
+    border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+.materials-flex {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+}
+
+.material-block {
+    background: var(--bg-surface);
+    padding: 40px 30px;
+    border: 1px solid rgba(255,255,255,0.05);
+    transition: var(--transition-smooth);
+    border-top: 3px solid transparent;
+}
+
+.material-block:hover {
+    border-top-color: var(--brand-yellow);
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+}
+
+.material-block h4 {
+    font-family: var(--font-head);
+    font-size: 1.2rem;
+    color: var(--text-primary);
+    margin-bottom: 15px;
+}
+
+.material-block p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+/* Why Custom Section */
+.section-why-custom {
+    padding: 100px 0;
+    background: var(--bg-dark);
+}
+
+.why-custom-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+}
+
+.reason-card {
+    text-align: center;
+    padding: 30px 20px;
+}
+
+.reason-icon {
+    font-size: 2.5rem;
+    color: var(--brand-yellow);
+    margin-bottom: 25px;
+}
+
+.reason-card h4 {
+    font-family: var(--font-head);
+    font-size: 1.3rem;
+    margin-bottom: 15px;
+    color: var(--text-primary);
+}
+
+.reason-card p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    font-size: 0.95rem;
+}
+
+/* Phase 7 Media Queries */
+@media (max-width: 1024px) {
+    .about-grid { grid-template-columns: 1fr; gap: 40px; }
+    .materials-flex, .why-custom-grid { grid-template-columns: 1fr; }
+    .floating-badge { right: 20px; bottom: 20px; }
 }
