@@ -36,13 +36,14 @@
     --border-radius-sm: 8px;
     --border-radius: 16px;
 
-    /* Effects */
+    /* Effects & Animations */
     --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.4);
     --glow-primary: 0 0 20px rgba(30, 144, 255, 0.3);
     --glow-secondary: 0 0 20px rgba(0, 229, 255, 0.3);
 
-    /* Transitions */
-    --transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    /* Apple-tier Cinematic Transitions */
+    --ease-out-cinematic: cubic-bezier(0.4, 0, 0.2, 1);
+    --transition: all 0.6s var(--ease-out-cinematic);
 }
 
 /* =========================================
@@ -69,7 +70,23 @@ body {
     position: relative;
 }
 
-/* Ambient Animated Gradient Mesh */
+/* Ambient Animated Gradient Mesh & Technical Grid */
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 50px 50px;
+    z-index: -1;
+    /* Behind content, over background mesh */
+    pointer-events: none;
+}
+
 body::before {
     content: '';
     position: fixed;
@@ -201,9 +218,12 @@ img {
     letter-spacing: 0.5px;
     border-radius: var(--border-radius-sm);
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+    transition: var(--transition);
     border: none;
     text-align: center;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
 }
 
 .btn-primary {
@@ -329,9 +349,33 @@ img {
     position: relative;
     display: flex;
     align-items: center;
+    overflow: hidden;
+    /* For parallax layers boundaries */
+}
+
+/* Layered Parallax Elements */
+.hero-bg,
+.hero-mid {
+    position: absolute;
+    top: -5%;
+    left: -5%;
+    width: 110%;
+    height: 110%;
+    z-index: 1;
+    will-change: transform;
+}
+
+.hero-bg {
     background-image: url('imgs/background.jpg');
     background-size: cover;
     background-position: center;
+}
+
+.hero-mid {
+    /* Subtle blue vertical accent lines */
+    background-image: linear-gradient(90deg, transparent 20%, rgba(30, 144, 255, 0.05) 20.1%, transparent 20.2%),
+        linear-gradient(90deg, transparent 80%, rgba(0, 229, 255, 0.05) 80.1%, transparent 80.2%);
+    z-index: 2;
 }
 
 .hero-overlay {
@@ -340,12 +384,14 @@ img {
     left: 0;
     width: 100%;
     height: 100%;
+    z-index: 3;
     background: linear-gradient(90deg, rgba(11, 15, 26, 0.95) 0%, rgba(11, 15, 26, 0.8) 50%, rgba(11, 15, 26, 0.4) 100%);
 }
 
 .hero-container {
     position: relative;
     z-index: 10;
+    will-change: transform;
 }
 
 .hero-content {
@@ -374,12 +420,31 @@ img {
     line-height: 1.05;
     font-weight: 800;
     letter-spacing: -2.5px;
-    background: linear-gradient(180deg, #FFFFFF 0%, #A1B2C8 100%);
+
+    /* Light Sweep Effect */
+    background: linear-gradient(100deg,
+            #FFFFFF 20%,
+            #a1b2c8 48%,
+            #FFFFFF 50%,
+            #1E90FF 55%,
+            #FFFFFF 80%);
+    background-size: 300% auto;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+
     opacity: 0;
-    animation: fadeUp 1s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+    animation: fadeUp 1.2s var(--ease-out-cinematic) forwards, lightSweep 8s linear infinite;
+}
+
+@keyframes lightSweep {
+    0% {
+        background-position: -50% center;
+    }
+
+    100% {
+        background-position: 150% center;
+    }
 }
 
 .hero-text p {
@@ -390,7 +455,7 @@ img {
     font-weight: 300;
     font-family: var(--font-body);
     opacity: 0;
-    animation: fadeUp 1s cubic-bezier(0.165, 0.84, 0.44, 1) 0.3s forwards;
+    animation: fadeUp 1.2s var(--ease-out-cinematic) 0.3s forwards;
 }
 
 .hero-stats {
@@ -434,8 +499,9 @@ img {
     overflow: hidden;
     opacity: 0;
     transform: translateY(20px);
-    animation: fadeUp 1s cubic-bezier(0.165, 0.84, 0.44, 1) 0.5s forwards;
-    transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s;
+    animation: fadeUp 1.2s var(--ease-out-cinematic) 0.5s forwards;
+    transition: transform 0.6s var(--ease-out-cinematic), box-shadow 0.6s var(--ease-out-cinematic);
+    will-change: transform, box-shadow;
 }
 
 .quote-form-card:hover {
@@ -649,10 +715,11 @@ img {
     padding: 40px 30px;
     border-radius: var(--border-radius);
     border: 1px solid rgba(255, 255, 255, 0.05);
-    transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+    transition: var(--transition);
     position: relative;
     overflow: hidden;
     box-shadow: var(--shadow-soft);
+    will-change: transform, box-shadow;
 }
 
 .service-card::before {
@@ -743,7 +810,8 @@ img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+    transition: transform 0.8s var(--ease-out-cinematic);
+    will-change: transform;
 }
 
 .gallery-overlay {
@@ -753,7 +821,7 @@ img {
     width: 100%;
     padding: 30px;
     background: linear-gradient(to top, rgba(11, 15, 26, 1), rgba(11, 15, 26, 0.7), transparent);
-    transition: padding 0.4s ease;
+    transition: padding 0.6s var(--ease-out-cinematic);
 }
 
 .gallery-item:hover img {
@@ -895,27 +963,30 @@ img {
 
 .reveal-up {
     opacity: 0;
-    transform: translateY(40px);
-    transition: opacity 0.8s cubic-bezier(0.165, 0.84, 0.44, 1), transform 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
+    transform: translateY(40px) scale(0.95);
+    transition: opacity 1s var(--ease-out-cinematic), transform 1s var(--ease-out-cinematic);
+    will-change: transform, opacity;
 }
 
 .reveal-left {
     opacity: 0;
     transform: translateX(-40px);
-    transition: opacity 0.8s cubic-bezier(0.165, 0.84, 0.44, 1), transform 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
+    transition: opacity 1s var(--ease-out-cinematic), transform 1s var(--ease-out-cinematic);
+    will-change: transform, opacity;
 }
 
 .reveal-right {
     opacity: 0;
     transform: translateX(40px);
-    transition: opacity 0.8s cubic-bezier(0.165, 0.84, 0.44, 1), transform 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
+    transition: opacity 1s var(--ease-out-cinematic), transform 1s var(--ease-out-cinematic);
+    will-change: transform, opacity;
 }
 
 .reveal-up.active,
 .reveal-left.active,
 .reveal-right.active {
     opacity: 1;
-    transform: translate(0);
+    transform: translate(0) scale(1);
 }
 
 /* =========================================

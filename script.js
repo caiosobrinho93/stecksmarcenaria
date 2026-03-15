@@ -257,4 +257,53 @@ if (lightbox) {
 // Initial Gallery Load
 loadMainGallery();
 
+// =========================================
+// CINEMATIC PARALLAX & SCROLL STORYTELLING
+// =========================================
+
+// Hero Parallax on Mouse Move
+const heroSection = document.getElementById('inicio');
+const parallaxBg = document.getElementById('parallax-bg');
+const parallaxMid = document.getElementById('parallax-mid');
+const parallaxFg = document.getElementById('parallax-fg');
+
+if (heroSection && window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+    heroSection.addEventListener('mousemove', (e) => {
+        const x = (e.clientX / window.innerWidth - 0.5) * 2;
+        const y = (e.clientY / window.innerHeight - 0.5) * 2;
+
+        requestAnimationFrame(() => {
+            if (parallaxBg) parallaxBg.style.transform = `translate3d(${x * 8}px, ${y * 8}px, 0)`;
+            if (parallaxMid) parallaxMid.style.transform = `translate3d(${x * 15}px, ${y * 15}px, 0)`;
+            if (parallaxFg) parallaxFg.style.transform = `translate3d(${x * -10}px, ${y * -10}px, 0)`;
+        });
+    });
+
+    heroSection.addEventListener('mouseleave', () => {
+        requestAnimationFrame(() => {
+            if (parallaxBg) parallaxBg.style.transform = `translate3d(0, 0, 0)`;
+            if (parallaxMid) parallaxMid.style.transform = `translate3d(0, 0, 0)`;
+            if (parallaxFg) parallaxFg.style.transform = `translate3d(0, 0, 0)`;
+        });
+    });
+}
+
+// Section Storytelling (Scale down on scroll out)
+window.addEventListener('scroll', () => {
+    if (window.innerWidth <= 768) return;
+
+    const scrollY = window.scrollY;
+    if (heroSection && scrollY < window.innerHeight) {
+        const progress = scrollY / window.innerHeight;
+        const scaleBg = 1 - (progress * 0.05); // Scale down to 0.95
+        const opacityMid = 1 - (progress * 1.5);
+
+        requestAnimationFrame(() => {
+            if (parallaxBg) parallaxBg.style.transform = `scale(${scaleBg})`;
+            if (parallaxMid) parallaxMid.style.opacity = Math.max(0, opacityMid);
+            if (parallaxFg) parallaxFg.style.transform = `translate3d(0, ${scrollY * 0.15}px, 0)`;
+        });
+    }
+}, { passive: true });
+
 
