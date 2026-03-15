@@ -593,21 +593,24 @@ input, button, textarea {
     .auth-stat:not(:last-child)::after { display: none; }
 }
 
-.stat-number {
-    font-family: var(--font-mono);
-    font-size: clamp(2.5rem, 5vw, 4rem);
-    font-weight: 700;
+.stat-value {
+    font-size: 2.5rem;
     color: var(--brand-yellow);
-    line-height: 1;
-    margin-bottom: 10px;
-    text-shadow: 0 0 20px rgba(234, 179, 8, 0.3);
+    margin-bottom: 15px;
+    opacity: 0.9;
+    transition: var(--transition-smooth);
+}
+
+.auth-stat:hover .stat-value {
+    transform: scale(1.1) translateY(-5px);
+    text-shadow: 0 0 20px rgba(234, 179, 8, 0.4);
 }
 
 .stat-label {
     font-family: var(--font-head);
-    font-size: 0.85rem;
+    font-size: 1rem;
     color: var(--text-secondary);
-    letter-spacing: 2px;
+    letter-spacing: 1px;
 }
 
 /* Process Section */
@@ -1269,7 +1272,9 @@ input, button, textarea {
 .footer-logo {
     height: 40px;
     width: auto;
+    object-fit: contain;
     margin-bottom: 20px;
+    display: block;
 }
 
 .brand-mark p {
@@ -1322,19 +1327,19 @@ input, button, textarea {
 .reveal-up {
     opacity: 0;
     transform: translateY(20px);
-    transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 1.2s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .reveal-left {
     opacity: 0;
     transform: translateX(-20px);
-    transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 1.2s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .reveal-right {
     opacity: 0;
     transform: translateX(20px);
-    transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 1.2s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .reveal-up.active, .reveal-left.active, .reveal-right.active {
@@ -1360,6 +1365,10 @@ input, button, textarea {
 }
 
 @media (max-width: 768px) {
+    .reveal-up { transform: translateY(15px); transition: all 1s cubic-bezier(0.25, 1, 0.5, 1); }
+    .reveal-left { transform: translateX(-10px); transition: all 1s cubic-bezier(0.25, 1, 0.5, 1); }
+    .reveal-right { transform: translateX(10px); transition: all 1s cubic-bezier(0.25, 1, 0.5, 1); }
+
     .nav-links {
         display: none;
     }

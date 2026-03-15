@@ -56,40 +56,10 @@ const revealObserver = new IntersectionObserver((entries, observer) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
             entry.target.classList.add('active');
-            
-            // Check if element is an auth-stat to trigger counter
-            if (entry.target.classList.contains('auth-stat')) {
-                const counterElement = entry.target.querySelector('.counter');
-                if (counterElement) {
-                    animateCounter(counterElement);
-                }
-            }
-            
             observer.unobserve(entry.target);
         }
     });
 }, observerOptions);
-
-function animateCounter(el) {
-    const target = +el.getAttribute('data-target');
-    const duration = 1500; // ms
-    const stepTime = Math.abs(Math.floor(duration / target));
-    let current = 0;
-    
-    // Ensure minimum step duration to avoid performance issues with large numbers
-    const actualStepTime = Math.max(stepTime, 10);
-    const increment = Math.max(1, Math.floor(target / (duration / actualStepTime)));
-
-    const timer = setInterval(() => {
-        current += increment;
-        if (current >= target) {
-            el.innerText = target;
-            clearInterval(timer);
-        } else {
-            el.innerText = current;
-        }
-    }, actualStepTime);
-}
 
 function initReveals() {
     const reveals = document.querySelectorAll('.reveal-up, .reveal-left, .reveal-right');
