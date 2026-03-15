@@ -430,12 +430,44 @@ input, button, textarea {
     transform: translate(-50%, -50%);
     z-index: -1;
     pointer-events: none;
-    animation: pulse-hero-light 10s ease-in-out infinite alternate;
+    animation: pulse-hero-light 10s ease-in-out infinite alternate,
+               float-hero-light 15s ease-in-out infinite alternate;
 }
 
 @keyframes pulse-hero-light {
     0% { opacity: 0.4; transform: translate(-50%, -50%) scale(1); }
     100% { opacity: 0.8; transform: translate(-45%, -55%) scale(1.1); }
+}
+
+@keyframes float-hero-light {
+    0% { left: 20%; }
+    100% { left: 25%; top: 55%; }
+}
+
+/* Phase 6 Hero Additions */
+.hero-main-logo {
+    width: 100%;
+    max-width: 200px;
+    height: auto;
+    object-fit: contain;
+    margin-bottom: 25px;
+    filter: drop-shadow(0 0 10px rgba(234, 179, 8, 0.15));
+}
+
+.hero-particles {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    animation: floating-grid 30s linear infinite;
+}
+
+@keyframes floating-grid {
+    0% { background-position: 0px 0px; }
+    100% { background-position: 40px 40px; }
 }
 
 .tech-badge {
@@ -655,12 +687,19 @@ input, button, textarea {
     }
     .process-step {
         padding-top: 0;
-        padding-left: 50px;
+        padding-left: 60px;
+        min-height: 80px;
     }
     .step-marker {
         position: absolute;
         top: 0;
         left: 0;
+        width: 42px;
+        text-align: center;
+        background: var(--bg-surface);
+        padding: 5px 0;
+        margin-bottom: 0;
+        z-index: 2;
     }
 }
 
@@ -1429,4 +1468,10 @@ input, button, textarea {
         width: 100%;
         text-align: center;
     }
+    .hero-main-logo { max-width: 160px; }
+}
+
+/* Phase 6 Global Enhancements */
+.btn-solid-yellow:hover {
+    box-shadow: 0 10px 30px rgba(234, 179, 8, 0.5), 0 0 15px rgba(234, 179, 8, 0.6) !important;
 }
