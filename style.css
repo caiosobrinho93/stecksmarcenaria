@@ -65,6 +65,32 @@ body {
     color: var(--text-main);
     line-height: 1.6;
     overflow-x: hidden;
+    position: relative;
+}
+
+/* Ambient Animated Gradient Mesh */
+body::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 50% 50%, rgba(30, 144, 255, 0.03), transparent 60%),
+        radial-gradient(circle at 80% 20%, rgba(0, 229, 255, 0.02), transparent 50%);
+    z-index: -1;
+    animation: ambientMotion 30s linear infinite alternate;
+    pointer-events: none;
+}
+
+@keyframes ambientMotion {
+    0% {
+        transform: rotate(0deg) translate(0, 0) scale(1);
+    }
+
+    100% {
+        transform: rotate(5deg) translate(-2%, 5%) scale(1.1);
+    }
 }
 
 h1,
@@ -161,7 +187,7 @@ img {
     font-weight: 500;
     border-radius: var(--border-radius-sm);
     cursor: pointer;
-    transition: var(--transition);
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
     border: none;
     text-align: center;
 }
@@ -174,7 +200,7 @@ img {
 
 .btn-primary:hover {
     background: linear-gradient(135deg, var(--primary-hover), var(--secondary-accent));
-    transform: translateY(-2px);
+    transform: scale(1.05) translateY(-2px);
     box-shadow: var(--glow-primary);
 }
 
@@ -326,6 +352,8 @@ img {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    opacity: 0;
+    animation: fadeUp 1s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
 }
 
 .hero-text p {
@@ -335,6 +363,8 @@ img {
     margin-bottom: 40px;
     font-weight: 300;
     font-family: var(--font-body);
+    opacity: 0;
+    animation: fadeUp 1s cubic-bezier(0.165, 0.84, 0.44, 1) 0.3s forwards;
 }
 
 .hero-stats {
@@ -376,6 +406,15 @@ img {
     border: 1px solid rgba(255, 255, 255, 0.08);
     position: relative;
     overflow: hidden;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeUp 1s cubic-bezier(0.165, 0.84, 0.44, 1) 0.5s forwards;
+    transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s;
+}
+
+.quote-form-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6), var(--glow-primary);
 }
 
 .quote-form-card::before {
@@ -672,7 +711,7 @@ img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.6s ease;
+    transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
 .gallery-overlay {
@@ -682,10 +721,15 @@ img {
     width: 100%;
     padding: 30px;
     background: linear-gradient(to top, rgba(11, 15, 26, 1), rgba(11, 15, 26, 0.7), transparent);
+    transition: padding 0.4s ease;
 }
 
 .gallery-item:hover img {
-    transform: scale(1.05);
+    transform: scale(1.06);
+}
+
+.gallery-item:hover .gallery-overlay {
+    padding-bottom: 40px;
 }
 
 .gallery-overlay h4 {
@@ -803,24 +847,36 @@ img {
 }
 
 /* =========================================
-   ANIMATIONS CLASSES
+   ANIMATIONS CLASSES & KEYFRAMES
    ========================================= */
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .reveal-up {
     opacity: 0;
     transform: translateY(40px);
-    transition: all 0.8s ease;
+    transition: opacity 0.8s cubic-bezier(0.165, 0.84, 0.44, 1), transform 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
 .reveal-left {
     opacity: 0;
     transform: translateX(-40px);
-    transition: all 0.8s ease;
+    transition: opacity 0.8s cubic-bezier(0.165, 0.84, 0.44, 1), transform 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
 .reveal-right {
     opacity: 0;
     transform: translateX(40px);
-    transition: all 0.8s ease;
+    transition: opacity 0.8s cubic-bezier(0.165, 0.84, 0.44, 1), transform 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
 .reveal-up.active,

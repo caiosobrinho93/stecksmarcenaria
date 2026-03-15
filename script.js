@@ -49,25 +49,32 @@ window.addEventListener('scroll', () => {
     });
 });
 
-// Scroll Reveal Animations
-function reveal() {
-    var reveals = document.querySelectorAll('.reveal-up, .reveal-left, .reveal-right');
+// CSS Classes for Reveal Animations
+// Managed via IntersectionObserver for performance
+const observerOptions = {
+    root: null,
+    rootMargin: '0px',
+    threshold: 0.15
+};
 
-    for (var i = 0; i < reveals.length; i++) {
-        var windowHeight = window.innerHeight;
-        var elementTop = reveals[i].getBoundingClientRect().top;
-        var elementVisible = 150;
-
-        if (elementTop < windowHeight - elementVisible) {
-            reveals[i].classList.add('active');
+const revealObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+            observer.unobserve(entry.target); // Stop observing once revealed
         }
-    }
+    });
+}, observerOptions);
+
+function initReveals() {
+    const reveals = document.querySelectorAll('.reveal-up, .reveal-left, .reveal-right');
+    reveals.forEach(el => revealObserver.observe(el));
 }
 
-// Trigger initial reveal and on scroll
-window.addEventListener('scroll', reveal);
-// Add slight delay for initial load
-setTimeout(reveal, 100);
+// Trigger initial observe
+document.addEventListener('DOMContentLoaded', initReveals);
+// Fallback for dynamic content loaded later
+setTimeout(initReveals, 300);
 
 // Simple Form Handling (Prevent Default and Validate)
 function handleFormSubmit(formId) {
@@ -206,8 +213,8 @@ function loadMainGallery() {
         div.addEventListener('click', () => openLightbox(item.url, item.title, item.desc));
     });
 
-    // Trigger reveals for new items
-    setTimeout(reveal, 100);
+    // Trigger reveals for new items dynamically loaded
+    setTimeout(initReveals, 100);
 }
 
 function openLightbox(src, title, desc) {
