@@ -56,6 +56,30 @@ body {
     background-size: 40px 40px;
     z-index: -2;
     pointer-events: none;
+    animation: grid-move 20s linear infinite;
+}
+
+@keyframes grid-move {
+    0% { background-position: 0 0; }
+    100% { background-position: 40px 40px; }
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200vw;
+    height: 200vh;
+    background: radial-gradient(circle at 50% 50%, rgba(234, 179, 8, 0.03), transparent 70%);
+    z-index: -3;
+    animation: pulse-ambient 15s ease-in-out infinite alternate;
+    pointer-events: none;
+}
+
+@keyframes pulse-ambient {
+    0% { transform: scale(1) translate(0, 0); opacity: 0.5; }
+    100% { transform: scale(1.05) translate(2%, 2%); opacity: 1; }
 }
 
 .tech-lines-overlay {
@@ -165,6 +189,8 @@ input, button, textarea {
 .btn-tech:hover {
     border-color: rgba(255,255,255,0.5);
     background: rgba(255,255,255,0.05);
+    transform: scale(1.03);
+    box-shadow: 0 0 20px rgba(234, 179, 8, 0.2);
 }
 
 .btn-tech:hover::before {
@@ -192,7 +218,7 @@ input, button, textarea {
 .btn-solid-yellow:hover {
     background-color: #FDE047;
     box-shadow: 0 0 30px rgba(234, 179, 8, 0.4);
-    transform: translateY(-2px);
+    transform: scale(1.03);
 }
 
 .btn-outline-tech {
@@ -214,6 +240,8 @@ input, button, textarea {
 .btn-outline-tech:hover {
     border-color: var(--brand-yellow);
     background: rgba(234, 179, 8, 0.05);
+    transform: scale(1.03);
+    box-shadow: 0 0 20px rgba(234, 179, 8, 0.2);
 }
 
 .w-100 {
@@ -319,6 +347,8 @@ input, button, textarea {
     width: 100%;
     height: 100%;
     z-index: -1;
+    opacity: 0;
+    animation: cin-fade 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .hero-img {
@@ -431,6 +461,25 @@ input, button, textarea {
     display: flex;
     gap: 16px;
     flex-wrap: wrap;
+}
+
+/* Cinematic Hero Keyframes Setup */
+.hero-typography .tech-badge { opacity: 0; animation: cin-up 1s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.2s; }
+.hero-typography .cinematic-title { opacity: 0; animation: cin-up 1s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.4s; }
+.hero-typography .sub-title { opacity: 0; animation: cin-up 1s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.6s; }
+.hero-typography .hero-desc { opacity: 0; animation: cin-up 1s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.8s; }
+.hero-typography .hero-actions { opacity: 0; animation: cin-up 1s cubic-bezier(0.16, 1, 0.3, 1) forwards 1s; }
+.hero-technical-drawing { opacity: 0; animation: cin-up 1s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.7s; }
+.left-data, .right-data { opacity: 0; animation: cin-fade 1s cubic-bezier(0.16, 1, 0.3, 1) forwards 1.2s; }
+
+@keyframes cin-up {
+    0% { opacity: 0; transform: translateY(30px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes cin-fade {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
 }
 
 /* Technical CAD Box */
@@ -627,9 +676,9 @@ input, button, textarea {
 
 .sys-card:hover {
     border-color: rgba(234, 179, 8, 0.4);
-    transform: translateY(-5px);
+    transform: translateY(-8px);
     background-color: var(--bg-surface-light);
-    box-shadow: 0 15px 30px rgba(0,0,0,0.5);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.6);
 }
 
 .sys-id {
@@ -706,7 +755,7 @@ input, button, textarea {
 
 .gallery-item:hover img {
     filter: grayscale(0%) contrast(1.1);
-    transform: scale(1.05);
+    transform: scale(1.04);
 }
 
 .gallery-overlay {
@@ -978,19 +1027,19 @@ input, button, textarea {
 /* Scroll Animations */
 .reveal-up {
     opacity: 0;
-    transform: translateY(40px);
+    transform: translateY(20px);
     transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .reveal-left {
     opacity: 0;
-    transform: translateX(-40px);
+    transform: translateX(-20px);
     transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .reveal-right {
     opacity: 0;
-    transform: translateX(40px);
+    transform: translateX(20px);
     transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
