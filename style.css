@@ -248,24 +248,12 @@ input, button, textarea {
 
 .nav-brand {
     display: flex;
-    align-items: baseline;
-    white-space: nowrap;
+    align-items: center;
 }
 
-.brand-text {
-    font-family: var(--font-head);
-    font-weight: 900;
-    font-size: 1.5rem;
-    letter-spacing: 2px;
-    color: var(--text-primary);
-}
-
-.brand-sub {
-    font-family: var(--font-head);
-    font-weight: 300;
-    font-size: 1.5rem;
-    color: var(--brand-yellow);
-    margin-left: 5px;
+.nav-logo {
+    height: 40px;
+    width: auto;
 }
 
 .nav-links {
@@ -410,56 +398,19 @@ input, button, textarea {
     letter-spacing: 2px;
 }
 
-.glitch-title {
+.cinematic-title {
     font-size: clamp(4rem, 8vw, 7rem);
     font-weight: 900;
     line-height: 1;
     margin-bottom: 10px;
     letter-spacing: -2px;
-    color: transparent;
-    -webkit-text-stroke: 1px var(--text-primary);
-    position: relative;
+    color: var(--text-primary);
+    transition: var(--transition-smooth);
 }
 
-.glitch-title::before, .glitch-title::after {
-    content: attr(data-text);
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -1;
-}
-
-.glitch-title::before {
-    left: 4px;
-    text-shadow: -2px 0 var(--brand-yellow);
-    clip: rect(44px, 450px, 56px, 0);
-    animation: glitch-anim 5s infinite linear alternate-reverse;
-}
-
-.glitch-title::after {
-    left: -4px;
-    text-shadow: -2px 0 #F8FAFC;
-    clip: rect(44px, 450px, 56px, 0);
-    animation: glitch-anim2 5s infinite linear alternate-reverse;
-}
-
-@keyframes glitch-anim {
-  0% { clip: rect(40px, 9999px, 53px, 0); }
-  20% { clip: rect(10px, 9999px, 86px, 0); }
-  40% { clip: rect(62px, 9999px, 90px, 0); }
-  60% { clip: rect(23px, 9999px, 5px, 0); }
-  80% { clip: rect(83px, 9999px, 20px, 0); }
-  100% { clip: rect(59px, 9999px, 63px, 0); }
-}
-@keyframes glitch-anim2 {
-  0% { clip: rect(65px, 9999px, 100px, 0); }
-  20% { clip: rect(3px, 9999px, 4px, 0); }
-  40% { clip: rect(98px, 9999px, 12px, 0); }
-  60% { clip: rect(69px, 9999px, 34px, 0); }
-  80% { clip: rect(24px, 9999px, 55px, 0); }
-  100% { clip: rect(42px, 9999px, 7px, 0); }
+.cinematic-title:hover {
+    color: var(--brand-yellow);
+    text-shadow: 0 0 30px rgba(234, 179, 8, 0.4);
 }
 
 .sub-title {
@@ -969,6 +920,13 @@ input, button, textarea {
     flex-wrap: wrap;
     gap: 50px;
     margin-bottom: 60px;
+}
+
+.footer-logo {
+    height: 40px;
+    width: auto;
+    margin-top: -10px;
+    margin-bottom: 16px;
 }
 
 .brand-mark p {
