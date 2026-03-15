@@ -70,8 +70,11 @@
                             <label for="name">Seu Nome</label>
                             <input type="text" id="name" placeholder="Informe seu nome" required>
                         </div>
-                        <button type="submit" class="btn btn-primary btn-block">Agendar Consultoria <i
-                                class="fa-brands fa-whatsapp"></i></button>
+                        <div class="form-group-row btn-container">
+                            <button type="submit" class="btn btn-primary btn-block">Agendar Consultoria <i
+                                    class="fa-brands fa-whatsapp"></i></button>
+                            <a href="#galeria" class="btn btn-secondary btn-block">Ver Portfólio</a>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -85,7 +88,7 @@
                 <div class="about-images reveal-left">
                     <!-- Updated with the carpenter image as requested -->
                     <img src="imgs/marceneiro.jpg" alt="State Marcenaria - Marceneiro em ação"
-                        class="img-main reference-img">
+                        class="img-main reference-img" loading="lazy">
                     <div class="decorative-square"></div>
                 </div>
                 <div class="about-content reveal-right">
@@ -186,40 +189,8 @@
             <div class="section-badge reveal-up">Inspirações</div>
             <h2 class="reveal-up">Projetos Executados</h2>
 
-            <div class="gallery-grid">
-                <!-- Using Unsplash luxury interior images -->
-                <div class="gallery-item reveal-up" style="transition-delay: 0.1s;">
-                    <img src="https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?q=80&w=2670&auto=format&fit=crop"
-                        alt="Cozinha de Alto Padrão">
-                    <div class="gallery-overlay">
-                        <h4>Cozinha Gourmet</h4>
-                        <p>Linha Titanium</p>
-                    </div>
-                </div>
-                <div class="gallery-item reveal-up" style="transition-delay: 0.2s;">
-                    <img src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=2600&auto=format&fit=crop"
-                        alt="Sala de Estar">
-                    <div class="gallery-overlay">
-                        <h4>Living Integrado</h4>
-                        <p>Iluminação Smart LED</p>
-                    </div>
-                </div>
-                <div class="gallery-item reveal-up" style="transition-delay: 0.3s;">
-                    <img src="https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?q=80&w=2670&auto=format&fit=crop"
-                        alt="Quarto Casal">
-                    <div class="gallery-overlay">
-                        <h4>Dormitório Casal</h4>
-                        <p>Closet Elegance</p>
-                    </div>
-                </div>
-                <div class="gallery-item large reveal-up" style="transition-delay: 0.4s;">
-                    <img src="https://images.unsplash.com/photo-1588854337236-6889d631faa8?q=80&w=2670&auto=format&fit=crop"
-                        alt="Home Theater Smart">
-                    <div class="gallery-overlay">
-                        <h4>Home Theater Smart</h4>
-                        <p>Totalmente integrado com Alexa</p>
-                    </div>
-                </div>
+            <div class="gallery-grid" id="main-gallery">
+                <!-- Javascript will load masonry items here to maintain uniform structure and lazy loading -->
             </div>
         </div>
     </section>

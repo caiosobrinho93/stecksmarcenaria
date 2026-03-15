@@ -179,17 +179,18 @@ if (openModalBtn && modal && closeModalBtn) {
 }
 
 // =========================================
-// DYNAMIC GALLERY LOADING
+// DYNAMIC GALLERY LOADING (MASONRY)
 // =========================================
 function loadMainGallery() {
     const galleryGrid = document.querySelector('.gallery-grid');
     if (!galleryGrid) return;
 
     const defaultGallery = [
-        { url: 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?q=80&w=2670&auto=format&fit=crop', title: 'Cozinha Gourmet', desc: 'Linha Titanium' },
-        { url: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=2600&auto=format&fit=crop', title: 'Living Integrado', desc: 'Iluminação Smart LED' },
-        { url: 'https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?q=80&w=2670&auto=format&fit=crop', title: 'Dormitório Casal', desc: 'Closet Elegance' },
-        { url: 'https://images.unsplash.com/photo-1588854337236-6889d631faa8?q=80&w=2670&auto=format&fit=crop', title: 'Home Theater Smart', desc: 'Integração Alexa' }
+        { url: 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?q=80&w=1200&auto=format&fit=crop', title: 'Cozinha Gourmet', desc: 'Linha Titanium' },
+        { url: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=800&auto=format&fit=crop', title: 'Living Integrado', desc: 'Iluminação Smart LED' },
+        { url: 'https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?q=80&w=800&auto=format&fit=crop', title: 'Dormitório Casal', desc: 'Closet Elegance' },
+        { url: 'https://images.unsplash.com/photo-1588854337236-6889d631faa8?q=80&w=1400&auto=format&fit=crop', title: 'Home Theater', desc: 'Integração Alexa' },
+        { url: 'https://images.unsplash.com/photo-1600607686527-6fb886090705?q=80&w=800&auto=format&fit=crop', title: 'Escritório Executivo', desc: 'Design Corporativo' }
     ];
 
     const stored = localStorage.getItem('state_gallery');
@@ -198,10 +199,17 @@ function loadMainGallery() {
     galleryGrid.innerHTML = '';
     items.forEach((item, index) => {
         const div = document.createElement('div');
-        div.className = `gallery-item reveal-up ${index === 3 ? 'large' : ''}`;
-        div.style.transitionDelay = `${(index + 1) * 0.1}s`;
+        // Determine masonry spans (some images take 2 rows, some 1, some span columns)
+        // Just an alternating pattern for high-end feel
+        let masonryClass = 'gallery-item reveal-up';
+        if (index === 0) masonryClass += ' span-col-2 span-row-2';
+        else if (index === 3) masonryClass += ' span-col-2';
+        else if (index === 4) masonryClass += ' span-row-2';
+
+        div.className = masonryClass;
+        div.style.transitionDelay = `${(index % 3 + 1) * 0.1}s`;
         div.innerHTML = `
-            <img src="${item.url}" alt="${item.title}">
+            <img src="${item.url}" alt="${item.title}" loading="lazy">
             <div class="gallery-overlay">
                 <h4>${item.title}</h4>
                 <p>${item.desc}</p>
