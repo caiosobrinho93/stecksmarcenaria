@@ -302,7 +302,9 @@ img {
 }
 
 .n-link {
-    font-family: var(--font-mono);
+    font-family: var(--font-head);
+    font-weight: 500;
+    letter-spacing: 1px;
     font-size: 0.9rem;
     color: var(--text-primary);
     position: relative;
