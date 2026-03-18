@@ -125,7 +125,28 @@ function loadMainGallery() {
     ];
 
     galleryGrid.innerHTML = '';
-    defaultGallery.forEach((item, index) => {
+    
+    // Load from localStorage if available (Integrated with Dashboard)
+    const storedGallery = localStorage.getItem('state_db_gallery');
+    let displayGallery = defaultGallery;
+
+    if (storedGallery) {
+        try {
+            const parsed = JSON.parse(storedGallery);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                // Convert simple string array (from dashboard) to object format used here
+                const userImages = parsed.map((url, i) => ({
+                    url: url,
+                    title: `Projeto Cliente`,
+                    desc: `Execução Especializada`
+                }));
+                // Combine: User images first, then defaults
+                displayGallery = [...userImages, ...defaultGallery];
+            }
+        } catch(e) { console.error("Error loading stored gallery", e); }
+    }
+
+    displayGallery.forEach((item, index) => {
         let masonryClass = 'gallery-item reveal-up';
         
         // Asymmetric grid logic (Masonry effect elements)

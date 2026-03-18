@@ -4,283 +4,1463 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>State Admin | Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800&family=Inter:wght@400;500&display=swap"
-        rel="stylesheet">
+    <title>State Marcenaria | Advanced Console</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../style.css">
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .admin-nav {
-            background-color: #0d0d0e;
-            padding: 15px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            margin-bottom: 40px;
-        }
-
-        .admin-container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-
-        .admin-header {
+        /* Dashboard Specific Styles Extending style.css */
+        body {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 40px;
-        }
-
-        .manage-card {
-            background-color: #1a1b1e;
-            padding: 30px;
-            border-radius: 8px;
-            height: fit-content;
-        }
-
-        .gallery-preview-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 15px;
-        }
-
-        .preview-item {
-            position: relative;
-            aspect-ratio: 1/1;
-            border-radius: 4px;
+            height: 100vh;
             overflow: hidden;
+            background-color: var(--bg-base);
         }
 
-        .preview-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background-color: var(--bg-surface-light);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            z-index: 50;
+            position: relative;
         }
 
-        .delete-btn {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: #ef4444;
-            color: white;
-            border: none;
-            width: 25px;
-            height: 25px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 12px;
+        .sidebar-header {
+            padding: 30px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        .logout-btn {
-            color: var(--text-muted);
-            font-size: 0.9rem;
+        .sidebar-logo {
+            height: 40px;
+            filter: drop-shadow(0 0 10px rgba(234, 179, 8, 0.15));
+        }
+
+        .nav-menu {
+            flex-grow: 1;
+            padding: 20px 0;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 25px;
+            color: var(--text-secondary);
+            font-family: var(--font-head);
+            font-size: 0.95rem;
+            text-decoration: none;
             cursor: pointer;
+            transition: var(--transition-smooth);
+            border-left: 3px solid transparent;
         }
 
-        .logout-btn:hover {
-            color: var(--primary);
+        .nav-item i {
+            width: 20px;
+            margin-right: 15px;
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            transition: var(--transition-smooth);
         }
 
-        /* Dashboard Responsiveness */
-        @media (max-width: 768px) {
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
+        .nav-item:hover, .nav-item.active {
+            background-color: rgba(234, 179, 8, 0.05);
+            color: var(--text-primary);
+            border-left-color: var(--brand-yellow);
+        }
 
-            .admin-header img {
-                height: 25px !important;
-            }
+        .nav-item.active i, .nav-item:hover i {
+            color: var(--brand-yellow);
+        }
+
+        .sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Main Content Area */
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .topbar {
+            height: 70px;
+            background-color: rgba(13, 11, 10, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+            z-index: 40;
+        }
+
+        .topbar-title {
+            font-family: var(--font-head);
+            font-size: 1.25rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tech-status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--brand-yellow);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--brand-yellow);
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0% { opacity: 0.5; box-shadow: 0 0 5px var(--brand-yellow); }
+            50% { opacity: 1; box-shadow: 0 0 15px var(--brand-yellow); }
+            100% { opacity: 0.5; box-shadow: 0 0 5px var(--brand-yellow); }
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+            background-color: var(--bg-surface-light);
+            border: 1px solid var(--brand-yellow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--brand-yellow);
+        }
+
+        .content-area {
+            flex-grow: 1;
+            padding: 30px;
+            overflow-y: auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Module Containers */
+        .module {
+            display: none;
+            animation: fade-in 0.4s ease;
+        }
+
+        .module.active {
+            display: block;
+        }
+
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Generic Dashboard UI Components */
+        .dash-header {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .dash-title {
+            font-size: 1.8rem;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        }
+
+        .dash-subtitle {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--brand-yellow);
+            letter-spacing: 1px;
+        }
+
+        .dash-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--bg-surface-light);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 25px;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition-smooth);
+        }
+        
+        .stat-card:hover {
+            border-color: rgba(234, 179, 8, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 3px; height: 100%;
+            background: var(--brand-yellow);
+        }
+
+        .stat-icon {
+            position: absolute;
+            top: 25px; right: 25px;
+            font-size: 2rem;
+            color: rgba(255, 255, 255, 0.05);
+        }
+
+        .stat-value {
+            font-family: var(--font-head);
+            font-size: 2.5rem;
+            color: var(--text-primary);
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Tables & Lists */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .data-table th, .data-table td {
+            padding: 15px 20px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.02);
+            font-size: 0.9rem;
+        }
+
+        .data-table th {
+            font-family: var(--font-head);
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background: rgba(255,255,255,0.02);
+        }
+
+        .data-table tr:hover {
+            background: rgba(234, 179, 8, 0.02);
+        }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .status-active { background: rgba(34, 197, 94, 0.1); color: #22c55e; border: 1px solid #22c55e; }
+        .status-pending { background: rgba(234, 179, 8, 0.1); color: #eab308; border: 1px solid #eab308; }
+        .status-inactive { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid #ef4444; }
+
+        /* Forms */
+        .admin-form {
+            background: var(--bg-surface-light);
+            padding: 30px;
+            border: 1px solid rgba(255,255,255,0.05);
+            margin-bottom: 30px;
+            display: none;
+        }
+
+        .admin-form.active {
+            display: block;
+            animation: fade-in 0.3s ease;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group.full {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            display: block;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 12px 15px;
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            transition: var(--transition-smooth);
+            outline: none;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            border-color: var(--brand-yellow);
+            background: rgba(234, 179, 8, 0.05);
+        }
+
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .btn-delete-sm {
+            background: transparent;
+            color: #ef4444;
+            border: 1px solid #ef4444;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+        .btn-delete-sm:hover {
+            background: #ef4444;
+            color: #fff;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .sidebar { width: 80px; }
+            .sidebar-logo { display: none; }
+            .nav-item span { display: none; }
+            .nav-item { justify-content: center; padding: 20px; }
+            .nav-item i { margin-right: 0; font-size: 1.5rem; }
+            .user-profile span { display: none; }
+            .form-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 
-<body>
-    <nav class="admin-nav">
-        <div class="admin-container admin-header">
-            <img src="../imgs/logo-state.png" alt="STATE MARCENARIA" style="height: 35px;">
-            <div class="logout-btn" id="logout">Sair <i class="fa-solid fa-right-from-bracket"></i></div>
-        </div>
-    </nav>
+<body class="theme-dark">
+    <!-- Technical Background from index -->
+    <div class="tech-grid-overlay"></div>
+    <div class="tech-lines-overlay" style="opacity: 0.3;"></div>
 
-    <div class="admin-container">
-        <div>
-            <h1 style="margin-bottom: 10px;">Gerenciar Galeria</h1>
-            <p style="color: var(--text-muted); margin-bottom: 40px;">Adicione ou remova projetos exibidos na página
-                principal.</p>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <img src="../imgs/logo-state.png" alt="STATE" class="sidebar-logo">
         </div>
+        
+        <nav class="nav-menu">
+            <div class="nav-item active" data-target="mod-overview">
+                <i class="fa-solid fa-chart-line"></i> <span>Visão Geral</span>
+            </div>
+            <div class="nav-item" data-target="mod-clients">
+                <i class="fa-solid fa-users"></i> <span>Clientes</span>
+            </div>
+            <div class="nav-item" data-target="mod-projects">
+                <i class="fa-solid fa-layer-group"></i> <span>Projetos</span>
+            </div>
+            <div class="nav-item" data-target="mod-inventory">
+                <i class="fa-solid fa-boxes-stacked"></i> <span>Estoque</span>
+            </div>
+            <div class="nav-item" data-target="mod-finance">
+                <i class="fa-solid fa-wallet"></i> <span>Financeiro</span>
+            </div>
+            <div class="nav-item" data-target="mod-providers">
+                <i class="fa-solid fa-helmet-safety"></i> <span>Prestadores</span>
+            </div>
+            <div class="nav-item" data-target="mod-gallery">
+                <i class="fa-solid fa-images"></i> <span>Galeria Web</span>
+            </div>
+        </nav>
 
-        <div class="dashboard-grid">
-            <div class="manage-card">
-                <h3>Novo Projeto</h3>
-                <form id="add-project-form" style="margin-top: 20px;">
-                    <div class="form-group">
-                        <label>Imagem do Projeto</label>
-                        <div style="display: flex; flex-direction: column; gap: 10px;">
-                            <input type="url" id="img-url" placeholder="URL da Imagem (Ex: https://...)">
-                            <span style="font-size: 0.8rem; color: var(--text-muted); text-align: center;">-- OU
-                                --</span>
-                            <div class="upload-wrapper" style="position: relative;">
-                                <input type="file" id="img-file" accept="image/*" style="display: none;">
-                                <button type="button" class="btn btn-secondary btn-block" id="upload-btn-trigger">
-                                    <i class="fa-solid fa-upload"></i> Escolher Foto do Computador
-                                </button>
-                                <div id="file-name"
-                                    style="font-size: 0.75rem; color: var(--primary); margin-top: 5px; text-align: center;">
-                                </div>
+        <div class="sidebar-footer">
+            <div class="nav-item" id="logout-btn" style="color: #ef4444;">
+                <i class="fa-solid fa-power-off" style="color: #ef4444;"></i> <span>Encerrar Sessão</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar">
+            <div class="topbar-title">
+                <div class="tech-status-dot"></div>
+                STATE CONSOLE <span style="font-family: var(--font-mono); font-size: 10px; color: var(--text-muted);">v2.0</span>
+            </div>
+            <div class="user-profile">
+                <span>Eng. Chefe</span>
+                <div class="user-avatar"><i class="fa-solid fa-user-astronaut"></i></div>
+            </div>
+        </header>
+
+        <div class="content-area">
+            
+            <!-- OVERVIEW MODULE -->
+            <section id="mod-overview" class="module active">
+                <div class="dash-header">
+                    <div>
+                        <h2 class="dash-title">Status Global</h2>
+                        <div class="dash-subtitle">SYS_METRICS_ACTIVE</div>
+                    </div>
+                </div>
+
+                <div class="dash-grid">
+                    <div class="stat-card">
+                        <i class="fa-solid fa-layer-group stat-icon"></i>
+                        <div class="stat-value" id="stat-active-projects">0</div>
+                        <div class="stat-label">Projetos em Andamento</div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fa-solid fa-users stat-icon"></i>
+                        <div class="stat-value" id="stat-total-clients">0</div>
+                        <div class="stat-label">Clientes Ativos</div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fa-solid fa-triangle-exclamation stat-icon"></i>
+                        <div class="stat-value" style="color: #ef4444;" id="stat-low-stock">0</div>
+                        <div class="stat-label">Alertas de Estoque</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CLIENTS MODULE -->
+            <section id="mod-clients" class="module">
+                <div class="dash-header">
+                    <div>
+                        <h2 class="dash-title">Base de Clientes</h2>
+                        <div class="dash-subtitle">GERENCIAMENTO_DE_CONTATOS</div>
+                    </div>
+                </div>
+
+                <div class="action-bar">
+                    <button class="btn-solid-yellow" id="btn-new-client" style="padding: 10px 20px; font-size: 0.85rem;">
+                        <i class="fa-solid fa-plus"></i> Novo Cliente
+                    </button>
+                </div>
+
+                <!-- Add Client Form -->
+                <div class="admin-form" id="form-add-client">
+                    <h3 style="margin-bottom: 20px; color: var(--brand-yellow);"><i class="fa-solid fa-user-plus"></i> Cadastrar Cliente</h3>
+                    <form id="client-form">
+                        <div class="form-grid">
+                            <div class="form-group full">
+                                <label>Nome Completo / Empresa</label>
+                                <input type="text" id="client-name" required placeholder="Ex: João da Silva ou Construtora Alpha">
+                            </div>
+                            <div class="form-group">
+                                <label>Telefone / WhatsApp</label>
+                                <input type="text" id="client-phone" required placeholder="(11) 90000-0000">
+                            </div>
+                            <div class="form-group">
+                                <label>Email Principal</label>
+                                <input type="email" id="client-email" placeholder="contato@empresa.com">
+                            </div>
+                            <div class="form-group full">
+                                <label>Endereço da Obra / Residência</label>
+                                <input type="text" id="client-address" placeholder="Av. Paulista, 1000 - Apto 55">
+                            </div>
+                            <div class="form-group">
+                                <label>Status</label>
+                                <select id="client-status">
+                                    <option value="active">Ativo (Em Obra)</option>
+                                    <option value="pending">Prospect (Orçamento)</option>
+                                    <option value="inactive">Inativo (Concluído)</option>
+                                </select>
                             </div>
                         </div>
-                    </div>
-                    <div class="form-group" style="margin-top: 20px;">
-                        <label>Título do Projeto</label>
-                        <input type="text" id="img-title" placeholder="Ex: Cozinha Gourmet" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Descrição Curta</label>
-                        <input type="text" id="img-desc" placeholder="Ex: Linha Titanium" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary btn-block">Adicionar à Galeria</button>
-                </form>
-            </div>
+                        <div style="display: flex; gap: 10px; margin-top: 20px;">
+                            <button type="submit" class="btn-solid-yellow" style="padding: 10px 20px; font-size: 0.85rem;">Salvar Registro</button>
+                            <button type="button" class="btn-outline-tech" id="btn-cancel-client" style="padding: 10px 20px; font-size: 0.85rem;">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
 
-            <div>
-                <h3 style="margin-bottom: 20px;">Fotos Atuais</h3>
-                <div class="gallery-preview-grid" id="admin-gallery">
+                <!-- Clients List -->
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Nome do Cliente</th>
+                            <th>Contato</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="clients-table-body">
+                        <!-- Loaded via JS -->
+                    </tbody>
+                </table>
+            </section>
+            <!-- PROJECTS MODULE -->
+            <section id="mod-projects" class="module">
+                <div class="dash-header">
+                    <div>
+                        <h2 class="dash-title">Gestão de Projetos</h2>
+                        <div class="dash-subtitle">WORKFLOW_DE_ENTREGAS</div>
+                    </div>
+                </div>
+
+                <div class="action-bar">
+                    <button class="btn-solid-yellow" id="btn-new-project" style="padding: 10px 20px; font-size: 0.85rem;">
+                        <i class="fa-solid fa-plus"></i> Novo Projeto
+                    </button>
+                </div>
+
+                <!-- Add Project Form -->
+                <div class="admin-form" id="form-add-project">
+                    <h3 style="margin-bottom: 20px; color: var(--brand-yellow);"><i class="fa-solid fa-folder-plus"></i> Iniciar Projeto</h3>
+                    <form id="project-form">
+                        <div class="form-grid">
+                            <div class="form-group full">
+                                <label>Nome do Projeto</label>
+                                <input type="text" id="project-name" required placeholder="Ex: Cozinha Planejada Sr. João">
+                            </div>
+                            <div class="form-group">
+                                <label>Cliente Relacionado</label>
+                                <select id="project-client" required>
+                                    <!-- Populated via JS -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Estágio Atual</label>
+                                <select id="project-stage">
+                                    <option value="design">Design / Projeto Técnico</option>
+                                    <option value="production">Em Produção (Fábrica)</option>
+                                    <option value="installation">Em Instalação</option>
+                                    <option value="delivery">Finalizado / Entregue</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Data de Início</label>
+                                <input type="date" id="project-start" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Previsão de Entrega</label>
+                                <input type="date" id="project-end" required>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 10px; margin-top: 20px;">
+                            <button type="submit" class="btn-solid-yellow" style="padding: 10px 20px; font-size: 0.85rem;">Salvar Projeto</button>
+                            <button type="button" class="btn-outline-tech" id="btn-cancel-project" style="padding: 10px 20px; font-size: 0.85rem;">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Projeto</th>
+                            <th>Cliente</th>
+                            <th>Estágio / Status</th>
+                            <th>Prazo Final</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="projects-table-body">
+                        <!-- Loaded via JS -->
+                    </tbody>
+                </table>
+            </section>
+            
+            <!-- INVENTORY MODULE -->
+            <section id="mod-inventory" class="module">
+                <div class="dash-header">
+                    <div>
+                        <h2 class="dash-title">Controle de Estoque</h2>
+                        <div class="dash-subtitle">MATERIAIS_E_FERRAGENS</div>
+                    </div>
+                </div>
+
+                <div class="action-bar">
+                    <button class="btn-solid-yellow" id="btn-new-item" style="padding: 10px 20px; font-size: 0.85rem;">
+                        <i class="fa-solid fa-plus"></i> Novo Item
+                    </button>
+                </div>
+
+                <!-- Add Inventory Form -->
+                <div class="admin-form" id="form-add-item">
+                    <h3 style="margin-bottom: 20px; color: var(--brand-yellow);"><i class="fa-solid fa-box-open"></i> Cadastrar Material</h3>
+                    <form id="inventory-form">
+                        <div class="form-grid">
+                            <div class="form-group full">
+                                <label>Descrição do Material</label>
+                                <input type="text" id="item-name" required placeholder="Ex: Chapa MDF Branco TX 15mm">
+                            </div>
+                            <div class="form-group">
+                                <label>Categoria</label>
+                                <select id="item-category">
+                                    <option value="mdf">Chapas MDF</option>
+                                    <option value="hardware">Ferragens (Dobradiças, Corrediças)</option>
+                                    <option value="led">Perfis LED / Elétrica</option>
+                                    <option value="others">Outros Insumos</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Quantidade Atual</label>
+                                <input type="number" id="item-qtd" required min="0" placeholder="Ex: 50">
+                            </div>
+                            <div class="form-group">
+                                <label>Unidade de Medida</label>
+                                <select id="item-unit">
+                                    <option value="un">Unidade (un)</option>
+                                    <option value="chapa">Chapa</option>
+                                    <option value="m">Metros (m)</option>
+                                    <option value="cx">Caixa (cx)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Estoque Mínimo (Alerta)</label>
+                                <input type="number" id="item-min" required min="1" placeholder="Ex: 10">
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 10px; margin-top: 20px;">
+                            <button type="submit" class="btn-solid-yellow" style="padding: 10px 20px; font-size: 0.85rem;">Salvar Material</button>
+                            <button type="button" class="btn-outline-tech" id="btn-cancel-item" style="padding: 10px 20px; font-size: 0.85rem;">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Material / Insumo</th>
+                            <th>Categoria</th>
+                            <th>Qtd. Atual</th>
+                            <th>Status (Mínimo)</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventory-table-body">
+                        <!-- Loaded via JS -->
+                    </tbody>
+                </table>
+            </section>
+            <!-- FINANCE MODULE -->
+            <section id="mod-finance" class="module">
+                <div class="dash-header">
+                    <div>
+                        <h2 class="dash-title">Financeiro Avançado</h2>
+                        <div class="dash-subtitle">FLUXO_DE_CAIXA_E_ORDENS</div>
+                    </div>
+                </div>
+
+                <div class="dash-grid">
+                    <div class="stat-card" style="border-left: 3px solid #22c55e;">
+                        <i class="fa-solid fa-arrow-trend-up stat-icon"></i>
+                        <div class="stat-value" style="color: #22c55e;" id="stat-income">R$ 0,00</div>
+                        <div class="stat-label">Total Entradas (Mês)</div>
+                    </div>
+                    <div class="stat-card" style="border-left: 3px solid #ef4444;">
+                        <i class="fa-solid fa-arrow-trend-down stat-icon"></i>
+                        <div class="stat-value" style="color: #ef4444;" id="stat-expenses">R$ 0,00</div>
+                        <div class="stat-label">Total Saídas (Mês)</div>
+                    </div>
+                </div>
+
+                <div class="action-bar">
+                    <button class="btn-solid-yellow" id="btn-new-transaction" style="padding: 10px 20px; font-size: 0.85rem;">
+                        <i class="fa-solid fa-plus"></i> Novo Lançamento
+                    </button>
+                </div>
+
+                <!-- Add Transaction Form -->
+                <div class="admin-form" id="form-add-transaction">
+                    <h3 style="margin-bottom: 20px; color: var(--brand-yellow);"><i class="fa-solid fa-money-bill-transfer"></i> Novo Lançamento</h3>
+                    <form id="finance-form">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Tipo</label>
+                                <select id="trans-type">
+                                    <option value="income">Entrada (Recebimento)</option>
+                                    <option value="expense">Saída (Pagamento)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Valor (R$)</label>
+                                <input type="number" id="trans-value" required step="0.01" placeholder="0.00">
+                            </div>
+                            <div class="form-group full">
+                                <label>Descrição / Referência</label>
+                                <input type="text" id="trans-desc" required placeholder="Ex: Parcela 1/2 Projeto Cozinha Sr. João">
+                            </div>
+                            <div class="form-group">
+                                <label>Data</label>
+                                <input type="date" id="trans-date" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Categoria</label>
+                                <select id="trans-category">
+                                    <option value="project">Projeto</option>
+                                    <option value="material">Material / Fornecedor</option>
+                                    <option value="labor">Mão de Obra / Terceirizado</option>
+                                    <option value="fixed">Custo Fixo (Aluguel, Luz)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 10px; margin-top: 20px;">
+                            <button type="submit" class="btn-solid-yellow" style="padding: 10px 20px; font-size: 0.85rem;">Registrar</button>
+                            <button type="button" class="btn-outline-tech" id="btn-cancel-transaction" style="padding: 10px 20px; font-size: 0.85rem;">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Descrição</th>
+                            <th>Categoria</th>
+                            <th>Valor</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="finance-table-body">
+                        <!-- Loaded via JS -->
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- SERVICE PROVIDERS MODULE -->
+            <section id="mod-providers" class="module">
+                <div class="dash-header">
+                    <div>
+                        <h2 class="dash-title">Prestadores de Serviço</h2>
+                        <div class="dash-subtitle">REDE_DE_PARCEIROS_TECNICOS</div>
+                    </div>
+                </div>
+
+                <div class="action-bar">
+                    <button class="btn-solid-yellow" id="btn-new-provider" style="padding: 10px 20px; font-size: 0.85rem;">
+                        <i class="fa-solid fa-user-plus"></i> Novo Prestador
+                    </button>
+                </div>
+
+                <!-- Add Provider Form -->
+                <div class="admin-form" id="form-add-provider">
+                    <h3 style="margin-bottom: 20px; color: var(--brand-yellow);"><i class="fa-solid fa-id-card"></i> Cadastrar Parceiro</h3>
+                    <form id="provider-form">
+                        <div class="form-grid">
+                            <div class="form-group full">
+                                <label>Nome / Nome Fantasia</label>
+                                <input type="text" id="provider-name" required placeholder="Ex: Marmoraria Arte & Pedra">
+                            </div>
+                            <div class="form-group">
+                                <label>Especialidade</label>
+                                <input type="text" id="provider-specialty" required placeholder="Ex: Marmoraria, Elétrica, Pintura">
+                            </div>
+                            <div class="form-group">
+                                <label>Telefone / WhatsApp</label>
+                                <input type="text" id="provider-phone" required placeholder="(11) 90000-0000">
+                            </div>
+                            <div class="form-group">
+                                <label>Qualificação / Rating</label>
+                                <select id="provider-rating">
+                                    <option value="5">⭐⭐⭐⭐⭐ (Excelente)</option>
+                                    <option value="4">⭐⭐⭐⭐ (Muito Bom)</option>
+                                    <option value="3">⭐⭐⭐ (Regular)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 10px; margin-top: 20px;">
+                            <button type="submit" class="btn-solid-yellow" style="padding: 10px 20px; font-size: 0.85rem;">Salvar Parceiro</button>
+                            <button type="button" class="btn-outline-tech" id="btn-cancel-provider" style="padding: 10px 20px; font-size: 0.85rem;">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Provider Cards Grid -->
+                <div class="dash-grid" id="providers-grid">
                     <!-- Loaded via JS -->
                 </div>
-            </div>
+            </section>
+            <!-- GALLERY MODULE -->
+            <section id="mod-gallery" class="module">
+                <div class="dash-header">
+                    <div>
+                        <h2 class="dash-title">Galeria do Site</h2>
+                        <div class="dash-subtitle">GERENCIAMENTO_DE_IMAGENS_PUBLICAS</div>
+                    </div>
+                </div>
+
+                <div class="stat-card" style="margin-bottom: 30px;">
+                    <h3 style="margin-bottom: 20px; color: var(--brand-yellow);"><i class="fa-solid fa-cloud-arrow-up"></i> Upload de Nova Foto</h3>
+                    
+                    <div id="upload-dropzone" style="border: 2px dashed rgba(255,255,255,0.1); padding: 40px; text-align: center; cursor: pointer; transition: var(--transition-smooth);">
+                        <i class="fa-solid fa-images" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 15px;"></i>
+                        <p style="color: var(--text-secondary);">Arraste imagens aqui ou clique para selecionar</p>
+                        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 5px;">Formatos aceitos: JPG, PNG, WEBP (Máx: 2MB)</p>
+                        <input type="file" id="gallery-input" multiple accept="image/*" style="display: none;">
+                    </div>
+
+                    <div id="upload-status" style="margin-top: 15px; font-family: var(--font-mono); font-size: 0.8rem; display: none;">
+                        <!-- Alerts go here -->
+                    </div>
+                </div>
+
+                <div class="dash-header">
+                    <div>
+                        <h2 class="dash-title" style="font-size: 1.2rem;">Fotos Publicadas</h2>
+                    </div>
+                </div>
+
+                <div class="dash-grid" id="gallery-grid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));">
+                    <!-- Loaded via JS -->
+                </div>
+            </section>
+
         </div>
-    </div>
+    </main>
 
     <script>
-        // Security check
+        // Security logic
         if (localStorage.getItem('state_admin_session') !== 'active') {
             window.location.href = 'login.html';
         }
 
-        document.getElementById('logout').addEventListener('click', () => {
+        document.getElementById('logout-btn').addEventListener('click', () => {
             localStorage.removeItem('state_admin_session');
             window.location.href = 'login.html';
         });
 
-        const galleryEl = document.getElementById('admin-gallery');
-        const form = document.getElementById('add-project-form');
-        const fileInput = document.getElementById('img-file');
-        const fileNameEl = document.getElementById('file-name');
-        const uploadBtnTrigger = document.getElementById('upload-btn-trigger');
-        let selectedBase64 = null;
+        // Navigation Logic
+        const navItems = document.querySelectorAll('.nav-menu .nav-item');
+        const modules = document.querySelectorAll('.module');
 
-        uploadBtnTrigger.addEventListener('click', () => {
-            fileInput.click();
-        });
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                // Update active nav
+                navItems.forEach(n => n.classList.remove('active'));
+                item.classList.add('active');
 
-        fileInput.addEventListener('change', function () {
-            if (this.files && this.files[0]) {
-                const reader = new FileReader();
-                fileNameEl.textContent = this.files[0].name;
-
-                reader.onload = function (e) {
-                    selectedBase64 = e.target.result;
-                    document.getElementById('img-url').value = ''; // Clear URL if file selected
-                }
-                reader.readAsDataURL(this.files[0]);
-            } else {
-                fileNameEl.textContent = '';
-                selectedBase64 = null;
-            }
-        });
-
-        document.getElementById('img-url').addEventListener('input', function () {
-            if (this.value) {
-                fileInput.value = '';
-                fileNameEl.textContent = '';
-                selectedBase64 = null;
-            }
-        });
-
-        // Initial default gallery items (if local storage is empty)
-        const defaultGallery = [
-            { url: 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?q=80&w=2670', title: 'Cozinha Gourmet', desc: 'Linha Titanium' },
-            { url: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=2600', title: 'Living Integrado', desc: 'Iluminação Smart LED' },
-            { url: 'https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?q=80&w=2670', title: 'Dormitório Casal', desc: 'Closet Elegance' },
-            { url: 'https://images.unsplash.com/photo-1588854337236-6889d631faa8?q=80&w=2670', title: 'Home Theater Smart', desc: 'Integração Alexa' }
-        ];
-
-        function getGallery() {
-            const stored = localStorage.getItem('state_gallery');
-            return stored ? JSON.parse(stored) : defaultGallery;
-        }
-
-        function saveGallery(items) {
-            try {
-                localStorage.setItem('state_gallery', JSON.stringify(items));
-                renderAdminGallery();
-            } catch (e) {
-                if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
-                    alert('Erro: Limite de armazenamento atingido. Tente usar fotos menores ou remova itens antigos.');
-                } else {
-                    alert('Erro ao salvar galeria: ' + e.message);
-                }
-            }
-        }
-
-        function renderAdminGallery() {
-            const items = getGallery();
-            galleryEl.innerHTML = '';
-            items.forEach((item, index) => {
-                const div = document.createElement('div');
-                div.className = 'preview-item';
-                div.innerHTML = `
-                    <img src="${item.url}" alt="${item.title}">
-                    <button class="delete-btn" onclick="deleteItem(${index})"><i class="fa-solid fa-trash"></i></button>
-                `;
-                galleryEl.appendChild(div);
+                // Update active module
+                const targetId = item.getAttribute('data-target');
+                modules.forEach(m => m.classList.remove('active'));
+                document.getElementById(targetId).classList.add('active');
             });
-        }
-
-        window.deleteItem = (index) => {
-            if (confirm('Deseja remover esta imagem?')) {
-                const items = getGallery();
-                items.splice(index, 1);
-                saveGallery(items);
+        });
+        
+        // ==========================================
+        // LOCAL DB ABSTRACTION (localStorage)
+        // ==========================================
+        const DB = {
+            get: (key, defaultVal) => {
+                const data = localStorage.getItem(`state_db_${key}`);
+                return data ? JSON.parse(data) : defaultVal;
+            },
+            set: (key, val) => {
+                localStorage.setItem(`state_db_${key}`, JSON.stringify(val));
             }
         };
 
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
+        // ==========================================
+        // CLIENTS MODULE LOGIC
+        // ==========================================
+        const clientsTbody = document.getElementById('clients-table-body');
+        const formAddClient = document.getElementById('form-add-client');
+        const btnNewClient = document.getElementById('btn-new-client');
+        const btnCancelClient = document.getElementById('btn-cancel-client');
+        const clientForm = document.getElementById('client-form');
 
-            const urlInput = document.getElementById('img-url').value;
-            const finalImg = selectedBase64 || urlInput;
+        const defaultClients = [
+            { id: 1, name: 'Condomínio High Line', phone: '(11) 98888-7777', email: 'sindico@highline.com', address: 'Vila Nova Conceição', status: 'active' },
+            { id: 2, name: 'Dr. Roberto Almeida', phone: '(11) 95555-4444', email: 'roberto@clinica.com', address: 'Moema - Consultório', status: 'pending' }
+        ];
 
-            if (!finalImg) {
-                alert('Por favor, insira uma URL ou escolha uma foto do computador.');
+        function renderClients() {
+            const clients = DB.get('clients', defaultClients);
+            clientsTbody.innerHTML = '';
+            
+            if(clients.length === 0) {
+                clientsTbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Nenhum cliente cadastrado.</td></tr>`;
                 return;
             }
 
-            const newItem = {
-                url: finalImg,
-                title: document.getElementById('img-title').value,
-                desc: document.getElementById('img-desc').value
-            };
+            clients.forEach(c => {
+                let badgeClass = 'status-active';
+                let badgeText = 'Em Obra';
+                if(c.status === 'pending') { badgeClass = 'status-pending'; badgeText = 'Orçamento'; }
+                if(c.status === 'inactive') { badgeClass = 'status-inactive'; badgeText = 'Concluído'; }
 
-            const items = getGallery();
-            items.push(newItem);
-            saveGallery(items);
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        <strong>${c.name}</strong><br>
+                        <span style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono);">${c.email || 'Sem email'}</span>
+                    </td>
+                    <td>
+                        <i class="fa-solid fa-phone" style="font-size: 0.8rem; color: var(--text-muted); margin-right: 5px;"></i> ${c.phone}
+                    </td>
+                    <td><span class="status-badge ${badgeClass}">${badgeText}</span></td>
+                    <td>
+                        <button class="btn-delete-sm" onclick="deleteClient(${c.id})" title="Remover"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                `;
+                clientsTbody.appendChild(tr);
+            });
 
-            // Reset
-            form.reset();
-            selectedBase64 = null;
-            fileNameEl.textContent = '';
+            // Update overview stat
+            document.getElementById('stat-total-clients').innerText = clients.length;
+        }
+
+        window.deleteClient = (id) => {
+            if(confirm('Tem certeza que deseja remover este registro?')) {
+                let clients = DB.get('clients', defaultClients);
+                clients = clients.filter(c => c.id !== id);
+                DB.set('clients', clients);
+                renderClients();
+            }
+        };
+
+        btnNewClient.addEventListener('click', () => {
+            formAddClient.classList.add('active');
+            btnNewClient.style.display = 'none';
         });
 
-        renderAdminGallery();
+        btnCancelClient.addEventListener('click', () => {
+            formAddClient.classList.remove('active');
+            clientForm.reset();
+            btnNewClient.style.display = 'inline-block';
+        });
+
+        clientForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const clients = DB.get('clients', defaultClients);
+            
+            const newClient = {
+                id: Date.now(),
+                name: document.getElementById('client-name').value,
+                phone: document.getElementById('client-phone').value,
+                email: document.getElementById('client-email').value,
+                address: document.getElementById('client-address').value,
+                status: document.getElementById('client-status').value,
+            };
+
+            clients.push(newClient);
+            DB.set('clients', clients);
+            
+            clientForm.reset();
+            formAddClient.classList.remove('active');
+            btnNewClient.style.display = 'inline-block';
+            renderClients();
+        });
+
+        // ==========================================
+        // PROJECTS MODULE LOGIC
+        // ==========================================
+        const projectsTbody = document.getElementById('projects-table-body');
+        const projectClientSelect = document.getElementById('project-client');
+        const formAddProject = document.getElementById('form-add-project');
+        const btnNewProject = document.getElementById('btn-new-project');
+        const btnCancelProject = document.getElementById('btn-cancel-project');
+        const projectForm = document.getElementById('project-form');
+
+        const defaultProjects = [
+            { id: 1, name: 'Cozinha Planejada - Apto 42', client: 'Dr. Roberto Almeida', stage: 'production', start: '2026-03-01', end: '2026-04-15' },
+            { id: 2, name: 'Closet Master - High Line', client: 'Condomínio High Line', stage: 'design', start: '2026-03-10', end: '2026-05-20' }
+        ];
+
+        function updateProjectClientSelect() {
+            const clients = DB.get('clients', defaultClients);
+            projectClientSelect.innerHTML = '<option value="">Selecione um cliente...</option>';
+            clients.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.name;
+                opt.textContent = c.name;
+                projectClientSelect.appendChild(opt);
+            });
+        }
+
+        function renderProjects() {
+            const projects = DB.get('projects', defaultProjects);
+            projectsTbody.innerHTML = '';
+            
+            if(projects.length === 0) {
+                projectsTbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Nenhum projeto em andamento.</td></tr>`;
+                return;
+            }
+
+            projects.forEach(p => {
+                let badgeClass = 'status-pending';
+                let badgeText = 'Design';
+                if(p.stage === 'production') { badgeClass = 'status-active'; badgeText = 'Fábrica'; }
+                if(p.stage === 'installation') { badgeClass = 'status-active'; badgeText = 'Instalação'; }
+                if(p.stage === 'delivery') { badgeClass = 'status-inactive'; badgeText = 'Entregue'; }
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${p.name}</strong></td>
+                    <td>${p.client}</td>
+                    <td><span class="status-badge ${badgeClass}">${badgeText}</span></td>
+                    <td><span style="font-family: var(--font-mono); font-size: 0.85rem;">${p.end}</span></td>
+                    <td>
+                        <button class="btn-delete-sm" onclick="deleteProject(${p.id})"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                `;
+                projectsTbody.appendChild(tr);
+            });
+
+            document.getElementById('stat-active-projects').innerText = projects.filter(p => p.stage !== 'delivery').length;
+        }
+
+        window.deleteProject = (id) => {
+            if(confirm('Deseja cancelar este projeto?')) {
+                let projects = DB.get('projects', defaultProjects);
+                projects = projects.filter(p => p.id !== id);
+                DB.set('projects', projects);
+                renderProjects();
+            }
+        };
+
+        btnNewProject.addEventListener('click', () => {
+            updateProjectClientSelect();
+            formAddProject.classList.add('active');
+            btnNewProject.style.display = 'none';
+        });
+
+        btnCancelProject.addEventListener('click', () => {
+            formAddProject.classList.remove('active');
+            projectForm.reset();
+            btnNewProject.style.display = 'inline-block';
+        });
+
+        projectForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const projects = DB.get('projects', defaultProjects);
+            
+            const newProject = {
+                id: Date.now(),
+                name: document.getElementById('project-name').value,
+                client: document.getElementById('project-client').value,
+                stage: document.getElementById('project-stage').value,
+                start: document.getElementById('project-start').value,
+                end: document.getElementById('project-end').value,
+            };
+
+            projects.push(newProject);
+            DB.set('projects', projects);
+            
+            projectForm.reset();
+            formAddProject.classList.remove('active');
+            btnNewProject.style.display = 'inline-block';
+            renderProjects();
+        });
+
+        // ==========================================
+        // INVENTORY MODULE LOGIC
+        // ==========================================
+        const inventoryTbody = document.getElementById('inventory-table-body');
+        const formAddItem = document.getElementById('form-add-item');
+        const btnNewItem = document.getElementById('btn-new-item');
+        const btnCancelItem = document.getElementById('btn-cancel-item');
+        const inventoryForm = document.getElementById('inventory-form');
+
+        const defaultInventory = [
+            { id: 1, name: 'MDF Branco TX 15mm', category: 'mdf', qtd: 24, unit: 'chapa', min: 10 },
+            { id: 2, name: 'Dobradiça c/ Amortecedor', category: 'hardware', qtd: 8, unit: 'un', min: 20 },
+            { id: 3, name: 'Perfil LED Slim 2m', category: 'led', qtd: 15, unit: 'm', min: 5 }
+        ];
+
+        function renderInventory() {
+            const inventory = DB.get('inventory', defaultInventory);
+            inventoryTbody.innerHTML = '';
+            let lowStockCount = 0;
+
+            inventory.forEach(item => {
+                const isLow = Number(item.qtd) <= Number(item.min);
+                if(isLow) lowStockCount++;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${item.name}</strong></td>
+                    <td>${item.category.toUpperCase()}</td>
+                    <td>${item.qtd} ${item.unit}</td>
+                    <td>
+                        <span class="status-badge ${isLow ? 'status-inactive' : 'status-active'}">
+                            ${isLow ? 'ABAIXO DO MÍNIMO' : 'OK'}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn-delete-sm" onclick="deleteInventoryItem(${item.id})"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                `;
+                inventoryTbody.appendChild(tr);
+            });
+
+            document.getElementById('stat-low-stock').innerText = lowStockCount;
+        }
+
+        window.deleteInventoryItem = (id) => {
+            if(confirm('Remover este material do estoque?')) {
+                let inventory = DB.get('inventory', defaultInventory);
+                inventory = inventory.filter(i => i.id !== id);
+                DB.set('inventory', inventory);
+                renderInventory();
+            }
+        };
+
+        btnNewItem.addEventListener('click', () => {
+            formAddItem.classList.add('active');
+            btnNewItem.style.display = 'none';
+        });
+
+        btnCancelItem.addEventListener('click', () => {
+            formAddItem.classList.remove('active');
+            inventoryForm.reset();
+            btnNewItem.style.display = 'inline-block';
+        });
+
+        inventoryForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const inventory = DB.get('inventory', defaultInventory);
+            
+            const newItem = {
+                id: Date.now(),
+                name: document.getElementById('item-name').value,
+                category: document.getElementById('item-category').value,
+                qtd: document.getElementById('item-qtd').value,
+                unit: document.getElementById('item-unit').value,
+                min: document.getElementById('item-min').value,
+            };
+
+            inventory.push(newItem);
+            DB.set('inventory', inventory);
+            
+            inventoryForm.reset();
+            formAddItem.classList.remove('active');
+            btnNewItem.style.display = 'inline-block';
+            renderInventory();
+        });
+
+        // ==========================================
+        // FINANCE MODULE LOGIC
+        // ==========================================
+        const financeTbody = document.getElementById('finance-table-body');
+        const formAddTrans = document.getElementById('form-add-transaction');
+        const btnNewTrans = document.getElementById('btn-new-transaction');
+        const btnCancelTrans = document.getElementById('btn-cancel-transaction');
+        const financeForm = document.getElementById('finance-form');
+
+        const defaultFinance = [
+            { id: 1, date: '2026-03-15', desc: 'Sinal Projeto Cozinha - Sr. João', category: 'project', value: 5000.00, type: 'income' },
+            { id: 2, date: '2026-03-16', desc: 'Compra de Chapas MDF - Fornecedor X', category: 'material', value: 1200.00, type: 'expense' },
+            { id: 3, date: '2026-03-17', desc: 'Pagamento Diária Montador', category: 'labor', value: 350.00, type: 'expense' }
+        ];
+
+        function renderFinance() {
+            const transactions = DB.get('finance', defaultFinance);
+            financeTbody.innerHTML = '';
+            let totalIncome = 0;
+            let totalExpense = 0;
+
+            transactions.forEach(t => {
+                const val = Number(t.value);
+                if(t.type === 'income') totalIncome += val;
+                else totalExpense += val;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><span style="font-family: var(--font-mono); font-size: 0.85rem;">${t.date}</span></td>
+                    <td>${t.desc}</td>
+                    <td><span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted);">${t.category}</span></td>
+                    <td style="color: ${t.type === 'income' ? '#22c55e' : '#ef4444'}; font-weight: 600;">
+                        ${t.type === 'income' ? '+' : '-'} R$ ${val.toLocaleString('pt-BR', {minimumFractionDigits: 2})}
+                    </td>
+                    <td>
+                        <button class="btn-delete-sm" onclick="deleteTransaction(${t.id})"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                `;
+                financeTbody.appendChild(tr);
+            });
+
+            document.getElementById('stat-income').innerText = `R$ ${totalIncome.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('stat-expenses').innerText = `R$ ${totalExpense.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+        }
+
+        window.deleteTransaction = (id) => {
+            if(confirm('Excluir este lançamento financeiro?')) {
+                let transactions = DB.get('finance', defaultFinance);
+                transactions = transactions.filter(t => t.id !== id);
+                DB.set('finance', transactions);
+                renderFinance();
+            }
+        };
+
+        btnNewTrans.addEventListener('click', () => {
+            formAddTrans.classList.add('active');
+            btnNewTrans.style.display = 'none';
+        });
+
+        btnCancelTrans.addEventListener('click', () => {
+            formAddTrans.classList.remove('active');
+            financeForm.reset();
+            btnNewTrans.style.display = 'inline-block';
+        });
+
+        financeForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const transactions = DB.get('finance', defaultFinance);
+            
+            const newTrans = {
+                id: Date.now(),
+                type: document.getElementById('trans-type').value,
+                value: document.getElementById('trans-value').value,
+                desc: document.getElementById('trans-desc').value,
+                date: document.getElementById('trans-date').value,
+                category: document.getElementById('trans-category').value,
+            };
+
+            transactions.push(newTrans);
+            DB.set('finance', transactions);
+            
+            financeForm.reset();
+            formAddTrans.classList.remove('active');
+            btnNewTrans.style.display = 'inline-block';
+            renderFinance();
+        });
+
+        // ==========================================
+        // PROVIDERS MODULE LOGIC
+        // ==========================================
+        const providersGrid = document.getElementById('providers-grid');
+        const formAddProvider = document.getElementById('form-add-provider');
+        const btnNewProvider = document.getElementById('btn-new-provider');
+        const btnCancelProvider = document.getElementById('btn-cancel-provider');
+        const providerForm = document.getElementById('provider-form');
+
+        const defaultProviders = [
+            { id: 1, name: 'Marmoraria Arte & Pedra', specialty: 'Marmoraria / Tampos', phone: '(11) 97777-6666', rating: 5 },
+            { id: 2, name: 'EletroLight Sergio', specialty: 'Elétrica / Iluminação', phone: '(11) 94444-3333', rating: 4 }
+        ];
+
+        function renderProviders() {
+            const providers = DB.get('providers', defaultProviders);
+            providersGrid.innerHTML = '';
+
+            providers.forEach(p => {
+                let stars = '⭐'.repeat(p.rating);
+                
+                const card = document.createElement('div');
+                card.className = 'stat-card';
+                card.style.borderLeft = '3px solid var(--brand-yellow)';
+                card.innerHTML = `
+                    <div style="margin-bottom: 15px;">
+                        <span style="font-size: 0.7rem; color: var(--brand-yellow); font-family: var(--font-mono); text-transform: uppercase;">${p.specialty}</span>
+                        <h4 style="font-size: 1.1rem; margin: 5px 0;">${p.name}</h4>
+                        <div style="font-size: 0.8rem;">${stars}</div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.85rem; color: var(--text-muted);"><i class="fa-solid fa-phone"></i> ${p.phone}</span>
+                        <button class="btn-delete-sm" onclick="deleteProvider(${p.id})"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `;
+                providersGrid.appendChild(card);
+            });
+        }
+
+        window.deleteProvider = (id) => {
+            if(confirm('Remover este prestador da rede?')) {
+                let providers = DB.get('providers', defaultProviders);
+                providers = providers.filter(p => p.id !== id);
+                DB.set('providers', providers);
+                renderProviders();
+            }
+        };
+
+        btnNewProvider.addEventListener('click', () => {
+            formAddProvider.classList.add('active');
+            btnNewProvider.style.display = 'none';
+        });
+
+        btnCancelProvider.addEventListener('click', () => {
+            formAddProvider.classList.remove('active');
+            providerForm.reset();
+            btnNewProvider.style.display = 'inline-block';
+        });
+
+        providerForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const providers = DB.get('providers', defaultProviders);
+            
+            const newProvider = {
+                id: Date.now(),
+                name: document.getElementById('provider-name').value,
+                specialty: document.getElementById('provider-specialty').value,
+                phone: document.getElementById('provider-phone').value,
+                rating: parseInt(document.getElementById('provider-rating').value),
+            };
+
+            providers.push(newProvider);
+            DB.set('providers', providers);
+            
+            providerForm.reset();
+            formAddProvider.classList.remove('active');
+            btnNewProvider.style.display = 'inline-block';
+            renderProviders();
+        });
+
+        // ==========================================
+        // GALLERY MODULE LOGIC
+        // ==========================================
+        const galleryGrid = document.getElementById('gallery-grid');
+        const galleryInput = document.getElementById('gallery-input');
+        const uploadDropzone = document.getElementById('upload-dropzone');
+        const uploadStatus = document.getElementById('upload-status');
+
+        function renderGallery() {
+            const images = DB.get('gallery', []);
+            galleryGrid.innerHTML = '';
+
+            if(images.length === 0) {
+                galleryGrid.innerHTML = `<p style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 40px;">Nenhuma imagem na galeria.</p>`;
+                return;
+            }
+
+            images.forEach((img, index) => {
+                const item = document.createElement('div');
+                item.className = 'stat-card';
+                item.style.padding = '10px';
+                item.innerHTML = `
+                    <div style="width: 100%; height: 150px; overflow: hidden; margin-bottom: 10px; background: #000;">
+                        <img src="${img}" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.7rem; color: var(--text-muted);">IMG_${index+1}</span>
+                        <button class="btn-delete-sm" onclick="deleteGalleryImage(${index})"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `;
+                galleryGrid.appendChild(item);
+            });
+        }
+
+        window.deleteGalleryImage = (index) => {
+            if(confirm('Remover esta imagem da galeria pública?')) {
+                let images = DB.get('gallery', []);
+                images.splice(index, 1);
+                DB.set('gallery', images);
+                renderGallery();
+            }
+        };
+
+        uploadDropzone.addEventListener('click', () => galleryInput.click());
+
+        uploadDropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadDropzone.style.borderColor = 'var(--brand-yellow)';
+            uploadDropzone.style.backgroundColor = 'rgba(234, 179, 8, 0.05)';
+        });
+
+        uploadDropzone.addEventListener('dragleave', () => {
+            uploadDropzone.style.borderColor = 'rgba(255,255,255,0.1)';
+            uploadDropzone.style.backgroundColor = 'transparent';
+        });
+
+        uploadDropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadDropzone.style.borderColor = 'rgba(255,255,255,0.1)';
+            uploadDropzone.style.backgroundColor = 'transparent';
+            handleFiles(e.dataTransfer.files);
+        });
+
+        galleryInput.addEventListener('change', (e) => handleFiles(e.target.files));
+
+        function handleFiles(files) {
+            const validFiles = Array.from(files).filter(file => {
+                const isImage = file.type.startsWith('image/');
+                const isSmall = file.size <= 2 * 1024 * 1024; // 2MB
+                return isImage && isSmall;
+            });
+
+            if (validFiles.length < files.length) {
+                showUploadStatus('Alguns arquivos foram ignorados (apenas imagens < 2MB).', 'error');
+            }
+
+            if (validFiles.length === 0) return;
+
+            showUploadStatus(`Processando ${validFiles.length} arquivo(s)...`, 'info');
+
+            let processed = 0;
+            const currentImages = DB.get('gallery', []);
+
+            validFiles.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    currentImages.push(e.target.result);
+                    processed++;
+                    if (processed === validFiles.length) {
+                        DB.set('gallery', currentImages);
+                        showUploadStatus('Upload concluído com sucesso!', 'success');
+                        renderGallery();
+                        setTimeout(() => { uploadStatus.style.display = 'none'; }, 3000);
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function showUploadStatus(msg, type) {
+            uploadStatus.style.display = 'block';
+            uploadStatus.innerText = msg;
+            uploadStatus.style.color = type === 'error' ? '#ef4444' : (type === 'success' ? '#22c55e' : 'var(--brand-yellow)');
+            
+            if(type === 'error') {
+                uploadDropzone.style.borderColor = '#ef4444';
+                setTimeout(() => { uploadDropzone.style.borderColor = 'rgba(255,255,255,0.1)'; }, 2000);
+            }
+        }
+
+        // ==========================================
+        // INIT
+        // ==========================================
+        function initDashboard() {
+            renderClients();
+            renderProjects();
+            renderInventory();
+            renderFinance();
+            renderProviders();
+            renderGallery();
+        }
+        
+        initDashboard();
     </script>
 </body>
 
-</html>
+</html>
