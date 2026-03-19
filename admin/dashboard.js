@@ -35,9 +35,14 @@ const navLinks = document.querySelectorAll('.nav-link[data-mod]');
 const sections = document.querySelectorAll('.module-section');
 
 function switchModule(modId) {
-    const current = document.querySelector('.module-section.active');
     const incoming = document.getElementById('mod-' + modId);
-    if (!incoming || current === incoming) return;
+    if (!incoming) return;
+
+    // Hide all sections instantly
+    sections.forEach(s => {
+        s.style.display = 'none';
+        s.classList.remove('active', 'exit', 'incoming');
+    });
 
     navLinks.forEach(l => l.classList.remove('active'));
     const link = document.querySelector(`.nav-link[data-mod="${modId}"]`);
@@ -46,29 +51,14 @@ function switchModule(modId) {
         document.getElementById('current-mod-name').innerText = link.querySelector('span').innerText;
     }
 
-    // Facebook Style Transition
-    if (current) {
-        current.classList.add('exit');
-        current.classList.remove('active');
-        setTimeout(() => {
-            current.classList.remove('exit');
-            current.style.display = 'none';
-        }, 600);
-    }
-
+    // Show incoming instantly
     incoming.style.display = 'block';
-    incoming.classList.add('incoming');
-    
-    // Trigger browser reflow
-    incoming.offsetHeight;
-
-    incoming.classList.remove('incoming');
     incoming.classList.add('active');
     
     // Close any open forms when switching
     document.querySelectorAll('.form-card').forEach(f => {
         f.style.display = 'none';
-        const dataBox = f.parentElement.querySelector('.data-box');
+        const dataBox = f.parentElement.querySelector('.data-box') || f.parentElement.querySelector('.table-container') || f.parentElement.querySelector('#providers-grid') || f.parentElement.querySelector('#gallery-list');
         if(dataBox) dataBox.style.display = 'block';
     });
 }

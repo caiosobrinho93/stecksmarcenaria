@@ -48,8 +48,8 @@ body::after {
     content: "";
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: radial-gradient(circle at 20% 30%, rgba(0, 243, 255, 0.05), transparent 40%),
-                radial-gradient(circle at 80% 70%, rgba(255, 0, 234, 0.05), transparent 40%);
+    background: radial-gradient(circle at 20% 30%, rgba(234, 179, 8, 0.05), transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(234, 179, 8, 0.05), transparent 40%);
     z-index: -1;
     pointer-events: none;
 }
@@ -84,7 +84,7 @@ body::after {
 
 .sidebar-logo {
     width: 35px;
-    filter: drop-shadow(0 0 10px var(--neon-cyan));
+    filter: drop-shadow(0 0 10px var(--state-gold));
 }
 
 .nav-list {
@@ -186,9 +186,9 @@ body::after {
 }
 
 .stat-card:hover {
-    border-color: var(--neon-cyan);
+    border-color: var(--state-gold);
     transform: translateY(-5px);
-    box-shadow: 0 10px 40px rgba(0, 243, 255, 0.1);
+    box-shadow: 0 10px 40px rgba(234, 179, 8, 0.1);
 }
 
 .stat-card::after {
@@ -297,8 +297,8 @@ input, select, textarea {
 }
 
 input:focus, select:focus {
-    border-color: var(--neon-cyan);
-    box-shadow: 0 0 10px rgba(0,243,255,0.2);
+    border-color: var(--state-gold);
+    box-shadow: 0 0 10px rgba(234, 179, 8, 0.3);
 }
 
 .btn {
@@ -316,25 +316,27 @@ input:focus, select:focus {
 }
 
 .btn-primary {
-    background: var(--neon-cyan);
-    color: #000;
-    box-shadow: 0 0 15px rgba(0,243,255,0.3);
+    background: var(--state-gold);
+    color: #000 !important;
+    font-weight: 800;
+    box-shadow: 0 0 15px rgba(234, 179, 8, 0.3);
 }
 
 .btn-primary:hover {
-    background: #fff;
-    box-shadow: 0 0 30px var(--neon-cyan);
+    background: var(--state-gold-dark);
+    box-shadow: 0 0 30px var(--state-gold);
     transform: translateY(-2px);
+    color: #000 !important;
 }
 
 .btn-ghost {
     background: transparent;
     border: 1px solid var(--cyber-border);
-    color: var(--neon-cyan);
+    color: var(--state-gold);
 }
 
 .btn-ghost:hover {
-    background: rgba(0,243,255,0.1);
+    background: rgba(234, 179, 8, 0.1);
 }
 
 /* --- AI WIDGET --- */
@@ -479,27 +481,18 @@ input:focus, select:focus {
     z-index: 1;
 }
 
-/* Outgoing Page: Scales back and fades */
-.module-section.exit {
-    display: block;
-    opacity: 0;
-    transform: scale(0.92) translateZ(-50px);
-    pointer-events: none;
-    z-index: 0;
+.module-section {
+    position: absolute;
+    width: 100%;
+    top: 0;
+    left: 0;
+    display: none;
+    z-index: 1;
 }
 
-/* Incoming Page: Slides from right */
 .module-section.active {
     display: block;
-    opacity: 1;
-    transform: translateX(0);
     z-index: 2;
-}
-
-.module-section.incoming {
-    display: block;
-    opacity: 0;
-    transform: translateX(100%);
 }
 
 /* --- CUSTOM FILE INPUT --- */
@@ -558,29 +551,39 @@ input:focus, select:focus {
 
 @media (max-width: 768px) {
     .sidebar { 
-        bottom: 0; top: auto; width: 100%; height: 60px; 
+        bottom: 0; top: auto; width: 100%; height: 65px; 
         flex-direction: row; border-right: none; border-top: 1px solid var(--cyber-border);
         padding: 0;
+        background: rgba(5, 5, 6, 0.98);
+        overflow-x: auto;
     }
     .sidebar-brand { display: none; }
-    .nav-list { flex-direction: row; padding: 0; height: 100%; width: 100%; }
-    .nav-link { 
-        flex: 1; justify-content: center; padding: 0; 
-        flex-direction: column; gap: 5px; font-size: 0.6rem;
+    .nav-list { 
+        flex-direction: row; padding: 0; height: 100%; width: 100%; 
+        display: flex; flex-wrap: nowrap;
+        justify-content: space-around;
+        align-items: center;
     }
-    .nav-link i { font-size: 1.2rem; margin: 0; }
+    .nav-link { 
+        flex: 1; min-width: 60px; justify-content: center; padding: 0 5px; 
+        flex-direction: column; gap: 4px; font-size: 0.55rem;
+        height: 100%;
+    }
+    .nav-link i { font-size: 1.1rem; margin: 0; }
+    .nav-link span { display: block !important; }
     .nav-link.active::before { width: 100%; height: 2px; top: 0; bottom: auto; }
     
     .main-wrapper { 
         margin-left: 0; 
-        padding: 0 15px 80px; 
+        padding: 0 15px 85px; 
     }
     .topbar { height: 60px; margin-bottom: 20px; }
-    .page-title { font-size: 0.9rem; letter-spacing: 1px; }
+    .page-title { font-size: 0.8rem; letter-spacing: 1px; }
     
     .module-section {
-        left: 15px; right: 15px; width: calc(100% - 30px);
-        top: 80px;
+        position: relative;
+        left: 0; right: 0; width: 100%;
+        top: 0;
     }
     
     .grid-auto { grid-template-columns: 1fr; gap: 15px; }
