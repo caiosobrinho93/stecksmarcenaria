@@ -20,8 +20,24 @@
     <!-- Flatpickr (Datepicker) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
+    <style>
+        /* HUD Scanning Line */
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(0deg, rgba(0, 243, 255, 0.05) 0%, transparent 50%, rgba(0, 243, 255, 0.05) 100%);
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.2;
+            animation: scanline 10s linear infinite;
+        }
+        @keyframes scanline { from { transform: translateY(-100%); } to { transform: translateY(100%); } }
+    </style>
 </head>
 <body>
+    <div id="toast-container"></div>
     
     <!-- Navigation Rail -->
     <aside class="sidebar">
