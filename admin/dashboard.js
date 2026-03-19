@@ -1,9 +1,4 @@
-/**
- * State Console V4.0 - Cyber-Logic
- * Features: High-Tech Toasts, Grok Integration, Pulse UI
- */
-
-const GROK_KEY = ''; // ENTER_KEY_VIA_UI_CONFIG
+let GROK_KEY = localStorage.getItem('state_grok_key') || '';
 const DB_PREFIX = 'state_db_';
 
 const DB = {
@@ -22,15 +17,15 @@ const DB = {
 };
 
 // --- FUTURISTIC NOTIFICATIONS (TOASTS) ---
-function notify(msg, type = 'info') {
+function notify(msg) {
     const container = document.getElementById('toast-container');
     const toast = document.createElement('div');
     toast.className = 'toast';
-    toast.innerHTML = `<i class="fa-solid fa-microchip" style="margin-right:10px; color:var(--neon-cyan)"></i> ${msg.toUpperCase()}`;
+    toast.innerHTML = `<i class="fa-solid fa-bolt" style="margin-right:10px; color:var(--state-gold)"></i> ${msg.toUpperCase()}`;
     container.appendChild(toast);
     setTimeout(() => {
         toast.style.opacity = '0';
-        toast.style.transform = 'translateX(20px)';
+        toast.style.transform = 'translateY(-10px)';
         setTimeout(() => toast.remove(), 500);
     }, 4000);
 }
@@ -40,33 +35,68 @@ const navLinks = document.querySelectorAll('.nav-link[data-mod]');
 const sections = document.querySelectorAll('.module-section');
 
 function switchModule(modId) {
-    sections.forEach(s => {
-        s.classList.remove('active');
-        setTimeout(() => { if (!s.classList.contains('active')) s.style.display = 'none'; }, 400);
-    });
-    navLinks.forEach(l => l.classList.remove('active'));
+    const current = document.querySelector('.module-section.active');
+    const incoming = document.getElementById('mod-' + modId);
+    if (!incoming || current === incoming) return;
 
-    const target = document.getElementById('mod-' + modId);
+    navLinks.forEach(l => l.classList.remove('active'));
     const link = document.querySelector(`.nav-link[data-mod="${modId}"]`);
-    
-    if (target && link) {
-        target.style.display = 'block';
-        setTimeout(() => target.classList.add('active'), 10);
+    if (link) {
         link.classList.add('active');
         document.getElementById('current-mod-name').innerText = link.querySelector('span').innerText;
     }
+
+    // Facebook Style Transition
+    if (current) {
+        current.classList.add('exit');
+        current.classList.remove('active');
+        setTimeout(() => {
+            current.classList.remove('exit');
+            current.style.display = 'none';
+        }, 600);
+    }
+
+    incoming.style.display = 'block';
+    incoming.classList.add('incoming');
+    
+    // Trigger browser reflow
+    incoming.offsetHeight;
+
+    incoming.classList.remove('incoming');
+    incoming.classList.add('active');
+    
+    // Close any open forms when switching
+    document.querySelectorAll('.form-card').forEach(f => {
+        f.style.display = 'none';
+        const dataBox = f.parentElement.querySelector('.data-box');
+        if(dataBox) dataBox.style.display = 'block';
+    });
 }
 
 navLinks.forEach(link => link.onclick = () => switchModule(link.dataset.mod));
 
+// --- USER MENU ---
+const userTrigger = document.getElementById('user-menu-trigger');
+const userDropdown = document.getElementById('user-dropdown');
+if (userTrigger) {
+    userTrigger.onclick = (e) => {
+        e.stopPropagation();
+        userDropdown.style.display = userDropdown.style.display === 'block' ? 'none' : 'block';
+    };
+    window.onclick = () => userDropdown.style.display = 'none';
+}
+
 // Logout
-document.getElementById('logout-trigger').onclick = (e) => {
-    e.preventDefault();
-    if (confirm('ENCERRAR PROTOCOLO DE ACESSO?')) {
-        localStorage.removeItem('state_admin_session');
-        window.location.href = 'login.html';
-    }
-};
+const logoutLink = document.getElementById('logout-link') || document.getElementById('logout-trigger');
+if(logoutLink) {
+    logoutLink.onclick = (e) => {
+        e.preventDefault();
+        if (confirm('ENCERRAR PROTOCOLO DE ACESSO?')) {
+            localStorage.removeItem('state_admin_session');
+            window.location.href = 'login.html';
+        }
+    };
+}
 
 // --- UTILS ---
 const toBase64 = file => new Promise((resolve, reject) => {
@@ -79,12 +109,28 @@ const toBase64 = file => new Promise((resolve, reject) => {
 function showModal(content) {
     const modal = document.getElementById('generic-modal');
     document.getElementById('modal-content').innerHTML = `
-        <div style="border-left: 2px solid var(--neon-cyan); padding-left: 30px; position:relative;">
-            <div style="position:absolute; top:-20px; left:0; font-family:var(--font-mono); font-size:0.6rem; color:var(--neon-cyan);">DATA_ENTRY_MODAL</div>
+        <div style="border-left: 2px solid var(--state-gold); padding-left: 30px; position:relative;">
+            <div style="position:absolute; top:-20px; left:0; font-family:var(--font-mono); font-size:0.6rem; color:var(--state-gold);">INTERFACE_OVERLAY</div>
             ${content}
         </div>
     `;
     modal.style.display = 'flex';
+}
+
+// --- FORM TOGGLING LOGIC ---
+function toggleModuleForm(formId, dataBoxQuery) {
+    const form = document.getElementById(formId);
+    const dataBox = form.parentElement.querySelector(dataBoxQuery);
+    
+    if (form.style.display === 'block') {
+        form.style.display = 'none';
+        if(dataBox) dataBox.style.display = 'block';
+    } else {
+        // Hide table first
+        if(dataBox) dataBox.style.display = 'none';
+        form.style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 }
 
 document.getElementById('modal-close').onclick = () => document.getElementById('generic-modal').style.display = 'none';
@@ -94,9 +140,13 @@ document.getElementById('modal-close').onclick = () => document.getElementById('
 // 1. CLIENTS
 const clientForm = document.getElementById('client-form-el');
 document.getElementById('btn-add-client-toggle').onclick = () => {
-    document.getElementById('form-client').classList.toggle('active');
+    toggleModuleForm('form-client', '.data-box');
     clientForm.reset();
     document.getElementById('client-id').value = '';
+};
+
+document.getElementById('btn-client-cancel').onclick = () => {
+    toggleModuleForm('form-client', '.data-box');
 };
 
 clientForm.onsubmit = async (e) => {
@@ -130,7 +180,7 @@ clientForm.onsubmit = async (e) => {
     DB.set('clients', clients);
     renderClients();
     clientForm.reset();
-    document.getElementById('form-client').classList.remove('active');
+    toggleModuleForm('form-client', '.data-box');
 };
 
 function renderClients() {
@@ -154,7 +204,7 @@ function renderClients() {
                 <td><div class="avatar-circle" style="width:35px;height:35px">
                     ${c.photo ? `<img src="${c.photo}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : '<i class="fa-solid fa-user"></i>'}
                 </div></td>
-                <td><strong style="color:var(--neon-cyan);cursor:pointer" onclick="viewClient('${c.id}')">${c.name}</strong></td>
+                <td><strong style="color:var(--state-gold);cursor:pointer" onclick="viewClient('${c.id}')">${c.name}</strong></td>
                 <td>${c.phone}</td>
                 <td>
                     <button class="btn btn-ghost btn-sm" onclick="editClient('${c.id}')"><i class="fa-solid fa-terminal"></i></button>
@@ -169,7 +219,11 @@ function renderClients() {
 
 window.editClient = (id) => {
     const c = DB.get('clients').find(x => x.id === id);
-    document.getElementById('form-client').classList.add('active');
+    const form = document.getElementById('form-client');
+    const dataBox = form.parentElement.querySelector('.data-box');
+    dataBox.style.display = 'none';
+    form.style.display = 'block';
+    
     document.getElementById('client-id').value = c.id;
     document.getElementById('client-name').value = c.name;
     document.getElementById('client-email').value = c.email;
@@ -183,9 +237,14 @@ window.editClient = (id) => {
 // 2. PROJECTS
 const projectForm = document.getElementById('project-form-el');
 document.getElementById('btn-add-project-toggle').onclick = () => {
-    document.getElementById('form-project').classList.toggle('active');
+    toggleModuleForm('form-project', '.data-box');
     projectForm.reset();
-}
+    document.getElementById('project-id').value = '';
+};
+
+document.getElementById('btn-project-cancel').onclick = () => {
+    toggleModuleForm('form-project', '.data-box');
+};
 
 projectForm.onsubmit = async (e) => {
     e.preventDefault();
@@ -219,7 +278,7 @@ projectForm.onsubmit = async (e) => {
     DB.set('projects', projects);
     renderProjects();
     projectForm.reset();
-    document.getElementById('form-project').classList.remove('active');
+    toggleModuleForm('form-project', '.data-box');
 };
 
 function renderProjects() {
@@ -242,7 +301,7 @@ function renderProjects() {
             let sc = p.status === 'done' ? 'badge-done' : (p.status === 'paused' ? 'badge-paused' : 'badge-working');
             return `
             <tr>
-                <td><strong style="color:var(--neon-cyan);cursor:pointer" onclick="viewProject('${p.id}')">${p.title}</strong></td>
+                <td><strong style="color:var(--state-gold);cursor:pointer" onclick="viewProject('${p.id}')">${p.title}</strong></td>
                 <td>${p.client}</td>
                 <td><span class="badge ${sc}" style="font-family:var(--font-mono)">${p.status.toUpperCase()}</span></td>
                 <td>
@@ -258,9 +317,14 @@ function renderProjects() {
 // 3. INVENTORY
 const invForm = document.getElementById('inventory-form-el');
 document.getElementById('btn-add-item-toggle').onclick = () => {
-    document.getElementById('form-inventory').classList.toggle('active');
+    toggleModuleForm('form-inventory', '.data-box');
     invForm.reset();
-}
+    document.getElementById('item-id').value = '';
+};
+
+document.getElementById('btn-item-cancel').onclick = () => {
+    toggleModuleForm('form-inventory', '.data-box');
+};
 
 invForm.onsubmit = async (e) => {
     e.preventDefault();
@@ -291,7 +355,7 @@ invForm.onsubmit = async (e) => {
     DB.set('inventory', inv);
     renderInventory();
     invForm.reset();
-    document.getElementById('form-inventory').classList.remove('active');
+    toggleModuleForm('form-inventory', '.data-box');
 };
 
 function renderInventory() {
@@ -350,8 +414,18 @@ document.getElementById('finance-form-el').onsubmit = (e) => {
     DB.set('finance', fin);
     DB.log(`Movimentação financeira registrada: ${data.desc}`);
     renderFinance();
-    document.getElementById('form-finance').classList.remove('active');
+    toggleModuleForm('form-finance', '.data-box');
 }
+
+document.getElementById('btn-finance-cancel').onclick = () => {
+    toggleModuleForm('form-finance', '.data-box');
+};
+
+document.getElementById('btn-add-trans-toggle').onclick = () => {
+    toggleModuleForm('form-finance', '.data-box');
+    document.getElementById('finance-form-el').reset();
+    document.getElementById('trans-id').value = '';
+};
 
 function renderFinance() {
     const fin = DB.get('finance');
@@ -376,7 +450,7 @@ function renderFinance() {
             <tr>
                 <td style="font-family:var(--font-mono)">${f.date}</td>
                 <td>${f.desc}</td>
-                <td style="color:${f.type === 'income' ? 'var(--neon-cyan)' : 'var(--neon-pink)'}; font-weight:bold; font-family:var(--font-mono)">
+                <td style="color:${f.type === 'income' ? 'var(--state-gold)' : '#ef4444'}; font-weight:bold; font-family:var(--font-mono)">
                     ${f.type === 'income' ? '+' : '-'} R$ ${f.val.toLocaleString('pt-BR')}
                 </td>
                 <td><button class="btn btn-ghost btn-sm" onclick="editTrans('${f.id}')"><i class="fa-solid fa-terminal"></i></button></td>
@@ -416,8 +490,18 @@ document.getElementById('provider-form-el').onsubmit = async (e) => {
     DB.set('providers', providers);
     DB.log(`Parceria estabelecida/atualizada: ${data.name}`);
     renderProviders();
-    document.getElementById('form-provider').classList.remove('active');
+    toggleModuleForm('form-provider', '#providers-grid');
 }
+
+document.getElementById('btn-prov-cancel').onclick = () => {
+    toggleModuleForm('form-provider', '#providers-grid');
+};
+
+document.getElementById('btn-add-prov-toggle').onclick = () => {
+    toggleModuleForm('form-provider', '#providers-grid');
+    document.getElementById('provider-form-el').reset();
+    document.getElementById('prov-id').value = '';
+};
 
 function renderProviders() {
     const p = DB.get('providers');
@@ -438,10 +522,10 @@ function renderProviders() {
         grid.innerHTML = p.map(p => `
             <div class="stat-card">
                 <div style="display:flex;gap:15px;align-items:center">
-                    <img src="${p.photo || '../imgs/logo-state.png'}" style="width:50px;height:50px;border-radius:4px;border:1px solid var(--neon-cyan)">
+                    <img src="${p.photo || '../imgs/logo-state.png'}" style="width:50px;height:50px;border-radius:4px;border:1px solid var(--state-gold)">
                     <div>
                         <h4 style="margin:0">${p.name}</h4>
-                        <span style="font-size:0.6rem;color:var(--neon-cyan);font-family:var(--font-mono)">[${p.skill}]</span>
+                        <span style="font-size:0.6rem;color:var(--state-gold);font-family:var(--font-mono)">[${p.skill}]</span>
                     </div>
                 </div>
                 <div style="margin-top:20px">
@@ -520,11 +604,41 @@ function renderGallery() {
 function renderLogs() {
     const logs = DB.get('logs');
     document.getElementById('recent-logs').innerHTML = logs.map(l => `
-        <div style="margin-bottom:10px; font-family:var(--font-mono); border-left:1px solid var(--cyber-border); padding-left:10px">
-            <span style="color:var(--neon-cyan)">[${l.time}]</span> ${l.msg}
+        <div style="margin-bottom:10px; font-family:var(--font-mono); border-left:1px solid var(--cyber-border); padding-left:10px; font-size:0.75rem;">
+            <span style="color:var(--state-gold)">[${l.time}]</span> ${l.msg}
         </div>
     `).join('');
 }
+
+// --- CALCULATOR LOGIC ---
+window.calculateQuote = () => {
+    const basePrice = parseFloat(document.getElementById('calc-type').value);
+    const measure = parseFloat(document.getElementById('calc-val').value || 0);
+    const materialMultiplier = parseFloat(document.getElementById('calc-material').value);
+    
+    if (measure <= 0) {
+        notify('INSIRA_UMA_MEDIDA_VÁLIDA');
+        return;
+    }
+
+    const total = basePrice * measure * materialMultiplier;
+    const resultBox = document.getElementById('calc-result');
+    const priceEl = document.getElementById('calc-price');
+    
+    priceEl.innerText = `R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+    resultBox.style.display = 'block';
+    
+    DB.log(`Cálculo de orçamento realizado: R$ ${total.toFixed(2)}`);
+};
+
+document.getElementById('save-config').onclick = () => {
+    const key = document.getElementById('grok-key').value.trim();
+    if(key) {
+        localStorage.setItem('state_grok_key', key);
+        GROK_KEY = key;
+        notify('CONFIGURAÇÕES_SALVAS_E_CRIPTOGRAFADAS');
+    }
+};
 
 function updateStats() {
     document.getElementById('st-projects').innerText = DB.get('projects').length;

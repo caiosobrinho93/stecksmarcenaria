@@ -26,14 +26,16 @@
             content: "";
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(0deg, rgba(0, 243, 255, 0.05) 0%, transparent 50%, rgba(0, 243, 255, 0.05) 100%);
+            background: linear-gradient(0deg, rgba(234, 179, 8, 0.03) 0%, transparent 50%, rgba(234, 179, 8, 0.03) 100%);
             background-size: 100% 4px;
             pointer-events: none;
             z-index: 9999;
-            opacity: 0.2;
-            animation: scanline 10s linear infinite;
+            opacity: 0.15;
+            animation: scanline 12s linear infinite;
         }
         @keyframes scanline { from { transform: translateY(-100%); } to { transform: translateY(100%); } }
+        
+        .form-card { display: none; } /* HIDDEN_BY_DEFAULT */
     </style>
 </head>
 <body>
@@ -62,12 +64,20 @@
     <main class="main-wrapper">
         <header class="topbar">
             <div class="page-title" id="current-mod-name">Visão Geral</div>
-            <div class="user-node">
+            <div class="user-node" style="position: relative; cursor: pointer;" id="user-menu-trigger">
                 <div style="text-align: right; line-height: 1.2;">
-                    <div style="font-weight: 700; font-size: 0.9rem;">Operador Central</div>
-                    <div style="color: var(--dash-text-dim); font-size: 0.7rem;">ADMIN_ROOT_ACCESS</div>
+                    <div style="font-weight: 700; font-size: 0.9rem; color: var(--state-gold);">Operador Central</div>
+                    <div style="color: rgba(255,255,255,0.4); font-size: 0.6rem; font-family: var(--font-mono);">SECURE_NODE_01</div>
                 </div>
                 <div class="avatar-circle"><i class="fa-solid fa-user-shield"></i></div>
+                
+                <!-- USER DROPDOWN -->
+                <div id="user-dropdown" class="glass" style="display: none; position: absolute; top: 60px; right: 0; width: 220px; z-index: 1000; padding: 10px; border-radius: 4px;">
+                    <a href="#" class="nav-link" style="padding: 10px; font-size: 0.8rem;"><i class="fa-solid fa-id-card"></i> Dados do Usuário</a>
+                    <a href="#" class="nav-link" style="padding: 10px; font-size: 0.8rem;"><i class="fa-solid fa-shield-halved"></i> Segurança</a>
+                    <hr style="border: 0; border-top: 1px solid var(--cyber-border); margin: 5px 0;">
+                    <a href="#" id="logout-link" class="nav-link" style="padding: 10px; font-size: 0.8rem; color: #ef4444;"><i class="fa-solid fa-power-off"></i> Encerrar Sessão</a>
+                </div>
             </div>
         </header>
 
@@ -98,20 +108,58 @@
                     </div>
                 </div>
                 
-                <div style="margin-top: 40px; display: grid; grid-template-columns: 2fr 1.2fr; gap: 30px;">
-                    <div class="stat-card" style="min-height: 300px;">
-                        <h3 style="margin-bottom: 20px;"><i class="fa-solid fa-clock-rotate-left"></i> Atividades Recentes</h3>
-                        <div id="recent-logs" style="font-size: 0.85rem; color: var(--dash-text-dim);">
-                            <!-- JS will inject logs here -->
-                            Iniciando console do sistema...
+                <div style="margin-top: 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                    <!-- CALCULATOR -->
+                    <div class="stat-card">
+                        <h3 style="margin-bottom: 20px; font-family: var(--font-cyber); font-size: 0.9rem; color: var(--state-gold);"><i class="fa-solid fa-calculator"></i> CALCULADORA_ORÇAMENTO_RÁPIDO</h3>
+                        <div style="display: grid; gap: 15px;">
+                            <div class="group">
+                                <label style="font-size: 0.6rem;">TIPO_DE_MOBILIÁRIO</label>
+                                <select id="calc-type" style="font-size: 0.8rem;">
+                                    <option value="1200">Cozinha (M. Linear)</option>
+                                    <option value="1500">Guarda-Roupa (M²)</option>
+                                    <option value="800">Painéis/Home (M²)</option>
+                                    <option value="600">Banheiros (M. Linear)</option>
+                                </select>
+                            </div>
+                            <div class="group">
+                                <label style="font-size: 0.6rem;">MEDIDA_ESTIMADA (M / M²)</label>
+                                <input type="number" id="calc-val" placeholder="0.00" style="font-size: 0.8rem;">
+                            </div>
+                            <div class="group">
+                                <label style="font-size: 0.6rem;">PADRÃO_MDF</label>
+                                <select id="calc-material" style="font-size: 0.8rem;">
+                                    <option value="1">Standard (Branco)</option>
+                                    <option value="1.3">Premium (Madeirado)</option>
+                                    <option value="1.6">Alta Performance (Brilho/Vidro)</option>
+                                </select>
+                            </div>
+                            <div id="calc-result" style="padding: 15px; background: rgba(234, 179, 8, 0.05); border-left: 2px solid var(--state-gold); display: none;">
+                                <div style="font-size: 0.6rem; color: var(--state-gold);">ESTIMATIVA_SISTEMA:</div>
+                                <div id="calc-price" style="font-size: 1.4rem; font-family: var(--font-mono); font-weight: bold;">R$ 0,00</div>
+                            </div>
+                            <button class="btn btn-primary" onclick="calculateQuote()" style="width: 100%;">GERAR_ESTIMATIVA</button>
                         </div>
                     </div>
+
                     <div class="stat-card">
-                        <h3><i class="fa-solid fa-gear"></i> Configurações Rápidas</h3>
-                        <div style="margin-top: 20px;">
-                            <label style="font-size: 0.7rem; color: var(--dash-text-dim);">Chave API Grok (xAI)</label>
+                        <h3 style="margin-bottom: 20px; font-family: var(--font-cyber); font-size: 0.9rem;"><i class="fa-solid fa-clock-rotate-left"></i> LOG_DE_SISTEMA</h3>
+                        <div id="recent-logs" style="font-size: 0.8rem; font-family: var(--font-mono); color: rgba(255,255,255,0.6); max-height: 250px; overflow-y: auto;">
+                            <!-- JS will inject logs here -->
+                            INITIALIZING_STATE_OS...
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stat-card" style="margin-top: 30px;">
+                    <h3><i class="fa-solid fa-gear"></i> TERMINAL_DE_CONFIGURAÇÃO</h3>
+                    <div style="margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div>
+                            <label style="font-size: 0.7rem; color: rgba(255,255,255,0.4);">Chave API Grok (xAI)</label>
                             <input type="password" id="grok-key" placeholder="Pode colar sua chave aqui..." style="margin-top: 5px;">
-                            <p style="font-size: 0.65rem; color: var(--dash-text-dim); margin-top: 8px;">Apenas salva localmente no navegador.</p>
+                        </div>
+                        <div style="display: flex; align-items: flex-end;">
+                            <button class="btn btn-ghost" id="save-config" style="width: 100%;">SALVAR_CONFIGURAÇÕES</button>
                         </div>
                     </div>
                 </div>
@@ -131,7 +179,10 @@
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                             <div class="group">
                                 <label>Foto de Perfil / Logo</label>
-                                <input type="file" id="client-photo" accept="image/*">
+                                <div class="file-upload-wrapper">
+                                    <div class="file-upload-btn"><i class="fa-solid fa-upload"></i> SELECIONAR_IMAGEM</div>
+                                    <input type="file" id="client-photo" accept="image/*">
+                                </div>
                             </div>
                             <div class="group">
                                 <label>Nome Completo / Fantasia</label>
@@ -207,8 +258,11 @@
                                 </select>
                             </div>
                             <div class="group">
-                                <label>Imagens (Múltiplas)</label>
-                                <input type="file" id="project-imgs" multiple accept="image/*">
+                                <label>Imagens (Portfólio)</label>
+                                <div class="file-upload-wrapper">
+                                    <div class="file-upload-btn"><i class="fa-solid fa-images"></i> UPLOAD_GALERIA</div>
+                                    <input type="file" id="project-imgs" multiple accept="image/*">
+                                </div>
                             </div>
                         </div>
                         <div style="display: flex; gap: 10px; margin-top: 10px;">
@@ -259,7 +313,10 @@
                             </div>
                             <div class="group">
                                 <label>Imagem do Item</label>
-                                <input type="file" id="item-photo" accept="image/*">
+                                <div class="file-upload-wrapper">
+                                    <div class="file-upload-btn"><i class="fa-solid fa-camera"></i> CAPTURAR_RECURSO</div>
+                                    <input type="file" id="item-photo" accept="image/*">
+                                </div>
                             </div>
                         </div>
                         <div style="display: flex; gap: 10px; margin-top: 10px;">
@@ -386,7 +443,10 @@
                             </div>
                             <div class="group">
                                 <label>Logo / Foto</label>
-                                <input type="file" id="prov-photo" accept="image/*">
+                                <div class="file-upload-wrapper">
+                                    <div class="file-upload-btn"><i class="fa-solid fa-file-image"></i> SELECIONAR_LOGOTIPO</div>
+                                    <input type="file" id="prov-photo" accept="image/*">
+                                </div>
                             </div>
                         </div>
                         <div style="display: flex; gap: 10px; margin-top: 10px;">
@@ -420,14 +480,17 @@
                             </div>
                             <div class="group">
                                 <label>Imagem</label>
-                                <input type="file" id="gal-file" accept="image/*">
+                                <div class="file-upload-wrapper">
+                                    <div class="file-upload-btn"><i class="fa-solid fa-image"></i> ESCOLHER_MÍDIA</div>
+                                    <input type="file" id="gal-file" accept="image/*">
+                                </div>
                             </div>
                             <div class="group">
                                 <label>Vincular Prestador</label>
                                 <select id="gal-prov-select"></select>
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-primary" id="btn-gal-submit">Publicar no Site</button>
+                        <button type="submit" class="btn btn-primary" id="btn-gal-submit" style="margin-top: 20px;">Publicar no Site</button>
                     </form>
                 </div>
 

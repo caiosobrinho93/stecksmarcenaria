@@ -134,12 +134,13 @@ function loadMainGallery() {
         try {
             const parsed = JSON.parse(storedGallery);
             if (Array.isArray(parsed) && parsed.length > 0) {
-                // Convert simple string array (from dashboard) to object format used here
-                const userImages = parsed.map((url, i) => ({
-                    url: url,
-                    title: `Projeto Cliente`,
-                    desc: `Execução Especializada`
-                }));
+                // The dashboard stores objects { photo, title, sub }
+                const userImages = parsed.map((item, i) => ({
+                    url: item.photo || item.url || '', // Support both formats
+                    title: item.title || `Projeto STATE`,
+                    desc: item.sub || item.desc || `Execução Especializada`
+                })).filter(img => img.url); // Ensure we have a URL
+                
                 // Combine: User images first, then defaults
                 displayGallery = [...userImages, ...defaultGallery];
             }
