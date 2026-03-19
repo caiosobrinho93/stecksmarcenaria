@@ -3,8 +3,7 @@ const DB_PREFIX = 'state_db_';
 
 const DB = {
     get: (key, defaultVal = []) => {
-        const data = localStorage.getItem(DB_PREFIX + key);
-        return data ? JSON.parse(data) : defaultVal;
+        try { const d = localStorage.getItem(DB_PREFIX + key); return d ? JSON.parse(d) : defaultVal; } catch { return defaultVal; }
     },
     set: (key, val) => localStorage.setItem(DB_PREFIX + key, JSON.stringify(val)),
     log: (msg) => {
@@ -16,729 +15,598 @@ const DB = {
     }
 };
 
-// --- FUTURISTIC NOTIFICATIONS (TOASTS) ---
+// ─── TOASTS ──────────────────────────────────────────────
 function notify(msg) {
     const container = document.getElementById('toast-container');
     const toast = document.createElement('div');
     toast.className = 'toast';
-    toast.innerHTML = `<i class="fa-solid fa-bolt" style="margin-right:10px; color:var(--state-gold)"></i> ${msg.toUpperCase()}`;
+    toast.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--accent);margin-right:8px"></i>${msg}`;
     container.appendChild(toast);
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateY(-10px)';
-        setTimeout(() => toast.remove(), 500);
-    }, 4000);
+    setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(20px)'; setTimeout(() => toast.remove(), 400); }, 4000);
 }
 
-// --- NAVIGATION ---
+// ─── NAVIGATION ──────────────────────────────────────────
 const navLinks = document.querySelectorAll('.nav-link[data-mod]');
 const sections = document.querySelectorAll('.module-section');
 
 function switchModule(modId) {
     const incoming = document.getElementById('mod-' + modId);
     if (!incoming) return;
-
-    // Hide all sections instantly
-    sections.forEach(s => {
-        s.style.display = 'none';
-        s.classList.remove('active', 'exit', 'incoming');
-    });
-
+    sections.forEach(s => { s.classList.remove('active'); setTimeout(() => { if (!s.classList.contains('active')) s.style.display = 'none'; }, 300); });
     navLinks.forEach(l => l.classList.remove('active'));
     const link = document.querySelector(`.nav-link[data-mod="${modId}"]`);
-    if (link) {
-        link.classList.add('active');
-        document.getElementById('current-mod-name').innerText = link.querySelector('span').innerText;
-    }
-
-    // Show incoming instantly
+    if (link) { link.classList.add('active'); document.getElementById('current-mod-name').innerText = link.querySelector('span').innerText; }
     incoming.style.display = 'block';
-    incoming.classList.add('active');
-    
-    // Close any open forms when switching
-    document.querySelectorAll('.form-card').forEach(f => {
-        f.style.display = 'none';
-        const dataBox = f.parentElement.querySelector('.data-box') || f.parentElement.querySelector('.table-container') || f.parentElement.querySelector('#providers-grid') || f.parentElement.querySelector('#gallery-list');
-        if(dataBox) dataBox.style.display = 'block';
-    });
+    setTimeout(() => incoming.classList.add('active'), 20);
+    // Close all open forms
+    document.querySelectorAll('.form-card:not(.always-visible)').forEach(f => f.style.display = 'none');
+    document.querySelectorAll('.data-box, #providers-grid, #gallery-list').forEach(b => b.style.display = '');
 }
 
 navLinks.forEach(link => link.onclick = () => switchModule(link.dataset.mod));
 
-// --- USER MENU ---
+// ─── USER MENU ───────────────────────────────────────────
 const userTrigger = document.getElementById('user-menu-trigger');
 const userDropdown = document.getElementById('user-dropdown');
 if (userTrigger) {
-    userTrigger.onclick = (e) => {
-        e.stopPropagation();
-        userDropdown.style.display = userDropdown.style.display === 'block' ? 'none' : 'block';
-    };
-    window.onclick = () => userDropdown.style.display = 'none';
+    userTrigger.onclick = e => { e.stopPropagation(); userDropdown.style.display = userDropdown.style.display === 'block' ? 'none' : 'block'; };
+    document.addEventListener('click', () => { if (userDropdown) userDropdown.style.display = 'none'; });
 }
 
 // Logout
-const logoutLink = document.getElementById('logout-link') || document.getElementById('logout-trigger');
-if(logoutLink) {
-    logoutLink.onclick = (e) => {
-        e.preventDefault();
-        if (confirm('ENCERRAR PROTOCOLO DE ACESSO?')) {
-            localStorage.removeItem('state_admin_session');
-            window.location.href = 'login.html';
-        }
-    };
-}
+const logoutEls = [document.getElementById('logout-link'), document.getElementById('logout-trigger')];
+logoutEls.forEach(el => { if (el) el.onclick = e => { e.preventDefault(); if (confirm('Sair do painel?')) { localStorage.removeItem('state_admin_session'); window.location.href = 'login.html'; } }; });
 
-// --- UTILS ---
-const toBase64 = file => new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = error => reject(error);
-});
+// ─── UTILS ───────────────────────────────────────────────
+const toBase64 = file => new Promise((resolve, reject) => { const r = new FileReader(); r.readAsDataURL(file); r.onload = () => resolve(r.result); r.onerror = reject; });
 
-function showModal(content) {
-    const modal = document.getElementById('generic-modal');
-    document.getElementById('modal-content').innerHTML = `
-        <div style="border-left: 2px solid var(--state-gold); padding-left: 30px; position:relative;">
-            <div style="position:absolute; top:-20px; left:0; font-family:var(--font-mono); font-size:0.6rem; color:var(--state-gold);">INTERFACE_OVERLAY</div>
-            ${content}
-        </div>
-    `;
-    modal.style.display = 'flex';
-}
-
-// --- FORM TOGGLING LOGIC ---
-function toggleModuleForm(formId, dataBoxQuery) {
-    const form = document.getElementById(formId);
-    const dataBox = form.parentElement.querySelector(dataBoxQuery);
-    
-    if (form.style.display === 'block') {
-        form.style.display = 'none';
-        if(dataBox) dataBox.style.display = 'block';
-    } else {
-        // Hide table first
-        if(dataBox) dataBox.style.display = 'none';
-        form.style.display = 'block';
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+function showModal(html) {
+    document.getElementById('modal-content').innerHTML = html;
+    document.getElementById('generic-modal').style.display = 'flex';
 }
 
 document.getElementById('modal-close').onclick = () => document.getElementById('generic-modal').style.display = 'none';
 
-// --- CRUDS (Optimized for V4) ---
+// ─── FORM TOGGLE ─────────────────────────────────────────
+function openForm(formId, hideQuery) {
+    const form = document.getElementById(formId);
+    if (!form) return;
+    const targets = form.closest('section').querySelectorAll(hideQuery);
+    targets.forEach(t => t.style.display = 'none');
+    form.style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 
-// 1. CLIENTS
+function closeForm(formId, showQuery) {
+    const form = document.getElementById(formId);
+    if (!form) return;
+    form.style.display = 'none';
+    const targets = form.closest('section').querySelectorAll(showQuery);
+    targets.forEach(t => t.style.display = '');
+}
+
+// ─── 1. CLIENTS ──────────────────────────────────────────
 const clientForm = document.getElementById('client-form-el');
+
 document.getElementById('btn-add-client-toggle').onclick = () => {
-    toggleModuleForm('form-client', '.data-box');
     clientForm.reset();
     document.getElementById('client-id').value = '';
+    document.getElementById('client-form-title').innerText = 'Novo Cliente';
+    openForm('form-client', '.data-box');
 };
 
-document.getElementById('btn-client-cancel').onclick = () => {
-    toggleModuleForm('form-client', '.data-box');
-};
+document.getElementById('btn-client-cancel').onclick = () => closeForm('form-client', '.data-box');
 
-clientForm.onsubmit = async (e) => {
+clientForm.onsubmit = async e => {
     e.preventDefault();
     const id = document.getElementById('client-id').value;
     const clients = DB.get('clients');
     const photoInput = document.getElementById('client-photo');
-    let photo = '';
-    
+    let photo = id ? (clients.find(c => c.id === id) || {}).photo || '' : '';
     if (photoInput.files[0]) photo = await toBase64(photoInput.files[0]);
-    else if(id) photo = clients.find(c => c.id === id).photo;
 
-    const data = {
-        id: id || Date.now().toString(),
-        name: document.getElementById('client-name').value,
-        email: document.getElementById('client-email').value,
-        phone: document.getElementById('client-phone').value,
-        address: document.getElementById('client-address').value,
-        photo: photo
-    };
+    const data = { id: id || Date.now().toString(), name: document.getElementById('client-name').value, email: document.getElementById('client-email').value, phone: document.getElementById('client-phone').value, address: document.getElementById('client-address').value, photo };
 
-    if (id) {
-        const idx = clients.findIndex(c => c.id === id);
-        clients[idx] = data;
-        DB.log(`Registro atualizado: ${data.name}`);
-    } else {
-        clients.push(data);
-        DB.log(`Novo perfil biométrico: ${data.name}`);
-    }
+    if (id) { clients[clients.findIndex(c => c.id === id)] = data; DB.log(`Cliente atualizado: ${data.name}`); }
+    else { clients.push(data); DB.log(`Cliente adicionado: ${data.name}`); }
 
     DB.set('clients', clients);
     renderClients();
     clientForm.reset();
-    toggleModuleForm('form-client', '.data-box');
+    closeForm('form-client', '.data-box');
 };
 
-function renderClients() {
-    const clients = DB.get('clients');
-    const tbody = document.querySelector('#table-clients tbody');
-    const container = document.getElementById('mod-clients');
-    
-    if (clients.length === 0) {
-        tbody.innerHTML = '';
-        if (!container.querySelector('.empty-state')) {
-            const empty = document.createElement('div');
-            empty.className = 'empty-state';
-            empty.innerHTML = '<i class="fa-solid fa-person-rays"></i><span>SCANNING_RECORDS... NO_BIOMETRIC_DATA_FOUND</span>';
-            container.appendChild(empty);
-        }
-    } else {
-        const existingEmpty = container.querySelector('.empty-state');
-        if (existingEmpty) existingEmpty.remove();
-        tbody.innerHTML = clients.map(c => `
-            <tr>
-                <td><div class="avatar-circle" style="width:35px;height:35px">
-                    ${c.photo ? `<img src="${c.photo}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : '<i class="fa-solid fa-user"></i>'}
-                </div></td>
-                <td><strong style="color:var(--state-gold);cursor:pointer" onclick="viewClient('${c.id}')">${c.name}</strong></td>
-                <td>${c.phone}</td>
-                <td>
-                    <button class="btn btn-ghost btn-sm" onclick="editClient('${c.id}')"><i class="fa-solid fa-terminal"></i></button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteItem('clients', '${c.id}', renderClients)"><i class="fa-solid fa-trash-can"></i></button>
-                </td>
-            </tr>
-        `).join('');
-    }
-    updateStats();
-    updateSelectors();
-}
-
-window.editClient = (id) => {
+window.editClient = id => {
     const c = DB.get('clients').find(x => x.id === id);
-    const form = document.getElementById('form-client');
-    const dataBox = form.parentElement.querySelector('.data-box');
-    dataBox.style.display = 'none';
-    form.style.display = 'block';
-    
+    if (!c) return;
     document.getElementById('client-id').value = c.id;
     document.getElementById('client-name').value = c.name;
     document.getElementById('client-email').value = c.email;
     document.getElementById('client-phone').value = c.phone;
     document.getElementById('client-address').value = c.address;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    document.getElementById('client-form-title').innerText = 'Editar Cliente';
+    openForm('form-client', '.data-box');
 };
 
-// ... (Other CRUDs follow similar pattern, optimized logic)
+window.viewClient = id => {
+    const c = DB.get('clients').find(x => x.id === id);
+    if (!c) return;
+    showModal(`<h3 style="margin-bottom:16px">${c.name}</h3>
+    <p><strong>Email:</strong> ${c.email || '—'}</p>
+    <p><strong>Telefone:</strong> ${c.phone || '—'}</p>
+    <p><strong>Endereço:</strong> ${c.address || '—'}</p>`);
+};
 
-// 2. PROJECTS
+function renderClients() {
+    const clients = DB.get('clients');
+    const tbody = document.querySelector('#table-clients tbody');
+    const section = document.getElementById('mod-clients');
+    let es = section.querySelector('.empty-state');
+    if (clients.length === 0) {
+        tbody.innerHTML = '';
+        if (!es) { es = mkEmpty('fa-users', 'Nenhum cliente cadastrado'); section.appendChild(es); }
+    } else {
+        if (es) es.remove();
+        tbody.innerHTML = clients.map(c => `<tr>
+            <td><div class="avatar-circle" style="width:32px;height:32px;font-size:0.75rem">${c.photo ? `<img src="${c.photo}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">` : '<i class="fa-solid fa-user"></i>'}</div></td>
+            <td><strong style="cursor:pointer;color:var(--accent)" onclick="viewClient('${c.id}')">${c.name}</strong></td>
+            <td>${c.phone || '—'}</td>
+            <td style="display:flex;gap:6px">
+                <button class="btn btn-ghost btn-sm" onclick="editClient('${c.id}')"><i class="fa-solid fa-pen"></i></button>
+                <button class="btn btn-danger btn-sm" onclick="deleteItem('clients','${c.id}',renderClients)"><i class="fa-solid fa-trash"></i></button>
+            </td></tr>`).join('');
+    }
+    updateStats(); updateSelectors();
+}
+
+// ─── 2. PROJECTS ─────────────────────────────────────────
 const projectForm = document.getElementById('project-form-el');
+
 document.getElementById('btn-add-project-toggle').onclick = () => {
-    toggleModuleForm('form-project', '.data-box');
     projectForm.reset();
     document.getElementById('project-id').value = '';
+    document.getElementById('project-form-title').innerText = 'Novo Projeto';
+    openForm('form-project', '.data-box');
 };
 
-document.getElementById('btn-project-cancel').onclick = () => {
-    toggleModuleForm('form-project', '.data-box');
-};
+document.getElementById('btn-project-cancel').onclick = () => closeForm('form-project', '.data-box');
 
-projectForm.onsubmit = async (e) => {
+projectForm.onsubmit = async e => {
     e.preventDefault();
     const id = document.getElementById('project-id').value;
     const projects = DB.get('projects');
-    const imgFiles = document.getElementById('project-imgs').files;
-    let images = [];
-    
-    if (imgFiles.length > 0) {
-        for (let file of imgFiles) images.push(await toBase64(file));
-    } else if (id) images = projects.find(p => p.id === id).images;
+    const files = document.getElementById('project-imgs').files;
+    let images = id ? (projects.find(p => p.id === id) || {}).images || [] : [];
+    if (files.length > 0) { images = []; for (const f of files) images.push(await toBase64(f)); }
 
-    const data = {
-        id: id || Date.now().toString(),
-        title: document.getElementById('project-title').value,
-        client: document.getElementById('project-client-select').value,
-        provider: document.getElementById('project-provider-select').value,
-        status: document.getElementById('project-status').value,
-        images: images
-    };
+    const data = { id: id || Date.now().toString(), title: document.getElementById('project-title').value, client: document.getElementById('project-client-select').value, provider: document.getElementById('project-provider-select').value, status: document.getElementById('project-status').value, images };
 
-    if (id) {
-        const idx = projects.findIndex(p => p.id === id);
-        projects[idx] = data;
-        DB.log(`Matriz de projeto reconfigurada: ${data.title}`);
-    } else {
-        projects.push(data);
-        DB.log(`Novo projeto inicializado: ${data.title}`);
-    }
+    if (id) { projects[projects.findIndex(p => p.id === id)] = data; DB.log(`Projeto atualizado: ${data.title}`); }
+    else { projects.push(data); DB.log(`Projeto criado: ${data.title}`); }
 
     DB.set('projects', projects);
     renderProjects();
     projectForm.reset();
-    toggleModuleForm('form-project', '.data-box');
+    closeForm('form-project', '.data-box');
+};
+
+window.editProject = id => {
+    const p = DB.get('projects').find(x => x.id === id);
+    if (!p) return;
+    document.getElementById('project-id').value = p.id;
+    document.getElementById('project-title').value = p.title;
+    document.getElementById('project-client-select').value = p.client;
+    document.getElementById('project-provider-select').value = p.provider;
+    document.getElementById('project-status').value = p.status;
+    document.getElementById('project-form-title').innerText = 'Editar Projeto';
+    openForm('form-project', '.data-box');
+};
+
+window.viewProject = id => {
+    const p = DB.get('projects').find(x => x.id === id);
+    if (!p) return;
+    showModal(`<h3 style="margin-bottom:16px">${p.title}</h3>
+    <p><strong>Cliente:</strong> ${p.client || '—'}</p>
+    <p><strong>Status:</strong> ${p.status}</p>
+    <p><strong>Imagens:</strong> ${(p.images || []).length} arquivo(s)</p>`);
 };
 
 function renderProjects() {
     const projects = DB.get('projects');
     const tbody = document.querySelector('#table-projects tbody');
-    const container = document.getElementById('mod-projects');
-    
+    const section = document.getElementById('mod-projects');
+    let es = section.querySelector('.empty-state');
+    const statusMap = { planning:'Em Planejamento', production:'Em Produção', installation:'Em Instalação', paused:'Pausado', done:'Concluído' };
+    const badgeMap = { done:'badge-done', paused:'badge-paused', planning:'badge-working', production:'badge-working', installation:'badge-working' };
     if (projects.length === 0) {
         tbody.innerHTML = '';
-        if (!container.querySelector('.empty-state')) {
-            const empty = document.createElement('div');
-            empty.className = 'empty-state';
-            empty.innerHTML = '<i class="fa-solid fa-diagram-project"></i><span>SCANNING_MATRIX... NO_ACTIVE_PROJECTS</span>';
-            container.appendChild(empty);
-        }
+        if (!es) { es = mkEmpty('fa-compass-drafting', 'Nenhum projeto criado'); section.appendChild(es); }
     } else {
-        const existingEmpty = container.querySelector('.empty-state');
-        if (existingEmpty) existingEmpty.remove();
-        tbody.innerHTML = projects.map(p => {
-            let sc = p.status === 'done' ? 'badge-done' : (p.status === 'paused' ? 'badge-paused' : 'badge-working');
-            return `
-            <tr>
-                <td><strong style="color:var(--state-gold);cursor:pointer" onclick="viewProject('${p.id}')">${p.title}</strong></td>
-                <td>${p.client}</td>
-                <td><span class="badge ${sc}" style="font-family:var(--font-mono)">${p.status.toUpperCase()}</span></td>
-                <td>
-                    <button class="btn btn-ghost btn-sm" onclick="editProject('${p.id}')"><i class="fa-solid fa-terminal"></i></button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteItem('projects', '${p.id}', renderProjects)"><i class="fa-solid fa-trash-can"></i></button>
-                </td>
-            </tr>
-        `}).join('');
+        if (es) es.remove();
+        tbody.innerHTML = projects.map(p => `<tr>
+            <td><strong style="cursor:pointer;color:var(--accent)" onclick="viewProject('${p.id}')">${p.title}</strong></td>
+            <td>${p.client || '—'}</td>
+            <td><span class="badge ${badgeMap[p.status] || 'badge-working'}">${statusMap[p.status] || p.status}</span></td>
+            <td style="display:flex;gap:6px">
+                <button class="btn btn-ghost btn-sm" onclick="editProject('${p.id}')"><i class="fa-solid fa-pen"></i></button>
+                <button class="btn btn-danger btn-sm" onclick="deleteItem('projects','${p.id}',renderProjects)"><i class="fa-solid fa-trash"></i></button>
+            </td></tr>`).join('');
     }
     updateStats();
 }
 
-// 3. INVENTORY
+// ─── 3. INVENTORY ────────────────────────────────────────
 const invForm = document.getElementById('inventory-form-el');
+
 document.getElementById('btn-add-item-toggle').onclick = () => {
-    toggleModuleForm('form-inventory', '.data-box');
     invForm.reset();
     document.getElementById('item-id').value = '';
+    document.getElementById('inventory-form-title').innerText = 'Novo Item';
+    openForm('form-inventory', '.data-box');
 };
 
-document.getElementById('btn-item-cancel').onclick = () => {
-    toggleModuleForm('form-inventory', '.data-box');
-};
+document.getElementById('btn-item-cancel').onclick = () => closeForm('form-inventory', '.data-box');
 
-invForm.onsubmit = async (e) => {
+invForm.onsubmit = async e => {
     e.preventDefault();
     const id = document.getElementById('item-id').value;
     const inv = DB.get('inventory');
     const pInput = document.getElementById('item-photo');
-    let photo = '';
-    if(pInput.files[0]) photo = await toBase64(pInput.files[0]);
-    else if(id) photo = inv.find(i => i.id === id).photo;
+    let photo = id ? (inv.find(i => i.id === id) || {}).photo || '' : '';
+    if (pInput.files[0]) photo = await toBase64(pInput.files[0]);
 
-    const data = {
-        id: id || Date.now().toString(),
-        name: document.getElementById('item-name').value,
-        qty: parseInt(document.getElementById('item-qty').value),
-        min: parseInt(document.getElementById('item-min').value),
-        photo: photo
-    };
+    const data = { id: id || Date.now().toString(), name: document.getElementById('item-name').value, qty: parseInt(document.getElementById('item-qty').value) || 0, min: parseInt(document.getElementById('item-min').value) || 0, photo };
 
-    if (id) {
-        const idx = inv.findIndex(i => i.id === id);
-        inv[idx] = data;
-        DB.log(`Nível de recurso atualizado: ${data.name}`);
-    } else {
-        inv.push(data);
-        DB.log(`Novo recurso catalogado: ${data.name}`);
-    }
+    if (id) { inv[inv.findIndex(i => i.id === id)] = data; DB.log(`Estoque atualizado: ${data.name}`); }
+    else { inv.push(data); DB.log(`Item adicionado: ${data.name}`); }
 
-    DB.set('inventory', inv);
-    renderInventory();
-    invForm.reset();
-    toggleModuleForm('form-inventory', '.data-box');
+    DB.set('inventory', inv); renderInventory(); invForm.reset(); closeForm('form-inventory', '.data-box');
+};
+
+window.editItem = id => {
+    const i = DB.get('inventory').find(x => x.id === id);
+    if (!i) return;
+    document.getElementById('item-id').value = i.id;
+    document.getElementById('item-name').value = i.name;
+    document.getElementById('item-qty').value = i.qty;
+    document.getElementById('item-min').value = i.min;
+    document.getElementById('inventory-form-title').innerText = 'Editar Item';
+    openForm('form-inventory', '.data-box');
 };
 
 function renderInventory() {
     const inv = DB.get('inventory');
     const tbody = document.querySelector('#table-inventory tbody');
-    const container = document.getElementById('mod-inventory');
+    const section = document.getElementById('mod-inventory');
+    let es = section.querySelector('.empty-state');
     let alerts = 0;
-    
     if (inv.length === 0) {
         tbody.innerHTML = '';
-        if (!container.querySelector('.empty-state')) {
-            const empty = document.createElement('div');
-            empty.className = 'empty-state';
-            empty.innerHTML = '<i class="fa-solid fa-boxes-stacked"></i><span>SCANNING_RESOURCES... NO_ASSETS_CATALOGED</span>';
-            container.appendChild(empty);
-        }
+        if (!es) { es = mkEmpty('fa-boxes-stacked', 'Nenhum material cadastrado'); section.appendChild(es); }
     } else {
-        const existingEmpty = container.querySelector('.empty-state');
-        if (existingEmpty) existingEmpty.remove();
+        if (es) es.remove();
         tbody.innerHTML = inv.map(i => {
-            const isLow = i.qty <= i.min;
-            if(isLow) alerts++;
-            return `
-            <tr>
-                <td><strong onclick="viewItem('${i.id}')" style="cursor:pointer">${i.name}</strong></td>
+            const low = i.qty <= i.min; if (low) alerts++;
+            return `<tr>
+                <td><strong>${i.name}</strong></td>
                 <td>${i.qty}</td>
-                <td><span class="badge ${isLow ? 'badge-paused' : 'badge-done'}" style="font-family:var(--font-mono)">${isLow ? 'ALERT_LOW' : 'STABLE'}</span></td>
-                <td>
-                    <button class="btn btn-ghost btn-sm" onclick="editItem('${i.id}')"><i class="fa-solid fa-terminal"></i></button>
-                </td>
-            </tr>
-        `}).join('');
+                <td><span class="badge ${low ? 'badge-paused' : 'badge-done'}">${low ? 'Baixo' : 'OK'}</span></td>
+                <td style="display:flex;gap:6px">
+                    <button class="btn btn-ghost btn-sm" onclick="editItem('${i.id}')"><i class="fa-solid fa-pen"></i></button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteItem('inventory','${i.id}',renderInventory)"><i class="fa-solid fa-trash"></i></button>
+                </td></tr>`;
+        }).join('');
     }
-    DB.set('low_stock_count', alerts);
-    updateStats();
+    DB.set('low_stock_count', alerts); updateStats();
 }
 
-// 4. FINANCE
-document.getElementById('btn-set-today').onclick = () => {
-    document.getElementById('trans-date')._flatpickr.setDate(new Date());
+// ─── 4. FINANCE ──────────────────────────────────────────
+document.getElementById('btn-add-trans-toggle').onclick = () => {
+    document.getElementById('finance-form-el').reset();
+    document.getElementById('trans-id').value = '';
+    document.getElementById('finance-form-title').innerText = 'Novo Lançamento';
+    openForm('form-finance', '.data-box');
 };
 
-document.getElementById('finance-form-el').onsubmit = (e) => {
+// FIX: The HTML cancel button has id="btn-trans-cancel" (in finance form), not "btn-finance-cancel"
+// We bind both just in case:
+const finCancelBtn = document.getElementById('btn-finance-cancel') || document.getElementById('btn-trans-cancel');
+if (finCancelBtn) finCancelBtn.onclick = () => closeForm('form-finance', '.data-box');
+
+document.getElementById('btn-set-today').onclick = () => {
+    const dp = document.getElementById('trans-date');
+    if (dp._flatpickr) dp._flatpickr.setDate(new Date()); else dp.value = new Date().toISOString().split('T')[0];
+};
+
+document.getElementById('finance-form-el').onsubmit = e => {
     e.preventDefault();
     const id = document.getElementById('trans-id').value;
     const fin = DB.get('finance');
-    const data = {
-        id: id || Date.now().toString(),
-        type: document.getElementById('trans-type').value,
-        val: parseFloat(document.getElementById('trans-val').value),
-        desc: document.getElementById('trans-desc').value,
-        date: document.getElementById('trans-date').value
-    };
-    if(id) fin[fin.findIndex(f => f.id === id)] = data;
-    else fin.push(data);
-    DB.set('finance', fin);
-    DB.log(`Movimentação financeira registrada: ${data.desc}`);
-    renderFinance();
-    toggleModuleForm('form-finance', '.data-box');
-}
-
-document.getElementById('btn-finance-cancel').onclick = () => {
-    toggleModuleForm('form-finance', '.data-box');
+    const data = { id: id || Date.now().toString(), type: document.getElementById('trans-type').value, val: parseFloat(document.getElementById('trans-val').value) || 0, desc: document.getElementById('trans-desc').value, date: document.getElementById('trans-date').value };
+    if (id) { fin[fin.findIndex(f => f.id === id)] = data; DB.log(`Lançamento editado: ${data.desc}`); }
+    else { fin.push(data); DB.log(`Lançamento adicionado: ${data.desc}`); }
+    DB.set('finance', fin); renderFinance(); document.getElementById('finance-form-el').reset(); closeForm('form-finance', '.data-box');
 };
 
-document.getElementById('btn-add-trans-toggle').onclick = () => {
-    toggleModuleForm('form-finance', '.data-box');
-    document.getElementById('finance-form-el').reset();
-    document.getElementById('trans-id').value = '';
+window.editTrans = id => {
+    const f = DB.get('finance').find(x => x.id === id);
+    if (!f) return;
+    document.getElementById('trans-id').value = f.id;
+    document.getElementById('trans-type').value = f.type;
+    document.getElementById('trans-val').value = f.val;
+    document.getElementById('trans-desc').value = f.desc;
+    document.getElementById('trans-date').value = f.date;
+    document.getElementById('finance-form-title').innerText = 'Editar Lançamento';
+    openForm('form-finance', '.data-box');
 };
 
 function renderFinance() {
     const fin = DB.get('finance');
     const tbody = document.querySelector('#table-finance tbody');
-    const container = document.getElementById('mod-finance');
+    const section = document.getElementById('mod-finance');
+    let es = section.querySelector('.empty-state');
     let total = 0;
-    
     if (fin.length === 0) {
         tbody.innerHTML = '';
-        if (!container.querySelector('.empty-state')) {
-            const empty = document.createElement('div');
-            empty.className = 'empty-state';
-            empty.innerHTML = '<i class="fa-solid fa-chart-line"></i><span>SCANNING_LEDGER... NO_TRANSACTIONS_LOGGED</span>';
-            container.appendChild(empty);
-        }
+        if (!es) { es = mkEmpty('fa-chart-line', 'Nenhum lançamento registrado'); section.appendChild(es); }
     } else {
-        const existingEmpty = container.querySelector('.empty-state');
-        if (existingEmpty) existingEmpty.remove();
+        if (es) es.remove();
         tbody.innerHTML = fin.map(f => {
-            if(f.type === 'income') total += f.val;
-            return `
-            <tr>
-                <td style="font-family:var(--font-mono)">${f.date}</td>
+            const inc = f.type === 'income'; if (inc) total += f.val;
+            return `<tr>
+                <td style="font-family:var(--font-mono);font-size:0.8rem">${f.date}</td>
                 <td>${f.desc}</td>
-                <td style="color:${f.type === 'income' ? 'var(--state-gold)' : '#ef4444'}; font-weight:bold; font-family:var(--font-mono)">
-                    ${f.type === 'income' ? '+' : '-'} R$ ${f.val.toLocaleString('pt-BR')}
-                </td>
-                <td><button class="btn btn-ghost btn-sm" onclick="editTrans('${f.id}')"><i class="fa-solid fa-terminal"></i></button></td>
-            </tr>
-        `}).join('');
+                <td style="color:${inc ? 'var(--success)' : 'var(--danger)'};font-weight:600">${inc ? '+' : '−'} R$ ${Number(f.val).toLocaleString('pt-BR', {minimumFractionDigits:2})}</td>
+                <td style="display:flex;gap:6px">
+                    <button class="btn btn-ghost btn-sm" onclick="editTrans('${f.id}')"><i class="fa-solid fa-pen"></i></button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteItem('finance','${f.id}',renderFinance)"><i class="fa-solid fa-trash"></i></button>
+                </td></tr>`;
+        }).join('');
     }
-    document.getElementById('st-income').innerText = `R$ ${total.toLocaleString('pt-BR')}`;
+    const el = document.getElementById('st-income'); if (el) el.innerText = `R$ ${total.toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
 }
 
-// 5. PROVIDERS
-document.getElementById('prov-type-person').onchange = (e) => {
+// ─── 5. PROVIDERS (PARCEIROS) ─────────────────────────────
+// FIX: These listeners were completely missing from the previous version!
+document.getElementById('btn-add-prov-toggle').onclick = () => {
+    document.getElementById('provider-form-el').reset();
+    document.getElementById('prov-id').value = '';
+    document.getElementById('provider-form-title').innerText = 'Novo Parceiro';
+    openForm('form-provider', '#providers-grid');
+};
+
+document.getElementById('btn-prov-cancel').onclick = () => closeForm('form-provider', '#providers-grid');
+
+document.getElementById('prov-type-person').onchange = e => {
     document.getElementById('label-doc').innerText = e.target.value === 'pf' ? 'CPF' : 'CNPJ';
 };
 
-document.getElementById('provider-form-el').onsubmit = async (e) => {
+document.getElementById('provider-form-el').onsubmit = async e => {
     e.preventDefault();
     const id = document.getElementById('prov-id').value;
     const providers = DB.get('providers');
     const pInput = document.getElementById('prov-photo');
-    let photo = '';
-    if(pInput.files[0]) photo = await toBase64(pInput.files[0]);
-    else if(id) photo = providers.find(p => p.id === id).photo;
+    let photo = id ? (providers.find(p => p.id === id) || {}).photo || '' : '';
+    if (pInput.files[0]) photo = await toBase64(pInput.files[0]);
 
-    const data = {
-        id: id || Date.now().toString(),
-        typePerson: document.getElementById('prov-type-person').value,
-        doc: document.getElementById('prov-doc').value,
-        name: document.getElementById('prov-name').value,
-        skill: document.getElementById('prov-skill').value,
-        email: document.getElementById('prov-email').value,
-        address: document.getElementById('prov-address').value,
-        responsible: document.getElementById('prov-resp').value,
-        photo: photo
-    };
-    if(id) providers[providers.findIndex(p => p.id === id)] = data;
-    else providers.push(data);
-    DB.set('providers', providers);
-    DB.log(`Parceria estabelecida/atualizada: ${data.name}`);
-    renderProviders();
-    toggleModuleForm('form-provider', '#providers-grid');
-}
+    const data = { id: id || Date.now().toString(), typePerson: document.getElementById('prov-type-person').value, doc: document.getElementById('prov-doc').value, name: document.getElementById('prov-name').value, skill: document.getElementById('prov-skill').value, email: document.getElementById('prov-email').value, address: document.getElementById('prov-address').value, responsible: document.getElementById('prov-resp').value, photo };
 
-document.getElementById('btn-prov-cancel').onclick = () => {
-    toggleModuleForm('form-provider', '#providers-grid');
+    if (id) { providers[providers.findIndex(p => p.id === id)] = data; DB.log(`Parceiro atualizado: ${data.name}`); }
+    else { providers.push(data); DB.log(`Parceiro adicionado: ${data.name}`); }
+
+    DB.set('providers', providers); renderProviders(); document.getElementById('provider-form-el').reset(); closeForm('form-provider', '#providers-grid');
 };
 
-document.getElementById('btn-add-prov-toggle').onclick = () => {
-    toggleModuleForm('form-provider', '#providers-grid');
-    document.getElementById('provider-form-el').reset();
-    document.getElementById('prov-id').value = '';
+window.editProvider = id => {
+    const p = DB.get('providers').find(x => x.id === id);
+    if (!p) return;
+    document.getElementById('prov-id').value = p.id;
+    document.getElementById('prov-type-person').value = p.typePerson;
+    document.getElementById('label-doc').innerText = p.typePerson === 'pf' ? 'CPF' : 'CNPJ';
+    document.getElementById('prov-doc').value = p.doc;
+    document.getElementById('prov-name').value = p.name;
+    document.getElementById('prov-skill').value = p.skill;
+    document.getElementById('prov-email').value = p.email;
+    document.getElementById('prov-address').value = p.address;
+    document.getElementById('prov-resp').value = p.responsible;
+    document.getElementById('provider-form-title').innerText = 'Editar Parceiro';
+    openForm('form-provider', '#providers-grid');
+};
+
+window.viewProvider = id => {
+    const p = DB.get('providers').find(x => x.id === id);
+    if (!p) return;
+    showModal(`<h3 style="margin-bottom:16px">${p.name}</h3>
+    <p><strong>Especialidade:</strong> ${p.skill || '—'}</p>
+    <p><strong>Email:</strong> ${p.email || '—'}</p>
+    <p><strong>Doc:</strong> ${p.doc || '—'}</p>
+    <p><strong>Endereço:</strong> ${p.address || '—'}</p>
+    <p><strong>Responsável:</strong> ${p.responsible || '—'}</p>`);
 };
 
 function renderProviders() {
-    const p = DB.get('providers');
+    const prv = DB.get('providers');
     const grid = document.getElementById('providers-grid');
-    const container = document.getElementById('mod-providers');
-    
-    if (p.length === 0) {
+    const section = document.getElementById('mod-providers');
+    let es = section.querySelector('.empty-state');
+    if (prv.length === 0) {
         grid.innerHTML = '';
-        if (!container.querySelector('.empty-state')) {
-            const empty = document.createElement('div');
-            empty.className = 'empty-state';
-            empty.innerHTML = '<i class="fa-solid fa-handshake"></i><span>SCANNING_NETWORK... NO_PARTNERS_MAPPED</span>';
-            container.appendChild(empty);
-        }
+        if (!es) { es = mkEmpty('fa-handshake', 'Nenhum parceiro cadastrado'); section.appendChild(es); }
     } else {
-        const existingEmpty = container.querySelector('.empty-state');
-        if (existingEmpty) existingEmpty.remove();
-        grid.innerHTML = p.map(p => `
-            <div class="stat-card">
-                <div style="display:flex;gap:15px;align-items:center">
-                    <img src="${p.photo || '../imgs/logo-state.png'}" style="width:50px;height:50px;border-radius:4px;border:1px solid var(--state-gold)">
-                    <div>
-                        <h4 style="margin:0">${p.name}</h4>
-                        <span style="font-size:0.6rem;color:var(--state-gold);font-family:var(--font-mono)">[${p.skill}]</span>
-                    </div>
-                </div>
-                <div style="margin-top:20px">
-                    <button class="btn btn-ghost btn-sm" style="width:100%" onclick="viewProvider('${p.id}')">INTERFACE_DATA</button>
+        if (es) es.remove();
+        grid.innerHTML = prv.map(p => `<div class="stat-card" style="display:flex;flex-direction:column;gap:16px">
+            <div style="display:flex;gap:14px;align-items:center">
+                ${p.photo ? `<img src="${p.photo}" style="width:48px;height:48px;border-radius:8px;object-fit:cover;border:1px solid var(--border)">` : `<div class="avatar-circle" style="width:48px;height:48px;border-radius:8px;font-size:1.2rem"><i class="fa-solid fa-handshake"></i></div>`}
+                <div>
+                    <div style="font-weight:600">${p.name}</div>
+                    <div style="font-size:0.75rem;color:var(--accent)">${p.skill}</div>
                 </div>
             </div>
-        `).join('');
+            <div style="display:flex;gap:8px">
+                <button class="btn btn-ghost btn-sm" style="flex:1" onclick="viewProvider('${p.id}')"><i class="fa-solid fa-eye"></i> Ver</button>
+                <button class="btn btn-ghost btn-sm" onclick="editProvider('${p.id}')"><i class="fa-solid fa-pen"></i></button>
+                <button class="btn btn-danger btn-sm" onclick="deleteItem('providers','${p.id}',renderProviders)"><i class="fa-solid fa-trash"></i></button>
+            </div>
+        </div>`).join('');
     }
     updateSelectors();
 }
 
-// 6. GALLERY
-document.getElementById('gallery-form-el').onsubmit = async (e) => {
+// ─── 6. GALLERY (GALERIA) ────────────────────────────────
+// FIX: Gallery form was always-visible but had no submit/reset handler; also no gal-prov-select update in updateSelectors
+document.getElementById('gallery-form-el').onsubmit = async e => {
     e.preventDefault();
     const id = document.getElementById('gal-id').value;
     const gallery = DB.get('gallery');
     const pInput = document.getElementById('gal-file');
-    let photo = '';
-    if(pInput.files[0]) photo = await toBase64(pInput.files[0]);
-    else if(id) photo = gallery.find(x => x.id === id).photo;
+    let photo = id ? (gallery.find(x => x.id === id) || {}).photo || '' : '';
+    if (pInput.files[0]) photo = await toBase64(pInput.files[0]);
 
     const providerId = document.getElementById('gal-prov-select').value;
     const provider = DB.get('providers').find(p => p.id === providerId);
 
-    const data = {
-        id: id || Date.now().toString(),
-        title: document.getElementById('gal-title').value,
-        sub: document.getElementById('gal-sub').value,
-        photo: photo,
-        providerAvatar: provider ? provider.photo : ''
-    };
-    if(id) gallery[gallery.findIndex(x => x.id === id)] = data;
-    else gallery.push(data);
+    const data = { id: id || Date.now().toString(), title: document.getElementById('gal-title').value, sub: document.getElementById('gal-sub').value, photo, providerAvatar: provider ? provider.photo : '' };
+
+    if (id) { gallery[gallery.findIndex(x => x.id === id)] = data; DB.log(`Foto atualizada: ${data.title}`); }
+    else { gallery.push(data); DB.log(`Foto publicada: ${data.title}`); }
+
     DB.set('gallery', gallery);
-    DB.log(`Mídia publicada: ${data.title}`);
     renderGallery();
-}
+    document.getElementById('gallery-form-el').reset();
+    document.getElementById('gal-id').value = '';
+};
+
+window.editGallery = id => {
+    const g = DB.get('gallery').find(x => x.id === id);
+    if (!g) return;
+    document.getElementById('gal-id').value = g.id;
+    document.getElementById('gal-title').value = g.title;
+    document.getElementById('gal-sub').value = g.sub;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+};
 
 function renderGallery() {
     const gallery = DB.get('gallery');
     const list = document.getElementById('gallery-list');
-    const container = document.getElementById('mod-gallery');
-    
+    const section = document.getElementById('mod-gallery');
+    let es = section.querySelector('.empty-state');
     if (gallery.length === 0) {
         list.innerHTML = '';
-        if (!container.querySelector('.empty-state')) {
-            const empty = document.createElement('div');
-            empty.className = 'empty-state';
-            empty.innerHTML = '<i class="fa-solid fa-images"></i><span>SCANNING_MEDIA... NO_PUBLICATIONS_SYNCED</span>';
-            container.appendChild(empty);
-        }
+        if (!es) { es = mkEmpty('fa-images', 'Nenhuma imagem publicada'); section.appendChild(es); }
     } else {
-        const existingEmpty = container.querySelector('.empty-state');
-        if (existingEmpty) existingEmpty.remove();
-        list.innerHTML = gallery.map(g => `
-            <div class="photo-card" style="border:1px solid var(--cyber-border)">
-                <img src="${g.photo}" class="photo-img">
-                <div style="padding:15px">
-                    <div style="display:flex;justify-content:space-between">
-                        <div>
-                            <h4 style="margin:0">${g.title}</h4>
-                            <p style="font-size:0.7rem;color:var(--dash-text-dim)">${g.sub}</p>
-                        </div>
-                    </div>
-                    <div style="margin-top:15px;display:flex;gap:5px">
-                        <button class="btn btn-ghost btn-sm" onclick="editGallery('${g.id}')"><i class="fa-solid fa-terminal"></i></button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteItem('gallery', '${g.id}', renderGallery)"><i class="fa-solid fa-trash"></i></button>
-                    </div>
+        if (es) es.remove();
+        list.innerHTML = gallery.map(g => `<div class="photo-card">
+            ${g.photo ? `<img src="${g.photo}" class="photo-img">` : `<div class="photo-img" style="background:var(--surface-2);display:flex;align-items:center;justify-content:center;color:var(--text-dim)"><i class="fa-solid fa-image" style="font-size:2rem"></i></div>`}
+            <div style="padding:14px">
+                <div style="font-weight:600;margin-bottom:4px">${g.title}</div>
+                <div style="font-size:0.78rem;color:var(--text-dim);margin-bottom:12px">${g.sub}</div>
+                <div style="display:flex;gap:8px">
+                    <button class="btn btn-ghost btn-sm" onclick="editGallery('${g.id}')"><i class="fa-solid fa-pen"></i> Editar</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteItem('gallery','${g.id}',renderGallery)"><i class="fa-solid fa-trash"></i></button>
                 </div>
-            </div>
-        `).join('');
+            </div></div>`).join('');
     }
 }
 
-// --- STATS & LOGS ---
-function renderLogs() {
-    const logs = DB.get('logs');
-    document.getElementById('recent-logs').innerHTML = logs.map(l => `
-        <div style="margin-bottom:10px; font-family:var(--font-mono); border-left:1px solid var(--cyber-border); padding-left:10px; font-size:0.75rem;">
-            <span style="color:var(--state-gold)">[${l.time}]</span> ${l.msg}
-        </div>
-    `).join('');
+// ─── HELPERS ────────────────────────────────────────────
+function mkEmpty(icon, msg) {
+    const d = document.createElement('div'); d.className = 'empty-state';
+    d.innerHTML = `<i class="fa-solid ${icon}"></i><span>${msg}</span>`; return d;
 }
-
-// --- CALCULATOR LOGIC ---
-window.calculateQuote = () => {
-    const basePrice = parseFloat(document.getElementById('calc-type').value);
-    const measure = parseFloat(document.getElementById('calc-val').value || 0);
-    const materialMultiplier = parseFloat(document.getElementById('calc-material').value);
-    
-    if (measure <= 0) {
-        notify('INSIRA_UMA_MEDIDA_VÁLIDA');
-        return;
-    }
-
-    const total = basePrice * measure * materialMultiplier;
-    const resultBox = document.getElementById('calc-result');
-    const priceEl = document.getElementById('calc-price');
-    
-    priceEl.innerText = `R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-    resultBox.style.display = 'block';
-    
-    DB.log(`Cálculo de orçamento realizado: R$ ${total.toFixed(2)}`);
-};
-
-document.getElementById('save-config').onclick = () => {
-    const key = document.getElementById('grok-key').value.trim();
-    if(key) {
-        localStorage.setItem('state_grok_key', key);
-        GROK_KEY = key;
-        notify('CONFIGURAÇÕES_SALVAS_E_CRIPTOGRAFADAS');
-    }
-};
 
 function updateStats() {
-    document.getElementById('st-projects').innerText = DB.get('projects').length;
-    document.getElementById('st-clients').innerText = DB.get('clients').length;
-    document.getElementById('st-alerts').innerText = DB.get('low_stock_count', 0);
+    const el = id => document.getElementById(id);
+    if (el('st-projects')) el('st-projects').innerText = DB.get('projects').length;
+    if (el('st-clients')) el('st-clients').innerText = DB.get('clients').length;
+    if (el('st-alerts')) el('st-alerts').innerText = DB.get('low_stock_count', 0);
 }
 
 function updateSelectors() {
     const cs = DB.get('clients');
     const ps = DB.get('providers');
-    
-    document.getElementById('project-client-select').innerHTML = '<option value="">CLIENT_SELECTION</option>' + cs.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
-    document.getElementById('project-provider-select').innerHTML = '<option value="">PARTNER_SELECTION</option>' + ps.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
-    document.getElementById('gal-prov-select').innerHTML = '<option value="">PARTNER_SYNC</option>' + ps.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+    const clientSel = document.getElementById('project-client-select');
+    const provSel = document.getElementById('project-provider-select');
+    const galProvSel = document.getElementById('gal-prov-select'); // FIX: was missing!
+    if (clientSel) clientSel.innerHTML = '<option value="">Selecione o cliente</option>' + cs.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+    if (provSel) provSel.innerHTML = '<option value="">Selecione o parceiro</option>' + ps.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+    if (galProvSel) galProvSel.innerHTML = '<option value="">Vincular parceiro (opcional)</option>' + ps.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
 }
 
-window.deleteItem = (key, id, callback) => {
-    if (confirm('CONFIRMAR EXCLUSÃO DE DADOS?')) {
-        let items = DB.get(key);
-        items = items.filter(x => x.id !== id);
-        DB.set(key, items);
-        DB.log(`Registro removido permanentemente.`);
-        callback();
-    }
+window.deleteItem = (key, id, cb) => {
+    if (!confirm('Remover este registro?')) return;
+    const items = DB.get(key).filter(x => x.id !== id);
+    DB.set(key, items);
+    DB.log('Registro removido.');
+    cb();
 };
 
-// --- AI ASYNC LOGIC (Grok V4 Integration) ---
+// ─── LOGS ────────────────────────────────────────────────
+function renderLogs() {
+    const logs = DB.get('logs');
+    const el = document.getElementById('recent-logs');
+    if (!el) return;
+    el.innerHTML = logs.length ? logs.map(l => `<div style="display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);font-size:0.78rem">
+        <span style="color:var(--text-dim);font-family:var(--font-mono);white-space:nowrap">${l.time}</span>
+        <span>${l.msg}</span></div>`).join('') : '<div style="color:var(--text-dim);font-size:0.8rem">Nenhum evento registrado.</div>';
+}
+
+// ─── CALCULATOR ──────────────────────────────────────────
+window.calculateQuote = () => {
+    const base = parseFloat(document.getElementById('calc-type').value);
+    const m = parseFloat(document.getElementById('calc-val').value || 0);
+    const mat = parseFloat(document.getElementById('calc-material').value);
+    if (!m || m <= 0) { notify('Informe uma medida válida'); return; }
+    const total = base * m * mat;
+    document.getElementById('calc-price').innerText = `R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+    document.getElementById('calc-result').style.display = 'block';
+    DB.log(`Orçamento calculado: R$ ${total.toFixed(2)}`);
+};
+
+// ─── CONFIG ──────────────────────────────────────────────
+document.getElementById('save-config').onclick = () => {
+    const key = document.getElementById('grok-key').value.trim();
+    if (key) { localStorage.setItem('state_grok_key', key); GROK_KEY = key; notify('Chave salva com sucesso!'); }
+};
+
+// ─── AI ASSISTANT ────────────────────────────────────────
 const aiToggle = document.getElementById('ai-toggle-btn');
 const aiPanel = document.getElementById('ai-panel');
 const aiMsgs = document.getElementById('ai-msgs');
 const aiInput = document.getElementById('ai-input');
 
-aiToggle.onclick = () => aiPanel.classList.toggle('active');
+if (aiToggle) aiToggle.onclick = () => aiPanel.classList.toggle('active');
+const aiClose = document.getElementById('ai-close');
+if (aiClose) aiClose.onclick = () => aiPanel.classList.remove('active');
+
+function appendMsg(role, text) {
+    const d = document.createElement('div'); d.className = `msg msg-${role}`; d.innerText = text;
+    aiMsgs.appendChild(d); aiMsgs.scrollTop = aiMsgs.scrollHeight; return d;
+}
 
 async function askAI() {
     const msg = aiInput.value.trim();
-    if(!msg) return;
-
-    appendMsg('user', msg);
-    aiInput.value = '';
-
-    const botMsg = appendMsg('bot', 'SCANNING_DATA...');
-    
+    if (!msg || !GROK_KEY) { if (!GROK_KEY) notify('Configure a chave do Grok primeiro!'); return; }
+    appendMsg('user', msg); aiInput.value = '';
+    const bot = appendMsg('bot', 'Processando...');
     try {
-        const res = await fetch('https://api.x.ai/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${GROK_KEY}`
-            },
-            body: JSON.stringify({
-                model: 'grok-beta',
-                messages: [
-                    { role: 'system', content: 'Você é a STATE_OS CORE, a inteligência central da MARCERARIA STATE. Responda em tom técnico, eficiente e futurista.' },
-                    { role: 'user', content: msg }
-                ]
-            })
-        });
-        const data = await res.json();
-        const fullText = data.choices[0].message.content;
-        botMsg.innerText = '';
-        botMsg.classList.add('typing-cursor');
-        
+        const res = await fetch('https://api.x.ai/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROK_KEY}` }, body: JSON.stringify({ model: 'grok-beta', messages: [{ role: 'system', content: 'Você é um assistente de negócios para uma marcenaria. Seja objetivo e útil.' }, { role: 'user', content: msg }] }) });
+        const json = await res.json();
+        const full = json.choices?.[0]?.message?.content || 'Sem resposta.';
+        bot.innerText = ''; bot.classList.add('typing-cursor');
         let i = 0;
-        const speed = 20;
-        function type() {
-            if (i < fullText.length) {
-                botMsg.innerText += fullText.charAt(i);
-                i++;
-                aiMsgs.scrollTop = aiMsgs.scrollHeight;
-                setTimeout(type, speed);
-            } else {
-                botMsg.classList.remove('typing-cursor');
-            }
-        }
+        const type = () => { if (i < full.length) { bot.innerText += full[i++]; aiMsgs.scrollTop = aiMsgs.scrollHeight; setTimeout(type, 15); } else bot.classList.remove('typing-cursor'); };
         type();
-        
-    } catch(e) {
-        botMsg.innerText = 'ERRO NA MATRIZ DE CONEXÃO. VERIFIQUE STATUS DO SERVIDOR.';
-    }
+    } catch (err) { bot.innerText = 'Erro ao contatar a IA. Verifique sua chave.'; }
 }
 
-function appendMsg(role, text) {
-    const div = document.createElement('div');
-    div.className = `msg msg-${role}`;
-    div.innerText = text;
-    aiMsgs.appendChild(div);
-    aiMsgs.scrollTop = aiMsgs.scrollHeight;
-    return div;
-}
+if (document.getElementById('ai-send')) document.getElementById('ai-send').onclick = askAI;
+if (aiInput) aiInput.onkeypress = e => { if (e.key === 'Enter') askAI(); };
 
-document.getElementById('ai-send').onclick = askAI;
-
-// --- INITIALIZATION ---
+// ─── INIT ────────────────────────────────────────────────
 window.onload = () => {
-    if (localStorage.getItem('state_admin_session') !== 'active') {
-        window.location.href = 'login.html';
-        return;
-    }
-
-    flatpickr(".datepicker", { locale: "pt", dateFormat: "Y-m-d", theme: "dark" });
-    document.getElementById('grok-key').value = GROK_KEY;
-
-    renderClients();
-    renderProjects();
-    renderInventory();
-    renderFinance();
-    renderProviders();
-    renderGallery();
-    renderLogs();
-    
-    DB.log('INITIALIZING_STATE_OS_V4.0... SYSTEM_READY.');
+    if (localStorage.getItem('state_admin_session') !== 'active') { window.location.href = 'login.html'; return; }
+    try { flatpickr('.datepicker', { locale: 'pt', dateFormat: 'Y-m-d', theme: 'dark' }); } catch (e) {}
+    const grokEl = document.getElementById('grok-key'); if (grokEl) grokEl.value = GROK_KEY;
+    renderClients(); renderProjects(); renderInventory(); renderFinance(); renderProviders(); renderGallery(); renderLogs();
+    DB.log('Painel carregado com sucesso.');
 };
