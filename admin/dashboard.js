@@ -63,8 +63,11 @@ function initSeedData() {
         ];
         DB.set('providers', seedProviders);
     }
-    if (DB.get('gallery').length <= 2) {
-        // Full portfolio from site
+    const currentGallery = DB.get('gallery');
+    const defaultIds = ['g1', 'g2', 'g3', 'g4', 'g5', 'g6'];
+    const hasDefaults = defaultIds.every(id => currentGallery.some(item => item.id === id));
+    
+    if (!hasDefaults) {
         const seedGallery = [
             { id: 'g1', title: 'Cozinha Gourmet', sub: 'Linha Titanium', photo: 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?q=80&w=1200' },
             { id: 'g2', title: 'Living Integrado', sub: 'Iluminação Smart LED', photo: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=800' },
@@ -73,7 +76,12 @@ function initSeedData() {
             { id: 'g5', title: 'Escritório Executivo', sub: 'Design Corporativo', photo: 'https://images.unsplash.com/photo-1600607686527-6fb886090705?q=80&w=800' },
             { id: 'g6', title: 'Painel Acústico', sub: 'Módulos Fonoabsorventes', photo: 'https://images.unsplash.com/photo-1593696140826-c58b021acf8b?q=80&w=800' }
         ];
-        DB.set('gallery', seedGallery);
+        // Combine keeping existing user images but ensuring all defaults are present
+        const combined = [...currentGallery];
+        seedGallery.forEach(s => {
+            if (!combined.some(c => c.id === s.id)) combined.push(s);
+        });
+        DB.set('gallery', combined);
     }
 }
 
@@ -490,7 +498,7 @@ function renderGallery() {
 window.deleteGalleryItem = (id) => {
     if(confirm('Excluir imagem do portfólio?')) {
         let gs = DB.get('gallery');
-        gs = gs.filter(x => x.id !== id);
+        gs = gs.filter(x => String(x.id) !== String(id));
         DB.set('gallery', gs);
         renderGallery();
         notify('Imagem removida.');

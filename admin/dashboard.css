@@ -124,7 +124,8 @@ body {
 /* --- Tables --- */
 .table-wrapper { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
 .table-scroll { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; min-width: 600px; }
+table { width: 100%; border-collapse: collapse; }
+@media (min-width: 768px) { table { min-width: 600px; } }
 th {
     text-align: left; padding: 18px 24px; background: rgba(255,255,255,0.02);
     font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;
@@ -200,13 +201,14 @@ input:focus { border-color: var(--brand-yellow); outline: none; box-shadow: 0 0 
     .hide-mobile { display: none; }
     .topbar-title { font-size: 1.25rem; }
 }
+@media (max-width: 600px) {
+    .topbar, .module-section > div:first-child { flex-direction: column; align-items: flex-start !important; gap: 15px; }
+    .topbar-title { font-size: 1.4rem; }
+    .btn { width: 100% !important; justify-content: center; }
+}
 @media (max-width: 480px) {
-    .main-content { padding: 15px !important; width: 100% !important; overflow-x: hidden; }
-    .topbar { margin-bottom: 20px; }
-    .topbar-title { font-size: 1.1rem; width: 100%; }
-    .card-grid { grid-template-columns: 1fr; gap: 15px; }
-    .module-section > div:first-child { flex-wrap: wrap; gap: 10px; }
-    .btn { width: 100%; justify-content: center; }
+    .main-content { padding: 12px !important; width: 100% !important; overflow-x: hidden; }
+    .topbar-title { font-size: 1.1rem; }
 }
 @media (max-width: 320px) {
     :root { --sidebar-width: 0px; }
