@@ -54,16 +54,14 @@
         <!-- Main Content -->
         <main class="main-content">
             <header class="topbar">
-                <div style="display: flex; align-items: center; gap: 20px;">
-                    <button class="menu-toggle" id="menu-toggle" style="background:none; border:none; color:var(--brand-yellow); font-size:1.5rem; cursor:pointer;"><i class="fa-solid fa-bars-staggered"></i></button>
-                    <h1 class="topbar-title" id="current-mod-name">Visão Geral</h1>
+                <div style="display:flex; align-items:center; gap:12px; overflow:hidden;">
+                    <button class="sidebar-toggle-btn" id="menu-toggle" style="background:none; border:none; color:var(--brand-yellow); cursor:pointer;"><i class="fa-solid fa-bars-staggered"></i></button>
+                    <h2 class="topbar-title" id="current-mod-name">VISÃO GERAL</h2>
                 </div>
-
+                
                 <div class="topbar-right">
-                    <div class="user-profile" id="user-menu-trigger" style="display:flex; align-items:center; gap:12px; cursor:pointer;">
-                        <span style="font-weight: 700; color:var(--text-secondary); font-size:0.8rem;" class="hide-mobile">DIRETORIA STATE</span>
-                        <div class="avatar">ADM</div>
-                    </div>
+                    <span style="font-size: 0.7rem; font-weight: 800; color: var(--text-muted);" class="hide-mobile">OPERADOR: <strong>ADMIN</strong></span>
+                    <div class="avatar" id="logout-trigger" title="Sair" style="cursor:pointer">ADM</div>
                 </div>
             </header>
 
@@ -71,40 +69,28 @@
                 
                 <!-- HOME MODULE -->
                 <section id="mod-home" class="module-section active">
-                    <div class="card-grid">
-                        <div class="card">
-                            <div style="display:flex; justify-content:space-between;">
-                                <div class="stat-label">Projetos Ativos</div>
-                                <div class="stat-icon"><i class="fa-solid fa-microchip"></i></div>
-                            </div>
-                            <div class="stat-val" id="st-projects">0</div>
-                            <div style="font-size: 0.7rem; color: var(--brand-yellow); font-family:var(--font-mono)">SYSTEM_STABLE</div>
+                    <!-- Dashboard Summary -->
+                    <div id="home-summary-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 15px; margin-bottom: 24px;">
+                        <div class="card" style="text-align:center; padding:15px; border-left:4px solid var(--brand-yellow);">
+                            <label style="margin-bottom:5px">SISTEMAS</label>
+                            <div id="st-projects" style="font-size:1.8rem; font-family:var(--font-head); font-weight:900;">0</div>
                         </div>
-                        <div class="card">
-                            <div style="display:flex; justify-content:space-between;">
-                                <div class="stat-label">Clientes Base</div>
-                                <div class="stat-icon"><i class="fa-solid fa-id-card-clip"></i></div>
-                            </div>
-                            <div class="stat-val" id="st-clients">0</div>
-                            <div style="font-size: 0.7rem; color: var(--text-muted);">Sync 100%</div>
+                        <div class="card" style="text-align:center; padding:15px; border-left:4px solid var(--brand-yellow);">
+                            <label style="margin-bottom:5px">CARTEIRA</label>
+                            <div id="st-clients" style="font-size:1.8rem; font-family:var(--font-head); font-weight:900;">0</div>
                         </div>
-                        <div class="card" style="grid-column: span 2;">
-                            <div style="display:flex; justify-content:space-between; align-items:center;">
-                                <div class="stat-label">Fluxo de Caixa Mensal</div>
-                                <div class="stat-icon"><i class="fa-solid fa-chart-line"></i></div>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top:10px;">
-                                <div class="stat-val" id="st-income" style="color: var(--brand-yellow); font-size:2.5rem;">R$ 0,00</div>
-                                <div id="income-chart-mini" style="width:150px; height:40px;">
-                                    <svg width="100%" height="100%" viewBox="0 0 120 40">
-                                        <path d="M0,38 Q10,10 20,30 T40,15 T60,35 T80,5 T100,20 T120,5" fill="none" stroke="var(--brand-yellow)" stroke-width="2" />
-                                    </svg>
-                                </div>
-                            </div>
+                        <div class="card" style="text-align:center; padding:15px; border-left:4px solid #4ade80;">
+                            <label style="margin-bottom:5px">RECEITAS</label>
+                            <div id="st-income" style="font-size:1.2rem; font-family:var(--font-mono); font-weight:800; color:#4ade80;">R$ 0</div>
+                        </div>
+                        <div class="card" style="text-align:center; padding:15px; border-left:4px solid #ef4444;">
+                            <label style="margin-bottom:5px">ALERTAS</label>
+                            <div id="st-alerts" style="font-size:1.8rem; font-family:var(--font-head); font-weight:900; color:#ef4444;">0</div>
                         </div>
                     </div>
 
-                    <div class="card-grid" style="margin-top: 24px;">
+                    <!-- Action Grids -->
+                    <div class="card-grid">
                         <!-- Price Engine Action -->
                         <div class="card" style="display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; border: 2px dashed var(--border-yellow);">
                             <i class="fa-solid fa-calculator" style="font-size:2.5rem; color:var(--brand-yellow); margin-bottom:15px;"></i>
@@ -113,7 +99,7 @@
                         </div>
 
                         <!-- Upcoming Deadlines -->
-                        <div class="card" style="grid-column: span 2;">
+                        <div class="card">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                                 <h3 style="font-family:var(--font-head); font-size:0.9rem; letter-spacing:1px;">CRONOGRAMA DE ENTREGAS</h3>
                                 <i class="fa-solid fa-calendar-check" style="color:var(--brand-yellow)"></i>
@@ -141,40 +127,44 @@
                         <button class="btn btn-primary" id="btn-add-client-toggle"><i class="fa-solid fa-plus"></i> NOVO CADASTRO</button>
                     </div>
 
-                    <div class="form-card" id="form-client" style="display: none; background:var(--bg-surface); padding:30px; border:1px solid var(--border-yellow); margin-bottom:30px;">
-                        <h3 id="client-form-title" style="margin-bottom: 24px; font-family:var(--font-head);">EDITAR REGISTRO</h3>
-                        <form id="client-form-el">
-                            <input type="hidden" id="client-id">
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px;">
-                                <div class="group">
-                                    <label>FOTO / LOGO</label>
-                                    <div id="photo-preview" style="width:100px; height:100px; border:1px dashed var(--border); margin-bottom:10px; display:flex; align-items:center; justify-content:center; overflow:hidden;">
-                                        <i class="fa-solid fa-image" style="opacity:0.2; font-size:2rem;"></i>
+                    <!-- CLIENT FORM MODAL -->
+                    <div id="modal-client-form" class="modal-overlay">
+                        <div class="modal-content" style="max-width:800px;">
+                            <span class="modal-close" onclick="closeAllModals()">&times;</span>
+                            <h3 id="client-form-title" style="margin-bottom:24px; font-family:var(--font-head); color:var(--brand-yellow);">CADASTRO DE CLIENTE</h3>
+                            <form id="client-form-el">
+                                <input type="hidden" id="client-id">
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px;">
+                                    <div class="group">
+                                        <label>FOTO / LOGO</label>
+                                        <div id="photo-preview" style="width:100px; height:100px; border:1px dashed var(--border); margin-bottom:10px; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                                            <i class="fa-solid fa-image" style="opacity:0.2; font-size:2rem;"></i>
+                                        </div>
+                                        <input type="file" id="client-photo" accept="image/*" onchange="previewImage(this, 'photo-preview')">
                                     </div>
-                                    <input type="file" id="client-photo" accept="image/*" onchange="previewImage(this, 'photo-preview')">
+                                    <div class="group">
+                                        <label>NOME COMPLETO</label>
+                                        <input type="text" id="client-name" required>
+                                    </div>
+                                    <div class="group">
+                                        <label>WHATSAPP (COM DDD)</label>
+                                        <input type="tel" id="client-phone" required placeholder="17999887766">
+                                    </div>
+                                    <div class="group">
+                                        <label>INSTAGRAM URL</label>
+                                        <input type="text" id="client-instagram" placeholder="https://instagram.com/perfildocliente">
+                                    </div>
+                                    <div class="group" style="grid-column: 1 / -1;">
+                                        <label>ENDEREÇO DA OBRA (PARA MAPS)</label>
+                                        <input type="text" id="client-address" placeholder="Rua, Número, Bairro, Cidade">
+                                    </div>
                                 </div>
-                                <div class="group">
-                                    <label>NOME COMPLETO</label>
-                                    <input type="text" id="client-name" required>
+                                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                                    <button type="submit" class="btn btn-primary" style="flex:1">SALVAR REGISTRO</button>
+                                    <button type="button" class="btn btn-ghost" onclick="closeAllModals()">CANCELAR</button>
                                 </div>
-                                <div class="group">
-                                    <label>WHATSAPP (COM DDD)</label>
-                                    <input type="tel" id="client-phone" required placeholder="17999887766">
-                                </div>
-                                <div class="group">
-                                    <label>INSTAGRAM URL</label>
-                                    <input type="text" id="client-instagram" placeholder="https://instagram.com/perfildocliente">
-                                </div>
-                                <div class="group" style="grid-column: 1 / -1;">
-                                    <label>ENDEREÇO DA OBRA (PARA MAPS)</label>
-                                    <input type="text" id="client-address" placeholder="Rua, Número, Bairro, Cidade">
-                                </div>
-                            </div>
-                            <div style="display: flex; gap: 12px; margin-top: 12px;">
-                                <button type="submit" class="btn btn-primary">SALVAR CLIENTE</button>
-                                <button type="button" class="btn btn-ghost" onclick="toggleForm('form-client', false)">CANCELAR</button>
-                            </div>
-                        </form>
+                            </form>
+                        </div>
                     </div>
 
                     <div class="card" style="margin-bottom:24px; padding:15px;">
@@ -189,9 +179,9 @@
                             <table id="table-clients">
                                 <thead>
                                     <tr>
-                                        <th>CÓDIGO</th>
                                         <th>CLIENTE</th>
-                                        <th>CONTATO / REDE</th>
+                                        <th class="hide-mobile">WHATSAPP</th>
+                                        <th class="hide-mobile">INSTAGRAM</th>
                                         <th style="text-align:right">AÇÕES</th>
                                     </tr>
                                 </thead>
@@ -208,46 +198,50 @@
                         <button class="btn btn-primary" id="btn-add-project-toggle"><i class="fa-solid fa-plus"></i> NOVO PROJETO</button>
                     </div>
 
-                    <div class="form-card" id="form-project" style="display: none; background:var(--bg-surface); padding:30px; border:1px solid var(--border-yellow); margin-bottom:30px;">
-                        <h3 id="project-form-title" style="margin-bottom:24px;">NOVO PROJETO</h3>
-                        <form id="project-form-el">
-                            <input type="hidden" id="project-id">
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px;">
-                                <div class="group" style="grid-column: 1 / -1;">
-                                    <label>TÍTULO DO SISTEMA MOVELEIRO</label>
-                                    <input type="text" id="project-title" required placeholder="Cozinha Gourmet Linear">
+                    <!-- PROJECT FORM MODAL -->
+                    <div id="modal-project-form" class="modal-overlay">
+                        <div class="modal-content" style="max-width:900px;">
+                            <span class="modal-close" onclick="closeAllModals()">&times;</span>
+                            <h3 id="project-form-title" style="margin-bottom:24px; font-family:var(--font-head); color:var(--brand-yellow);">CONFIGURAR PROJETO</h3>
+                            <form id="project-form-el">
+                                <input type="hidden" id="project-id">
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px;">
+                                    <div class="group" style="grid-column: 1 / -1;">
+                                        <label>TÍTULO DO SISTEMA MOVELEIRO</label>
+                                        <input type="text" id="project-title" required placeholder="Cozinha Gourmet Linear">
+                                    </div>
+                                    <div class="group">
+                                        <label>VINCULAR CLIENTE</label>
+                                        <select id="project-client-select" required></select>
+                                    </div>
+                                    <div class="group">
+                                        <label>PARCEIRO RESPONSÁVEL</label>
+                                        <select id="project-provider-select"></select>
+                                    </div>
+                                    <div class="group">
+                                        <label>STATUS OPERACIONAL</label>
+                                        <select id="project-status">
+                                            <option value="planejamento">PLANEJAMENTO</option>
+                                            <option value="producao">PRODUÇÃO</option>
+                                            <option value="montagem">MONTAGEM</option>
+                                            <option value="finalizado">CONCLUÍDO</option>
+                                        </select>
+                                    </div>
+                                    <div class="group">
+                                        <label>PROGRESSO (%)</label>
+                                        <input type="number" id="project-progress" value="0" min="0" max="100">
+                                    </div>
+                                    <div class="group">
+                                        <label>DATA DE ENTREGA PROMETIDA</label>
+                                        <input type="text" id="project-deadline" class="datepicker">
+                                    </div>
                                 </div>
-                                <div class="group">
-                                    <label>VINCULAR CLIENTE</label>
-                                    <select id="project-client-select" required></select>
+                                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                                    <button type="submit" class="btn btn-primary" style="flex:1">SALVAR ALTERAÇÕES</button>
+                                    <button type="button" class="btn btn-ghost" onclick="closeAllModals()">CANCELAR</button>
                                 </div>
-                                <div class="group">
-                                    <label>PARCEIRO RESPONSÁVEL</label>
-                                    <select id="project-provider-select"></select>
-                                </div>
-                                <div class="group">
-                                    <label>STATUS OPERACIONAL</label>
-                                    <select id="project-status">
-                                        <option value="planejamento">PLANEJAMENTO</option>
-                                        <option value="producao">PRODUÇÃO</option>
-                                        <option value="montagem">MONTAGEM</option>
-                                        <option value="finalizado">CONCLUÍDO</option>
-                                    </select>
-                                </div>
-                                <div class="group">
-                                    <label>PROGRESSO (%)</label>
-                                    <input type="number" id="project-progress" value="0" min="0" max="100">
-                                </div>
-                                <div class="group">
-                                    <label>DATA DE ENTREGA PROMETIDA</label>
-                                    <input type="text" id="project-deadline" class="datepicker">
-                                </div>
-                            </div>
-                            <div style="display: flex; gap: 12px; margin-top: 12px;">
-                                <button type="submit" class="btn btn-primary">EXECUTAR INÍCIO</button>
-                                <button type="button" class="btn btn-ghost" onclick="toggleForm('form-project', false)">FECHAR</button>
-                            </div>
-                        </form>
+                            </form>
+                        </div>
                     </div>
 
                     <div class="card" style="margin-bottom:24px; padding:15px;">
@@ -262,9 +256,9 @@
                             <table id="table-projects">
                                 <thead>
                                     <tr>
-                                        <th>SISTEMA / PROJETO</th>
-                                        <th>CLIENTE RESPONSÁVEL</th>
-                                        <th>STATUS OPERACIONAL</th>
+                                        <th>PROJETO</th>
+                                        <th class="hide-mobile">CLIENTE / PARCEIRO</th>
+                                        <th class="hide-mobile">STATUS / PRAZO</th>
                                         <th style="text-align:right">AÇÕES</th>
                                     </tr>
                                 </thead>
@@ -281,45 +275,36 @@
                         <button class="btn btn-primary" id="btn-add-item-toggle"><i class="fa-solid fa-plus"></i> ADICIONAR ITEM</button>
                     </div>
 
-                    <div class="form-card" id="form-inventory" style="display: none; background:var(--bg-surface); padding:30px; border:1px solid var(--border-yellow); margin-bottom:30px;">
-                        <h3>GERENCIAR MATERIAL</h3>
-                        <form id="inventory-form-el" style="margin-top:24px;">
-                            <input type="hidden" id="item-id">
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px;">
-                                <div class="group">
-                                    <label>FOTO DO PRODUTO</label>
-                                    <div id="item-photo-preview" style="width:80px; height:80px; border:1px dashed var(--border); margin-bottom:10px; display:flex; align-items:center; justify-content:center; overflow:hidden;">
-                                        <i class="fa-solid fa-box-open" style="opacity:0.2;"></i>
+                    <!-- INVENTORY FORM MODAL -->
+                    <div id="modal-inventory-form" class="modal-overlay">
+                        <div class="modal-content" style="max-width:500px;">
+                            <span class="modal-close" onclick="closeAllModals()">&times;</span>
+                            <h3 id="inventory-form-title" style="margin-bottom:24px; font-family:var(--font-head); color:var(--brand-yellow);">GESTÃO DE MATERIAIS</h3>
+                            <form id="inventory-form-el">
+                                <input type="hidden" id="item-id">
+                                <div style="display: grid; gap: 20px;">
+                                    <div class="group">
+                                        <label>FOTO DO PRODUTO</label>
+                                        <div id="item-photo-preview" style="width:100px; height:100px; border:1px dashed var(--border); margin-bottom:10px; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                                            <i class="fa-solid fa-box-open" style="opacity:0.2; font-size:2rem;"></i>
+                                        </div>
+                                        <input type="file" id="item-photo" accept="image/*" onchange="previewImage(this, 'item-photo-preview')">
                                     </div>
-                                    <input type="file" id="item-photo" accept="image/*" onchange="previewImage(this, 'item-photo-preview')">
+                                    <div class="group">
+                                        <label>ESPECIFICAÇÃO</label>
+                                        <input type="text" id="item-name" required placeholder="MDF Branco TX">
+                                    </div>
+                                    <div class="group">
+                                        <label>QTD ATUAL</label>
+                                        <input type="number" id="item-qty" required value="0">
+                                    </div>
                                 </div>
-                                <div class="group">
-                                    <label>ESPECIFICAÇÃO</label>
-                                    <input type="text" id="item-name" required placeholder="MDF Branco TX">
+                                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                                    <button type="submit" class="btn btn-primary" style="flex:1">SALVAR MATERIAL</button>
+                                    <button type="button" class="btn btn-ghost" onclick="closeAllModals()">CANCELAR</button>
                                 </div>
-                                <div class="group">
-                                    <label>QTD ATUAL</label>
-                                    <input type="number" id="item-qty" required value="0">
-                                </div>
-                                <div class="group">
-                                    <label>NÍVEL CRÍTICO</label>
-                                    <select id="item-type-val" onchange="setInvDefaults(this.value)">
-                                        <option value="">Personalizado</option>
-                                        <option value="mdf3">MDF 3mm</option>
-                                        <option value="mdf6">MDF 6mm</option>
-                                        <option value="mdf15">MDF 15mm</option>
-                                        <option value="mdf18">MDF 18mm</option>
-                                        <option value="fita22">Fita 22mm</option>
-                                        <option value="fita35">Fita 35mm</option>
-                                        <option value="fita60">Fita 60mm</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div style="display: flex; gap: 12px;">
-                                <button type="submit" class="btn btn-primary">SALVAR MATERIAL</button>
-                                <button type="button" class="btn btn-ghost" onclick="toggleForm('form-inventory', false)">CANCELAR</button>
-                            </div>
-                        </form>
+                            </form>
+                        </div>
                     </div>
 
                     <div class="card" style="margin-bottom:24px; padding:15px;">
@@ -334,9 +319,9 @@
                             <table id="table-inventory">
                                 <thead>
                                     <tr>
-                                        <th>MATERIAL</th>
-                                        <th>QUANTIDADE</th>
-                                        <th>DISPONIBILIDADE</th>
+                                        <th>MATERIAL / PRODUTO</th>
+                                        <th class="hide-mobile">QUANTIDADE</th>
+                                        <th class="hide-mobile">DISPONIBILIDADE</th>
                                         <th style="text-align:right">AÇÕES</th>
                                     </tr>
                                 </thead>
@@ -353,36 +338,40 @@
                         <button class="btn btn-primary" id="btn-add-trans-toggle"><i class="fa-solid fa-plus-circle"></i> NOVO LANÇAMENTO</button>
                     </div>
 
-                    <div class="form-card" id="form-finance" style="display: none; background:var(--bg-surface); padding:30px; border:1px solid var(--border-yellow); margin-bottom:30px;">
-                        <h3>REGISTRAR MOVIMENTAÇÃO FINANCEIRA</h3>
-                        <form id="finance-form-el" style="margin-top: 24px;">
-                            <input type="hidden" id="trans-id">
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 24px;">
-                                <div class="group">
-                                    <label>OPERAÇÃO</label>
-                                    <select id="trans-type">
-                                        <option value="income">RECEBER (+)</option>
-                                        <option value="expense">PAGAR (-)</option>
-                                    </select>
+                    <!-- FINANCE FORM MODAL -->
+                    <div id="modal-finance-form" class="modal-overlay">
+                        <div class="modal-content" style="max-width:500px;">
+                            <span class="modal-close" onclick="closeAllModals()">&times;</span>
+                            <h3 id="finance-form-title" style="margin-bottom:24px; font-family:var(--font-head); color:var(--brand-yellow);">LANÇAMENTO FINANCEIRO</h3>
+                            <form id="finance-form-el">
+                                <input type="hidden" id="trans-id">
+                                <div style="display: grid; gap: 20px;">
+                                    <div class="group">
+                                        <label>OPERAÇÃO</label>
+                                        <select id="trans-type">
+                                            <option value="income">RECEBER (+)</option>
+                                            <option value="expense">PAGAR (-)</option>
+                                        </select>
+                                    </div>
+                                    <div class="group">
+                                        <label>MONTANTE (R$)</label>
+                                        <input type="text" id="trans-val" required placeholder="0,00" onkeyup="formatBRL(this)">
+                                    </div>
+                                    <div class="group">
+                                        <label>DESCRIÇÃO</label>
+                                        <input type="text" id="trans-desc" required placeholder="Ex: Parcela 2/3 - Cozinha João">
+                                    </div>
+                                    <div class="group">
+                                        <label>VENCIMENTO</label>
+                                        <input type="text" id="trans-date" class="datepicker" required>
+                                    </div>
                                 </div>
-                                <div class="group">
-                                    <label>MONTANTE (R$)</label>
-                                    <input type="text" id="trans-val" required placeholder="0,00" onkeyup="formatBRL(this)">
+                                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                                    <button type="submit" class="btn btn-primary" style="flex:1">CONFIRMAR REGISTRO</button>
+                                    <button type="button" class="btn btn-ghost" onclick="closeAllModals()">CANCELAR</button>
                                 </div>
-                                <div class="group" style="grid-column: 1 / -1;">
-                                    <label>DESCRIÇÃO DO LANÇAMENTO</label>
-                                    <input type="text" id="trans-desc" required placeholder="Ex: Parcela 2/3 - Cozinha João">
-                                </div>
-                                <div class="group">
-                                    <label>DATA DE VENCIMENTO</label>
-                                    <input type="text" id="trans-date" class="datepicker" required>
-                                </div>
-                            </div>
-                            <div style="display: flex; gap: 12px;">
-                                <button type="submit" class="btn btn-primary">CONFIRMAR REGISTRO</button>
-                                <button type="button" class="btn btn-ghost" onclick="toggleForm('form-finance', false)">FECHAR</button>
-                            </div>
-                        </form>
+                            </form>
+                        </div>
                     </div>
 
                     <div class="card" style="margin-bottom:24px; padding:15px;">
@@ -396,8 +385,8 @@
                         <table id="table-finance">
                             <thead>
                                     <tr>
-                                        <th>VENCIMENTO</th>
-                                        <th>DESCRIÇÃO DO LANÇAMENTO</th>
+                                        <th class="hide-mobile">VENCIMENTO</th>
+                                        <th>DESCRIÇÃO</th>
                                         <th>VALOR (R$)</th>
                                         <th style="text-align:right">AÇÕES</th>
                                     </tr>
@@ -414,36 +403,40 @@
                         <button class="btn btn-primary" id="btn-add-prov-toggle"><i class="fa-solid fa-user-plus"></i> ADICIONAR</button>
                     </div>
 
-                    <div class="form-card" id="form-provider" style="display: none; background:var(--bg-surface); border:1px solid var(--border-yellow); padding:30px; margin-bottom:30px;">
-                        <h3>CADASTRAR PARCEIRO</h3>
-                        <form id="provider-form-el" style="margin-top: 24px;">
-                            <input type="hidden" id="prov-id">
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px;">
-                                <div class="group">
-                                    <label>FOTO DO PARCEIRO</label>
-                                    <div id="prov-photo-preview" style="width:80px; height:80px; border:1px dashed var(--border); margin-bottom:10px; display:flex; align-items:center; justify-content:center; overflow:hidden;">
-                                        <i class="fa-solid fa-users"></i>
+                    <!-- PROVIDER FORM MODAL -->
+                    <div id="modal-provider-form" class="modal-overlay">
+                        <div class="modal-content" style="max-width:600px;">
+                            <span class="modal-close" onclick="closeAllModals()">&times;</span>
+                            <h3 id="provider-form-title" style="margin-bottom:24px; font-family:var(--font-head); color:var(--brand-yellow);">CADASTRO DE PARCEIRO</h3>
+                            <form id="provider-form-el">
+                                <input type="hidden" id="prov-id">
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px;">
+                                    <div class="group">
+                                        <label>FOTO DO PARCEIRO</label>
+                                        <div id="prov-photo-preview" style="width:100px; height:100px; border:1px dashed var(--border); margin-bottom:10px; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                                            <i class="fa-solid fa-users"></i>
+                                        </div>
+                                        <input type="file" id="prov-photo" accept="image/*" onchange="previewImage(this, 'prov-photo-preview')">
                                     </div>
-                                    <input type="file" id="prov-photo" accept="image/*" onchange="previewImage(this, 'prov-photo-preview')">
+                                    <div class="group">
+                                        <label>EMPRESA / PROFISSIONAL</label>
+                                        <input type="text" id="prov-name" required>
+                                    </div>
+                                    <div class="group">
+                                        <label>ESPECIALIDADE</label>
+                                        <input type="text" id="prov-skill" required placeholder="Ex: Marmoraria">
+                                    </div>
+                                    <div class="group">
+                                        <label>WHATSAPP</label>
+                                        <input type="tel" id="prov-phone" placeholder="17999887766">
+                                    </div>
                                 </div>
-                                <div class="group">
-                                    <label>EMPRESA / PROFISSIONAL</label>
-                                    <input type="text" id="prov-name" required>
+                                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                                    <button type="submit" class="btn btn-primary" style="flex:1">SALVAR PARCEIRO</button>
+                                    <button type="button" class="btn btn-ghost" onclick="closeAllModals()">CANCELAR</button>
                                 </div>
-                                <div class="group">
-                                    <label>ESPECIALIDADE</label>
-                                    <input type="text" id="prov-skill" required placeholder="Ex: Marmoraria">
-                                </div>
-                                <div class="group">
-                                    <label>WHATSAPP</label>
-                                    <input type="tel" id="prov-phone" placeholder="17999887766">
-                                </div>
-                            </div>
-                            <div style="display: flex; gap: 12px;">
-                                <button type="submit" class="btn btn-primary">SALVAR PARCEIRO</button>
-                                <button type="button" class="btn btn-ghost" onclick="toggleForm('form-provider', false)">FECHAR</button>
-                            </div>
-                        </form>
+                            </form>
+                        </div>
                     </div>
 
                     <div id="providers-grid" class="card-grid"></div>
@@ -467,29 +460,33 @@
                         <button class="btn btn-primary" id="btn-add-gallery-toggle"><i class="fa-solid fa-plus"></i> PUBLICAR FOTO</button>
                     </div>
 
-                    <div class="form-card" id="form-gallery" style="display: none; background:var(--bg-surface); padding:30px; border:1px solid var(--border-yellow); margin-bottom:30px;">
-                        <h3>GESTÃO DE PORTFÓLIO WEB</h3>
-                        <form id="gallery-form-el" style="margin-top: 24px;">
-                            <input type="hidden" id="gal-id">
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px;">
-                                <div class="group">
-                                    <label>TÍTULO DO PROJETO</label>
-                                    <input type="text" id="gal-title" required placeholder="Cozinha Executive">
+                    <!-- GALLERY FORM MODAL -->
+                    <div id="modal-gallery-form" class="modal-overlay">
+                        <div class="modal-content" style="max-width:500px;">
+                            <span class="modal-close" onclick="closeAllModals()">&times;</span>
+                            <h3 id="gallery-form-title" style="margin-bottom:24px; font-family:var(--font-head); color:var(--brand-yellow);">PUBLICAR NA WEB</h3>
+                            <form id="gallery-form-el">
+                                <input type="hidden" id="gal-id">
+                                <div style="display: grid; gap: 20px;">
+                                    <div class="group">
+                                        <label>TÍTULO DO PROJETO</label>
+                                        <input type="text" id="gal-title" required placeholder="Cozinha Executive">
+                                    </div>
+                                    <div class="group">
+                                        <label>SUBTÍTULO / DESCRIÇÃO</label>
+                                        <input type="text" id="gal-sub" required placeholder="Linha Premium MDF">
+                                    </div>
+                                    <div class="group">
+                                        <label>UPLOAD DE IMAGEM</label>
+                                        <input type="file" id="gal-file" accept="image/*">
+                                    </div>
                                 </div>
-                                <div class="group">
-                                    <label>SUBTÍTULO / DESCRIÇÃO</label>
-                                    <input type="text" id="gal-sub" required placeholder="Linha Premium MDF">
+                                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                                    <button type="submit" class="btn btn-primary" style="flex:1">PUBLICAR AGORA</button>
+                                    <button type="button" class="btn btn-ghost" onclick="closeAllModals()">CANCELAR</button>
                                 </div>
-                                <div class="group">
-                                    <label>UPLOAD DE IMAGEM</label>
-                                    <input type="file" id="gal-file" accept="image/*">
-                                </div>
-                            </div>
-                            <div style="display: flex; gap: 12px;">
-                                <button type="submit" class="btn btn-primary">PUBLICAR AGORA</button>
-                                <button type="button" class="btn btn-ghost" onclick="toggleForm('form-gallery', false)">CANCELAR</button>
-                            </div>
-                        </form>
+                            </form>
+                        </div>
                     </div>
 
                     <div id="gallery-list" class="card-grid"></div>

@@ -128,11 +128,32 @@ function parseBRL(value) {
 }
 
 function toggleForm(id, show) { 
-    const el = document.getElementById(id); 
-    if(el) {
-        el.style.display = show ? 'block' : 'none'; 
-        if(show) window.scrollTo({top:0, behavior:'smooth'}); 
-    }
+    // ID mapping for legacy compatibility
+    const modalMap = {
+        'form-client': 'modal-client-form',
+        'form-project': 'modal-project-form',
+        'form-inventory': 'modal-inventory-form',
+        'form-finance': 'modal-finance-form',
+        'form-provider': 'modal-provider-form',
+        'form-gallery': 'modal-gallery-form'
+    };
+    const targetId = modalMap[id] || id;
+    if (show) openModal(targetId);
+    else closeModal(targetId);
+}
+
+function openModal(id) {
+    const el = document.getElementById(id);
+    if(el) el.style.display = 'flex';
+}
+
+function closeModal(id) {
+    const el = document.getElementById(id);
+    if(el) el.style.display = 'none';
+}
+
+function closeAllModals() {
+    document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
 }
 
 // --- Navigation ---
@@ -165,19 +186,23 @@ function renderClients(filter = '') {
     const tbody = document.querySelector('#table-clients tbody');
     if(!tbody) return;
     const filtered = clients.filter(c => c.name.toLowerCase().includes(filter.toLowerCase()) || (c.phone && c.phone.includes(filter)));
-    
     tbody.innerHTML = filtered.map(c => `
-        <tr onclick="openClientDetail('${c.id}')">
-            <td><code style="color:var(--brand-yellow)">#${c.id.slice(-4)}</code></td>
+        <tr onclick="openClientDetail('${c.id}')" style="cursor:pointer;">
             <td>
                 <div style="display:flex; align-items:center; gap:12px">
-                    <div class="avatar" style="width:32px; height:32px; font-size:0.75rem">${c.photo ? `<img src="${c.photo}" style="width:100%;height:100%;border-radius:50%">` : c.name[0]}</div>
-                    <strong>${c.name}</strong>
+                    <div class="avatar" style="width:36px; height:36px; flex-shrink:0;">
+                        ${c.photo ? `<img src="${c.photo}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">` : c.name[0]}
+                    </div>
+                    <div style="display:flex; flex-direction:column;">
+                        <strong style="color:var(--text-primary);">${c.name}</strong>
+                        <span class="show-mobile-only" style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">${c.phone}</span>
+                    </div>
                 </div>
             </td>
-            <td><span style="font-size:0.85rem">${c.phone || '---'}</span></td>
+            <td class="hide-mobile" style="font-size:0.85rem">${c.phone}</td>
+            <td class="hide-mobile" style="font-size:0.85rem">${c.instagram}</td>
             <td style="text-align:right">
-                <button class="btn btn-ghost btn-sm" style="padding:4px 8px;" onclick="event.stopPropagation(); editClient('${c.id}')"><i class="fa-solid fa-pen"></i></button>
+                <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); editClient('${c.id}')"><i class="fa-solid fa-pen"></i></button>
             </td>
         </tr>
     `).join('');
@@ -232,20 +257,28 @@ function renderProjects(filter = '') {
     if(!tbody) return;
     const filtered = projects.filter(p => p.title.toLowerCase().includes(filter.toLowerCase()) || p.client.toLowerCase().includes(filter.toLowerCase()));
     tbody.innerHTML = filtered.map(p => `
-        <tr onclick="openProjectDetail('${p.id}')">
-            <td><strong style="font-size:1rem">${p.title}</strong></td>
-            <td style="font-size:0.85rem; color:var(--text-secondary)">${p.client}</td>
+        <tr onclick="openProjectDetail('${p.id}')" style="cursor:pointer;">
             <td>
-                <div style="display:flex; justify-content:space-between; font-size:0.7rem; margin-bottom:6px; font-weight:700">
-                    <span style="color:var(--brand-yellow)">${p.status.toUpperCase()}</span>
-                    <span>${p.progress}%</span>
-                </div>
-                <div style="height:6px; background:var(--bg-surface-light); width:100%; border-radius:10px">
-                    <div style="height:6px; background:var(--brand-yellow); width:${p.progress}%; border-radius:10px;"></div>
+                <div style="display:flex; align-items:center; gap:12px">
+                    <div style="width:36px; height:36px; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:4px; flex-shrink:0; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                        ${p.images && p.images[0] ? `<img src="${p.images[0]}" style="width:100%;height:100%;object-fit:cover">` : '<i class="fa-solid fa-drafting-dot" style="opacity:0.2"></i>'}
+                    </div>
+                    <div style="display:flex; flex-direction:column;">
+                        <strong style="color:var(--brand-yellow); text-transform:uppercase; font-size:0.85rem;">${p.title}</strong>
+                        <span class="show-mobile-only" style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">${p.status.toUpperCase()} • ${p.progress}%</span>
+                    </div>
                 </div>
             </td>
+            <td class="hide-mobile">
+                <div style="font-size:0.85rem; font-weight:600;">${p.client}</div>
+                <div style="font-size:0.7rem; color:var(--text-muted)">${p.provider || 'Nenhum'}</div>
+            </td>
+            <td class="hide-mobile">
+                <div style="font-size:0.85rem; color:var(--brand-yellow); font-weight:700;">${p.status.toUpperCase()}</div>
+                <div style="font-size:0.7rem; font-family:var(--font-mono)">${p.deadline || 'A definir'}</div>
+            </td>
             <td style="text-align:right">
-                 <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); editProject('${p.id}')"><i class="fa-solid fa-pen"></i></button>
+                <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); editProject('${p.id}')"><i class="fa-solid fa-pen"></i></button>
             </td>
         </tr>
     `).join('');
@@ -375,18 +408,23 @@ function renderInventory(filter = '') {
     if(!tbody) return;
     const filtered = inv.filter(i => i.name.toLowerCase().includes(filter.toLowerCase()));
     tbody.innerHTML = filtered.map(i => `
-        <tr onclick="openInventoryDetail('${i.id}')">
+        <tr onclick="openInventoryDetail('${i.id}')" style="cursor:pointer;">
             <td>
                 <div style="display:flex; align-items:center; gap:12px">
-                    <div style="width:36px; height:36px; background:rgba(0,0,0,0.5); border:1px solid var(--border)">
-                        ${i.photo ? `<img src="${i.photo}" style="width:100%;height:100%;object-fit:cover">` : '<i class="fa-solid fa-layer-group" style="opacity:0.2; margin:8px"></i>'}
+                    <div style="width:36px; height:36px; background:rgba(0,0,0,0.5); border:1px solid var(--border); overflow:hidden; border-radius:4px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
+                        ${i.photo ? `<img src="${i.photo}" style="width:100%;height:100%;object-fit:cover">` : '<i class="fa-solid fa-box" style="opacity:0.2;"></i>'}
                     </div>
-                    <strong>${i.name}</strong>
+                    <div style="display:flex; flex-direction:column;">
+                        <strong style="color:var(--text-primary); font-size:0.85rem;">${i.name}</strong>
+                        <span class="show-mobile-only" style="font-size:0.7rem; color:${i.qty < 5 ? '#ef4444' : 'var(--brand-yellow)'}; font-weight:700;">SALDO: ${i.qty}</span>
+                    </div>
                 </div>
             </td>
-            <td><strong>${i.qty}</strong> <span style="font-size:0.7rem; color:var(--text-muted)">UNID</span></td>
-            <td><span style="color:#4ade80; font-size:0.75rem; font-weight:700">ATIVO</span></td>
-            <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); editItem('${i.id}')"><i class="fa-solid fa-pen"></i></button></td>
+            <td class="hide-mobile"><strong>${i.qty}</strong> <span style="font-size:0.7rem; color:var(--text-muted)">UNID</span></td>
+            <td class="hide-mobile"><span style="color:#4ade80; font-size:0.75rem; font-weight:700">ATIVO</span></td>
+            <td style="text-align:right">
+                <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); editItem('${i.id}')"><i class="fa-solid fa-pen"></i></button>
+            </td>
         </tr>
     `).join('');
 }
@@ -439,12 +477,17 @@ function renderFinance(filter = '') {
         if(f.type === 'income') total += val; else total -= val;
         return `
             <tr>
-                <td style="font-size:0.85rem">${f.date}</td>
-                <td style="font-size:0.95rem; font-weight:500;">${f.desc}</td>
-                <td style="color:${f.type === 'income' ? 'var(--brand-yellow)' : '#ef4444'}; font-weight:800; font-family:var(--font-mono)">
+                <td class="hide-mobile" style="font-size:0.85rem">${f.date}</td>
+                <td>
+                    <div style="font-size:0.95rem; font-weight:600;">${f.desc}</div>
+                    <div class="show-mobile-only" style="font-size:0.7rem; color:var(--text-muted);">${f.date}</div>
+                </td>
+                <td style="color:${f.type === 'income' ? 'var(--brand-yellow)' : '#ef4444'}; font-weight:800; font-family:var(--font-mono); text-align:right;">
                     ${f.type === 'income' ? '+' : '-'} ${val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                 </td>
-                <td style="text-align:right"><button class="btn btn-ghost btn-sm" onclick="deleteItem('finance', '${f.id}', renderFinance)"><i class="fa-solid fa-trash"></i></button></td>
+                <td style="text-align:right" class="hide-mobile">
+                    <button class="btn btn-ghost btn-sm" onclick="deleteItem('finance', '${f.id}', renderFinance)"><i class="fa-solid fa-trash"></i></button>
+                </td>
             </tr>
         `;
     }).join('');
@@ -498,7 +541,7 @@ function renderGallery() {
 window.deleteGalleryItem = (id) => {
     if(confirm('Excluir imagem do portfólio?')) {
         let gs = DB.get('gallery');
-        gs = gs.filter(x => String(x.id) !== String(id));
+        gs = gs.filter(x => String(x.id).trim() !== String(id).trim());
         DB.set('gallery', gs);
         renderGallery();
         notify('Imagem removida.');
@@ -547,20 +590,40 @@ function renderNotifications() {
 
 // Global Helpers
 window.deleteItem = (key, id, callback) => {
-    if(confirm('Confirmar exclusão?')) {
+    if(confirm('Confirmar exclusão deste registro?')) {
         let items = DB.get(key);
-        items = items.filter(x => x.id !== id);
+        items = items.filter(x => String(x.id).trim() !== String(id).trim());
         DB.set(key, items);
-        callback();
-        notify('Registro removido.');
+        if(callback) callback();
+        notify('Registro removido com sucesso.');
     }
 };
 
 function updateStats() {
-    const sp = document.getElementById('st-projects');
-    const sc = document.getElementById('st-clients');
-    if(sp) sp.innerText = DB.get('projects').length;
-    if(sc) sc.innerText = DB.get('clients').length;
+    const projects = DB.get('projects');
+    const clients = DB.get('clients');
+    const finance = DB.get('finance');
+    const inventory = DB.get('inventory');
+    const dismissed = DB.get('dismissed_alerts', []);
+    const today = new Date();
+
+    const totalIncome = finance.filter(f => f.type === 'income').reduce((sum, f) => sum + parseFloat(f.val || 0), 0);
+    const lowStock = inventory.filter(i => i.qty < 5);
+    const upcomingFin = finance.filter(f => {
+        if(dismissed.includes(f.id)) return false;
+        const d = new Date(f.date.split('/').reverse().join('-'));
+        return d >= today && d <= new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+    });
+
+    const elProjects = document.getElementById('st-projects');
+    const elClients = document.getElementById('st-clients');
+    const elIncome = document.getElementById('st-income');
+    const elAlerts = document.getElementById('st-alerts');
+
+    if(elProjects) elProjects.innerText = projects.length;
+    if(elClients) elClients.innerText = clients.length;
+    if(elIncome) elIncome.innerText = totalIncome.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    if(elAlerts) elAlerts.innerText = lowStock.length + upcomingFin.length;
 }
 
 function updateSelectors() {
@@ -570,6 +633,156 @@ function updateSelectors() {
     const selP = document.getElementById('project-provider-select');
     if(selC) selC.innerHTML = '<option value="">CLIENTE</option>' + cs.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
     if(selP) selP.innerHTML = '<option value="">PARCEIRO</option>' + ps.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+}
+
+// --- FORM SUBMISSION HANDLERS ---
+async function handleClientSubmit(e) {
+    e.preventDefault();
+    const id = document.getElementById('client-id').value;
+    const clients = DB.get('clients');
+    const photoInput = document.getElementById('client-photo');
+    let photo = id ? (clients.find(c => c.id === id)?.photo || '') : '';
+    if(photoInput.files[0]) photo = await toBase64(photoInput.files[0]);
+    
+    const data = { 
+        id: id || Date.now().toString(), 
+        name: document.getElementById('client-name').value, 
+        phone: document.getElementById('client-phone').value, 
+        instagram: document.getElementById('client-instagram').value, 
+        address: document.getElementById('client-address').value, 
+        photo 
+    };
+
+    if(id) clients[clients.findIndex(c => c.id === id)] = data;
+    else clients.push(data);
+    
+    DB.set('clients', clients);
+    renderClients();
+    closeAllModals();
+    notify('Cliente salvo com sucesso.');
+}
+
+function handleProjectSubmit(e) {
+    e.preventDefault();
+    const id = document.getElementById('project-id').value;
+    const projects = DB.get('projects');
+    const existing = id ? projects.find(x => x.id === id) : null;
+
+    const data = { 
+        id: id || Date.now().toString(), 
+        title: document.getElementById('project-title').value, 
+        client: document.getElementById('project-client-select').value, 
+        provider: document.getElementById('project-provider-select').value, 
+        status: document.getElementById('project-status').value, 
+        progress: parseInt(document.getElementById('project-progress').value || 0), 
+        deadline: document.getElementById('project-deadline').value, 
+        date: existing ? existing.date : new Date().toLocaleDateString(),
+        images: existing ? (existing.images || []) : [], 
+        comments: existing ? (existing.comments || []) : [] 
+    };
+
+    if(id) projects[projects.findIndex(p => p.id === id)] = data;
+    else projects.push(data);
+
+    DB.set('projects', projects);
+    renderProjects();
+    closeAllModals();
+    notify('Projeto atualizado.');
+}
+
+async function handleInventorySubmit(e) {
+    e.preventDefault();
+    const id = document.getElementById('item-id').value;
+    const inv = DB.get('inventory');
+    const photoInput = document.getElementById('item-photo');
+    let photo = id ? (inv.find(i => i.id === id)?.photo || '') : '';
+    if(photoInput.files[0]) photo = await toBase64(photoInput.files[0]);
+
+    const data = { 
+        id: id || Date.now().toString(), 
+        name: document.getElementById('item-name').value, 
+        qty: parseInt(document.getElementById('item-qty').value), 
+        photo 
+    };
+
+    if(id) inv[inv.findIndex(i => i.id === id)] = data;
+    else inv.push(data);
+
+    DB.set('inventory', inv);
+    renderInventory();
+    closeAllModals();
+    notify('Estoque atualizado.');
+}
+
+function handleFinanceSubmit(e) {
+    e.preventDefault();
+    const id = document.getElementById('trans-id').value;
+    const fin = DB.get('finance');
+    const data = { 
+        id: id || Date.now().toString(), 
+        type: document.getElementById('trans-type').value, 
+        val: parseBRL(document.getElementById('trans-val').value), 
+        desc: document.getElementById('trans-desc').value, 
+        date: document.getElementById('trans-date').value 
+    };
+
+    if(id) fin[fin.findIndex(f => f.id === id)] = data;
+    else fin.push(data);
+
+    DB.set('finance', fin);
+    renderFinance();
+    renderNotifications();
+    closeAllModals();
+    notify('Lançamento realizado.');
+}
+
+async function handleProviderSubmit(e) {
+    e.preventDefault();
+    const id = document.getElementById('prov-id').value;
+    const ps = DB.get('providers');
+    const photoInput = document.getElementById('prov-photo');
+    let photo = id ? (ps.find(p => p.id === id)?.photo || '') : '';
+    if(photoInput.files[0]) photo = await toBase64(photoInput.files[0]);
+
+    const data = { 
+        id: id || Date.now().toString(), 
+        name: document.getElementById('prov-name').value, 
+        skill: document.getElementById('prov-skill').value, 
+        phone: document.getElementById('prov-phone').value, 
+        photo 
+    };
+
+    if(id) ps[ps.findIndex(p => p.id === id)] = data;
+    else ps.push(data);
+
+    DB.set('providers', ps);
+    renderProviders();
+    closeAllModals();
+    notify('Parceiro salvo.');
+}
+
+async function handleGallerySubmit(e) {
+    e.preventDefault();
+    const id = document.getElementById('gal-id').value;
+    const gallery = DB.get('gallery');
+    const fileInput = document.getElementById('gal-file');
+    let photo = id ? (gallery.find(g => g.id === id)?.photo || '') : '';
+    if(fileInput && fileInput.files[0]) photo = await toBase64(fileInput.files[0]);
+
+    const data = { 
+        id: id || Date.now().toString(), 
+        title: document.getElementById('gal-title').value, 
+        sub: document.getElementById('gal-sub').value, 
+        photo 
+    };
+
+    if(id) gallery[gallery.findIndex(g => g.id === id)] = data;
+    else gallery.push(data);
+
+    DB.set('gallery', gallery);
+    renderGallery();
+    closeAllModals();
+    notify('Imagem publicada na web.');
 }
 
 // --- Initialization ---
@@ -591,22 +804,53 @@ document.addEventListener('DOMContentLoaded', () => {
     attachSearch('search-inventory', renderInventory);
     attachSearch('search-finance', renderFinance);
 
-    const attachClick = (id, fn) => { const el = document.getElementById(id); if(el) el.onclick = fn; };
-    attachClick('btn-add-client-toggle', () => { document.getElementById('client-id').value = ''; document.getElementById('client-form-el').reset(); document.getElementById('photo-preview').innerHTML = ''; toggleForm('form-client', true); });
-    attachClick('btn-add-project-toggle', () => { document.getElementById('project-id').value = ''; document.getElementById('project-form-el').reset(); toggleForm('form-project', true); });
-    attachClick('btn-add-item-toggle', () => { document.getElementById('item-id').value = ''; document.getElementById('inventory-form-el').reset(); document.getElementById('item-photo-preview').innerHTML = ''; toggleForm('form-inventory', true); });
-    attachClick('btn-add-trans-toggle', () => { document.getElementById('trans-id').value = ''; document.getElementById('finance-form-el').reset(); toggleForm('form-finance', true); });
-    attachClick('btn-add-prov-toggle', () => { document.getElementById('prov-id').value = ''; document.getElementById('provider-form-el').reset(); document.getElementById('prov-photo-preview').innerHTML = ''; toggleForm('form-provider', true); });
-    attachClick('btn-add-gallery-toggle', () => { document.getElementById('gal-id').value = ''; document.getElementById('gallery-form-el').reset(); toggleForm('form-gallery', true); });
-
     const attachSubmit = (id, fn) => { const el = document.getElementById(id); if(el) el.onsubmit = fn; };
-    attachSubmit('client-form-el', async (e) => { e.preventDefault(); const id = document.getElementById('client-id').value; const clients = DB.get('clients'); const photoInput = document.getElementById('client-photo'); let photo = id ? (clients.find(c => c.id === id)?.photo || '') : ''; if(photoInput.files[0]) photo = await toBase64(photoInput.files[0]); const data = { id: id || Date.now().toString(), name: document.getElementById('client-name').value, phone: document.getElementById('client-phone').value, instagram: document.getElementById('client-instagram').value, address: document.getElementById('client-address').value, photo }; if(id) clients[clients.findIndex(c => c.id === id)] = data; else clients.push(data); DB.set('clients', clients); renderClients(); toggleForm('form-client', false); notify('Cliente salvo.'); });
-    attachSubmit('project-form-el', (e) => { e.preventDefault(); const id = document.getElementById('project-id').value; const projects = DB.get('projects'); const data = { id: id || Date.now().toString(), title: document.getElementById('project-title').value, client: document.getElementById('project-client-select').value, provider: document.getElementById('project-provider-select').value, status: document.getElementById('project-status').value, progress: parseInt(document.getElementById('project-progress').value || 0), deadline: document.getElementById('project-deadline').value, date: new Date().toLocaleDateString(), images: id ? (projects.find(x => x.id === id).images || []) : [], comments: id ? (projects.find(x => x.id === id).comments || []) : [] }; if(id) projects[projects.findIndex(p => p.id === id)] = data; else projects.push(data); DB.set('projects', projects); renderProjects(); toggleForm('form-project', false); notify('Projeto atualizado.'); });
-    attachSubmit('inventory-form-el', async (e) => { e.preventDefault(); const id = document.getElementById('item-id').value; const inv = DB.get('inventory'); const photoInput = document.getElementById('item-photo'); let photo = id ? (inv.find(i => i.id === id)?.photo || '') : ''; if(photoInput.files[0]) photo = await toBase64(photoInput.files[0]); const data = { id: id || Date.now().toString(), name: document.getElementById('item-name').value, qty: parseInt(document.getElementById('item-qty').value), photo }; if(id) inv[inv.findIndex(i => i.id === id)] = data; else inv.push(data); DB.set('inventory', inv); renderInventory(); toggleForm('form-inventory', false); notify('Estoque sincronizado.'); });
-    attachSubmit('finance-form-el', (e) => { e.preventDefault(); const id = document.getElementById('trans-id').value; const fin = DB.get('finance'); const data = { id: id || Date.now().toString(), type: document.getElementById('trans-type').value, val: parseBRL(document.getElementById('trans-val').value), desc: document.getElementById('trans-desc').value, date: document.getElementById('trans-date').value }; if(id) fin[fin.findIndex(f => f.id === id)] = data; else fin.push(data); DB.set('finance', fin); renderFinance(); toggleForm('form-finance', false); renderNotifications(); notify('Lançamento realizado.'); });
-    attachSubmit('provider-form-el', async (e) => { e.preventDefault(); const id = document.getElementById('prov-id').value; const ps = DB.get('providers'); const photoInput = document.getElementById('prov-photo'); let photo = id ? (ps.find(p => p.id === id)?.photo || '') : ''; if(photoInput.files[0]) photo = await toBase64(photoInput.files[0]); const data = { id: id || Date.now().toString(), name: document.getElementById('prov-name').value, skill: document.getElementById('prov-skill').value, phone: document.getElementById('prov-phone').value, photo }; if(id) ps[ps.findIndex(p => p.id === id)] = data; else ps.push(data); DB.set('providers', ps); renderProviders(); toggleForm('form-provider', false); notify('Parceiro salvo.'); });
-    attachSubmit('gallery-form-el', async (e) => { e.preventDefault(); const id = document.getElementById('gal-id').value; const gallery = DB.get('gallery'); const fileInput = document.getElementById('gal-file'); let photo = id ? (gallery.find(g => g.id === id)?.photo || '') : ''; if(fileInput && fileInput.files[0]) photo = await toBase64(fileInput.files[0]); const data = { id: id || Date.now().toString(), title: document.getElementById('gal-title').value, sub: document.getElementById('gal-sub').value, photo }; if(id) gallery[gallery.findIndex(g => g.id === id)] = data; else gallery.push(data); DB.set('gallery', gallery); renderGallery(); toggleForm('form-gallery', false); notify('Imagem publicada.'); });
+    attachSubmit('client-form-el', handleClientSubmit);
+    attachSubmit('project-form-el', handleProjectSubmit);
+    attachSubmit('inventory-form-el', handleInventorySubmit);
+    attachSubmit('finance-form-el', handleFinanceSubmit);
+    attachSubmit('provider-form-el', handleProviderSubmit);
+    attachSubmit('gallery-form-el', handleGallerySubmit);
+
+    const attachClick = (id, fn) => { const el = document.getElementById(id); if(el) el.onclick = fn; };
+    attachClick('btn-add-client-toggle', () => { 
+        document.getElementById('client-id').value = ''; 
+        document.getElementById('client-form-el').reset(); 
+        document.getElementById('client-form-title').innerText = 'NOVO CADASTRO DE CLIENTE';
+        openModal('modal-client-form'); 
+    });
+    attachClick('btn-add-project-toggle', () => { 
+        document.getElementById('project-id').value = ''; 
+        document.getElementById('project-form-el').reset(); 
+        document.getElementById('project-form-title').innerText = 'CONFIGURAR NOVO PROJETO';
+        openModal('modal-project-form'); 
+    });
+    attachClick('btn-add-item-toggle', () => { 
+        document.getElementById('item-id').value = ''; 
+        document.getElementById('inventory-form-el').reset(); 
+        document.getElementById('inventory-form-title').innerText = 'ADICIONAR ITEM AO ESTOQUE';
+        openModal('modal-inventory-form'); 
+    });
+    attachClick('btn-add-trans-toggle', () => { 
+        document.getElementById('trans-id').value = ''; 
+        document.getElementById('finance-form-el').reset(); 
+        document.getElementById('finance-form-title').innerText = 'REGISTRAR NOVA MOVIMENTAÇÃO';
+        openModal('modal-finance-form'); 
+    });
+    attachClick('btn-add-prov-toggle', () => { 
+        document.getElementById('prov-id').value = ''; 
+        document.getElementById('provider-form-el').reset(); 
+        document.getElementById('provider-form-title').innerText = 'CADASTRAR NOVO PARCEIRO';
+        openModal('modal-provider-form'); 
+    });
+    attachClick('btn-add-gallery-toggle', () => { 
+        document.getElementById('gal-id').value = ''; 
+        document.getElementById('gallery-form-el').reset(); 
+        document.getElementById('gallery-form-title').innerText = 'PUBLICAR NOVO PROJETO NO PORTFÓLIO';
+        openModal('modal-gallery-form'); 
+    });
 
     if(typeof flatpickr !== 'undefined') flatpickr(".datepicker", { locale: "pt", theme: "dark", dateFormat: "d/m/Y" });
+    
     renderClients(); renderProjects(); renderInventory(); renderFinance(); renderProviders(); renderGallery(); renderNotifications(); updateStats();
 });
