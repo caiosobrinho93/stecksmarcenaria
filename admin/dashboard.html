@@ -189,9 +189,9 @@
                             <table id="table-clients">
                                 <thead>
                                     <tr>
-                                        <th>ID_REF</th>
-                                        <th>IDENTIFICAÇÃO</th>
-                                        <th>CONTATO_REDE</th>
+                                        <th>CÓDIGO</th>
+                                        <th>CLIENTE</th>
+                                        <th>CONTATO / REDE</th>
                                         <th style="text-align:right">AÇÕES</th>
                                     </tr>
                                 </thead>
@@ -209,7 +209,7 @@
                     </div>
 
                     <div class="form-card" id="form-project" style="display: none; background:var(--bg-surface); padding:30px; border:1px solid var(--border-yellow); margin-bottom:30px;">
-                        <h3 id="project-form-title" style="margin-bottom:24px;">CONFIG_PROJECT_INIT</h3>
+                        <h3 id="project-form-title" style="margin-bottom:24px;">NOVO PROJETO</h3>
                         <form id="project-form-el">
                             <input type="hidden" id="project-id">
                             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px;">
@@ -229,9 +229,9 @@
                                     <label>STATUS OPERACIONAL</label>
                                     <select id="project-status">
                                         <option value="planejamento">PLANEJAMENTO</option>
-                                        <option value="producao">EM PRODUÇÃO</option>
-                                        <option value="montagem">EM MONTAGEM</option>
-                                        <option value="finalizado">ENTREGUE</option>
+                                        <option value="producao">PRODUÇÃO</option>
+                                        <option value="montagem">MONTAGEM</option>
+                                        <option value="finalizado">CONCLUÍDO</option>
                                     </select>
                                 </div>
                                 <div class="group">
@@ -262,9 +262,9 @@
                             <table id="table-projects">
                                 <thead>
                                     <tr>
-                                        <th>SISTEMA_REF</th>
-                                        <th>CLIENTE_OBRA</th>
-                                        <th>STATUS_WORKFLOW</th>
+                                        <th>SISTEMA / PROJETO</th>
+                                        <th>CLIENTE RESPONSÁVEL</th>
+                                        <th>STATUS OPERACIONAL</th>
                                         <th style="text-align:right">AÇÕES</th>
                                     </tr>
                                 </thead>
