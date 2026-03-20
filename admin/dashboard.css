@@ -193,10 +193,15 @@ input:focus { border-color: var(--brand-yellow); outline: none; box-shadow: 0 0 
 }
 @media (max-width: 768px) {
     .sidebar { transform: translateX(-100%); width: 280px; }
-    .sidebar.open { transform: translateX(0); }
+    .sidebar.open { transform: translateX(0); z-index: 2001; }
     .sidebar.open .sidebar-brand, .sidebar.open .nav-link span { display: block; }
-    .main-content { margin-left: 0; }
+    .main-content { margin-left: 0; padding: 16px; }
     .hide-mobile { display: none; }
+    .topbar-title { font-size: 1.25rem; }
+}
+@media (max-width: 320px) {
+    .card-grid { grid-template-columns: 1fr; }
+    .main-content { padding: 10px; }
 }
 
 /* Specific UI Elements */

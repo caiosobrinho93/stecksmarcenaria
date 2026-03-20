@@ -30,8 +30,8 @@
             <div class="sidebar-header">
                 <img src="../imgs/logo-state.png" alt="STATE" class="sidebar-logo">
                 <div style="display:flex; flex-direction:column;">
-                    <span class="sidebar-brand">STATE CONSOLE</span>
-                    <span style="font-size:0.5rem; color:var(--brand-yellow); opacity:0.5; margin-left:12px;">V6.2.0_REFINED_ACTIVE</span>
+                    <span class="sidebar-brand">ESTADO MARCENARIA</span>
+                    <span style="font-size:0.5rem; color:var(--brand-yellow); opacity:0.5; margin-left:12px;">V6.3.0_PROFESSIONAL</span>
                 </div>
             </div>
             
@@ -115,7 +115,7 @@
                         <!-- Upcoming Deadlines -->
                         <div class="card" style="grid-column: span 2;">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                                <h3 style="font-family:var(--font-head); font-size:0.9rem; letter-spacing:1px;">PRÓXIMOS PRAZOS</h3>
+                                <h3 style="font-family:var(--font-head); font-size:0.9rem; letter-spacing:1px;">CRONOGRAMA DE ENTREGAS</h3>
                                 <i class="fa-solid fa-calendar-check" style="color:var(--brand-yellow)"></i>
                             </div>
                             <div id="upcoming-deadlines-home" style="max-height: 180px; overflow-y: auto; display:grid; gap:8px;">
@@ -420,7 +420,7 @@
                             <input type="hidden" id="prov-id">
                             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px;">
                                 <div class="group">
-                                    <label>IDENTIDADE VISUAL</label>
+                                    <label>FOTO DO PARCEIRO</label>
                                     <div id="prov-photo-preview" style="width:80px; height:80px; border:1px dashed var(--border); margin-bottom:10px; display:flex; align-items:center; justify-content:center; overflow:hidden;">
                                         <i class="fa-solid fa-users"></i>
                                     </div>
@@ -452,7 +452,8 @@
                 <!-- NOTIFICATIONS MODULE -->
                 <section id="mod-notifications" class="module-section">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-                        <h2 class="topbar-title">ALERTAS E VENCIMENTOS</h2>
+                        <h2 class="topbar-title">NOTIFICAÇÕES E AVISOS</h2>
+                        <button class="btn btn-ghost btn-sm" onclick="clearNotifications()"><i class="fa-solid fa-broom"></i> Limpar Tudo</button>
                     </div>
                     <div id="notifications-list" style="display:grid; gap:16px;">
                         <!-- Alerts rendered here -->
@@ -467,7 +468,7 @@
                     </div>
 
                     <div class="form-card" id="form-gallery" style="display: none; background:var(--bg-surface); padding:30px; border:1px solid var(--border-yellow); margin-bottom:30px;">
-                        <h3>SINC_GALERIA_TÉCNICA</h3>
+                        <h3>GESTÃO DE PORTFÓLIO WEB</h3>
                         <form id="gallery-form-el" style="margin-top: 24px;">
                             <input type="hidden" id="gal-id">
                             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px;">
@@ -537,7 +538,7 @@
 
     <!-- PROJECT DETAIL MODAL -->
     <div class="modal-overlay" id="modal-project-detail">
-        <div class="modal-box" id="project-detail-content" style="max-width: 500px; padding: 30px;">
+        <div class="modal-box" id="project-detail-content" style="max-width: 800px; padding: 30px;">
             <!-- Rendered via JS -->
         </div>
     </div>
