@@ -63,10 +63,15 @@ function initSeedData() {
         ];
         DB.set('providers', seedProviders);
     }
-    if (DB.get('gallery').length === 0) {
+    if (DB.get('gallery').length <= 2) {
+        // Full portfolio from site
         const seedGallery = [
-            { id: 'g1', title: 'Cozinha Industrial Grey', sub: 'Finalizado em Janeiro/2026', photo: 'https://images.unsplash.com/photo-1556911227-41cc57297e6b?q=80&w=600&auto=format&fit=crop' },
-            { id: 'g2', title: 'Painel Home Minimalista', sub: 'MDF Ripado Nogueira', photo: 'https://images.unsplash.com/photo-1593062096033-9a26b09da705?q=80&w=600&auto=format&fit=crop' }
+            { id: 'g1', title: 'Cozinha Gourmet', sub: 'Linha Titanium', photo: 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?q=80&w=1200' },
+            { id: 'g2', title: 'Living Integrado', sub: 'Iluminação Smart LED', photo: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=800' },
+            { id: 'g3', title: 'Dormitório Casal', sub: 'Closet Elegance', photo: 'https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?q=80&w=800' },
+            { id: 'g4', title: 'Home Theater', sub: 'Integração Alexa', photo: 'https://images.unsplash.com/photo-1588854337236-6889d631faa8?q=80&w=1400' },
+            { id: 'g5', title: 'Escritório Executivo', sub: 'Design Corporativo', photo: 'https://images.unsplash.com/photo-1600607686527-6fb886090705?q=80&w=800' },
+            { id: 'g6', title: 'Painel Acústico', sub: 'Módulos Fonoabsorventes', photo: 'https://images.unsplash.com/photo-1593696140826-c58b021acf8b?q=80&w=800' }
         ];
         DB.set('gallery', seedGallery);
     }
@@ -469,14 +474,14 @@ function renderGallery() {
     const grid = document.getElementById('gallery-list');
     if(!grid) return;
     grid.innerHTML = gs.map(g => `
-        <div class="card" style="padding:0">
+        <div class="card" style="padding:0; box-shadow:none;">
             <img src="${g.photo}" style="width:100%; height:180px; object-fit:cover; border-bottom:1px solid var(--border);">
-            <div style="padding:20px">
-                <h5 style="color:var(--brand-yellow); font-family:var(--font-head); font-size:1.1rem; margin-bottom:5px;">${g.title}</h5>
-                <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:15px;">${g.sub}</p>
+            <div style="padding:15px">
+                <h5 style="color:var(--brand-yellow); font-family:var(--font-head); font-size:0.9rem; margin-bottom:5px; text-transform:uppercase;">${g.title}</h5>
+                <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:15px; height:2.4em; overflow:hidden;">${g.sub}</p>
                 <div style="display:flex; gap:8px;">
-                    <button class="btn btn-ghost btn-sm" style="flex:1" onclick="editGallery('${g.id}')">EDITAR</button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteGalleryItem('${g.id}')"><i class="fa-solid fa-trash"></i></button>
+                    <button class="btn btn-ghost" style="flex:1; padding:8px; font-size:0.7rem;" onclick="editGallery('${g.id}')">EDITAR</button>
+                    <button class="btn btn-danger" style="flex:1; padding:8px; font-size:0.7rem;" onclick="deleteGalleryItem('${g.id}')"><i class="fa-solid fa-trash-can"></i></button>
                 </div>
             </div>
         </div>
