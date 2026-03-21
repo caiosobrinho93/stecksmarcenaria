@@ -215,5 +215,33 @@ body {
 ::-webkit-scrollbar-thumb { background: var(--border-glass); border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
-/* Animations */
+/* -- ADVANCED SOCIAL UI -- */
+.preview-img-item {
+    width: 60px; height: 60px; border-radius: 8px; object-fit: cover;
+    border: 1px solid var(--brand-yellow); animation: slideInUp 0.3s ease;
+    cursor: pointer; position: relative;
+}
+.preview-img-item:hover::after {
+    content: '×'; position: absolute; inset: 0; background: rgba(0,0,0,0.5);
+    display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.5rem;
+}
+
+.modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+    z-index: 10000; display: flex; align-items: center; justify-content: center;
+    animation: fadeIn 0.3s ease;
+}
+.modal-content-premium {
+    border: 1px solid var(--border-glass); box-shadow: 0 20px 80px rgba(0,0,0,0.9);
+    animation: slideInUp 0.3s ease;
+}
+
+.btn-option:hover { background: rgba(255,255,255,0.05) !important; color: var(--brand-yellow) !important; }
+
+.comment-bubble {
+    padding: 10px 15px; border-radius: 12px; font-size: 0.8rem;
+    background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass);
+}
+.comment-bubble strong { color: var(--brand-yellow); margin-right: 5px; }
+
 @keyframes slideInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }

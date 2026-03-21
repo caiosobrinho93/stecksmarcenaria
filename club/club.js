@@ -76,6 +76,10 @@ function logout() {
 }
 window.logout = logout;
 
+// --- GLOBAL STATE ---
+let currentPostImages = [];
+let activeCommentPostId = null;
+
 // --- FEED ENGINE ---
 function renderFeed() {
     const container = document.getElementById('social-feed-list');
@@ -83,55 +87,193 @@ function renderFeed() {
     const posts = LocalDB.get('social_posts');
     const dbUsers = JSON.parse(localStorage.getItem('state_users')) || [];
     const currentUser = sessionProject;
+    const currentUserObj = dbUsers.find(x => x.u === currentUser) || {};
+
+    // Update VIP status UI
+    const createBtn = document.querySelector('button[onclick="openCreateGroup()"]');
+    if(createBtn) {
+        createBtn.style.opacity = currentUserObj.isVIP ? '1' : '0.4';
+        createBtn.title = currentUserObj.isVIP ? 'Criar Novo Grupo' : 'Recurso exclusivo para Membros VIP';
+    }
 
     container.innerHTML = posts.map(p => {
         const u = dbUsers.find(x => x.u === p.user) || { name: p.user };
         const isLiked = (p.likes || []).includes(currentUser);
+        const imagesHtml = (p.images || []).map(img => `<img src="${img}" class="feed-img-small" style="width:100px; height:100px; object-fit:cover; border-radius:8px; border:1px solid var(--border-glass);">`).join('');
+        
         return `
-            <div class="glass-panel post-card" style="padding:0; overflow:hidden;">
+            <div class="glass-panel post-card" style="padding:0; overflow:hidden; position:relative;">
+                <button onclick="togglePostOptions(event, ${p.id})" style="position:absolute; top:12px; right:12px; background:transparent; border:none; color:var(--text-secondary); cursor:pointer;"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                
                 <div style="padding:12px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border-glass);">
                     <img src="${u.avatar || '../imgs/logo-state.png'}" style="width:35px; height:35px; border-radius:50%; object-fit:cover;">
                     <div><strong style="color:var(--brand-yellow); font-size:0.9rem;">${(u.name || p.user).toUpperCase()}</strong><br><small style="opacity:0.5; font-size:0.7rem;">${p.time || 'Agora'}</small></div>
                 </div>
+                
                 ${p.text ? `<div style="padding:12px; font-size:0.85rem; line-height:1.4;">${p.text}</div>` : ''}
-                ${p.image ? `<img src="${p.image}" style="width:100%; max-height:400px; object-fit:cover; display:block; border-top:1px solid var(--border-glass);">` : ''}
-                <div style="padding:8px 12px; display:flex; gap:15px; background:rgba(255,255,255,0.02);">
+                
+                ${p.images && p.images.length > 0 ? `
+                    <div style="display:flex; flex-wrap:wrap; gap:5px; padding:0 12px 12px 12px;">${imagesHtml}</div>
+                ` : ''}
+                
+                <div style="padding:8px 12px; display:flex; gap:15px; background:rgba(255,255,255,0.02); border-top:1px solid var(--border-glass);">
                     <button class="btn-icon" onclick="likePost(${p.id})" style="color:${isLiked ? '#ef4444' : 'var(--text-secondary)'}; font-size:0.8rem; background:transparent; border:none; cursor:pointer;">
                         <i class="fa-${isLiked ? 'solid' : 'regular'} fa-heart"></i> ${p.likes?.length || 0}
                     </button>
-                    <button class="btn-icon" style="font-size:0.8rem; color:var(--text-secondary); background:transparent; border:none;"><i class="fa-regular fa-comment"></i> ${p.comments?.length || 0}</button>
+                    <button class="btn-icon" onclick="openCommentModal(${p.id})" style="font-size:0.8rem; color:var(--text-secondary); background:transparent; border:none; cursor:pointer;">
+                        <i class="fa-regular fa-comment"></i> ${p.comments?.length || 0} Comentários
+                    </button>
                 </div>
             </div>
         `;
     }).join('') || '<p style="text-align:center; padding:30px; opacity:0.5; font-size:0.8rem;">Nenhuma atividade no feed VIP ainda.</p>';
 }
 
+function handleMultipleImages(input) {
+    if (input.files) {
+        const preview = document.getElementById('post-images-preview');
+        Array.from(input.files).forEach(file => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                currentPostImages.push(e.target.result);
+                const imgWrap = document.createElement('div');
+                imgWrap.style.position = 'relative';
+                imgWrap.innerHTML = `
+                    <img src="${e.target.result}" class="preview-img-item">
+                    <button onclick="removePreviewImage(this, '${e.target.result}')" style="position:absolute; top:-5px; right:-5px; background:#ef4444; color:#fff; border:none; border-radius:50%; width:18px; height:18px; font-size:12px; cursor:pointer;">&times;</button>
+                `;
+                preview.appendChild(imgWrap);
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+}
+window.handleMultipleImages = handleMultipleImages;
+
+function removePreviewImage(btn, src) {
+    currentPostImages = currentPostImages.filter(i => i !== src);
+    btn.parentElement.remove();
+}
+window.removePreviewImage = removePreviewImage;
+
 function handlePostSubmit() {
     const text = document.getElementById('post-text').value.trim();
-    const previewContainer = document.getElementById('post-preview-img-container');
-    const img = (previewContainer.style.display === 'block') ? document.getElementById('post-preview-img').src : null;
-    
-    if(!text && !img) return toast('Escreva algo para postar!', 'error');
+    if(!text && currentPostImages.length === 0) return toast('Escreva algo ou adicione fotos!', 'error');
 
     const posts = LocalDB.get('social_posts');
     posts.unshift({
         id: Date.now(),
         user: sessionProject,
         text,
-        image: img,
+        images: [...currentPostImages],
         time: new Date().toLocaleString('pt-BR'),
         likes: [],
         comments: []
     });
     LocalDB.set('social_posts', posts);
     
+    // Clear
     document.getElementById('post-text').value = '';
-    previewContainer.style.display = 'none';
-    document.getElementById('post-img-input').value = '';
+    document.getElementById('post-images-preview').innerHTML = '';
+    currentPostImages = [];
     renderFeed();
     toast('Publicado no Feed VIP!');
 }
 window.handlePostSubmit = handlePostSubmit;
+
+// --- COMMENT SYSTEM ---
+function openCommentModal(postId) {
+    activeCommentPostId = postId;
+    const modal = document.getElementById('modal-comments');
+    const list = document.getElementById('comment-list');
+    const input = document.getElementById('comment-input');
+    
+    if(!modal || !list) return;
+    
+    input.value = ''; // Clean input
+    modal.style.display = 'flex';
+    renderComments();
+}
+window.openCommentModal = openCommentModal;
+
+function closeCommentModal() {
+    document.getElementById('modal-comments').style.display = 'none';
+    document.getElementById('comment-input').value = '';
+}
+window.closeCommentModal = closeCommentModal;
+
+function renderComments() {
+    const list = document.getElementById('comment-list');
+    const posts = LocalDB.get('social_posts');
+    const post = posts.find(p => p.id === activeCommentPostId);
+    if(!post) return;
+
+    list.innerHTML = (post.comments || []).map(c => `
+        <div class="comment-bubble">
+            <strong>${c.user.toUpperCase()}:</strong> ${c.text}
+            <div style="font-size:0.6rem; opacity:0.5; margin-top:4px;">${c.time || ''}</div>
+        </div>
+    `).join('') || '<p style="text-align:center; opacity:0.4; font-size:0.8rem;">Seja o primeiro a interagir!</p>';
+}
+
+function submitComment() {
+    const text = document.getElementById('comment-input').value.trim();
+    if(!text) return;
+
+    const posts = LocalDB.get('social_posts');
+    const idx = posts.findIndex(p => p.id === activeCommentPostId);
+    if(idx === -1) return;
+
+    if(!posts[idx].comments) posts[idx].comments = [];
+    posts[idx].comments.push({
+        user: sessionProject,
+        text,
+        time: new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})
+    });
+
+    LocalDB.set('social_posts', posts);
+    document.getElementById('comment-input').value = '';
+    renderComments();
+    renderFeed();
+}
+window.submitComment = submitComment;
+
+function addEmoji(emoji) {
+    const input = document.getElementById('comment-input');
+    input.value += emoji;
+    input.focus();
+}
+window.addEmoji = addEmoji;
+
+// --- POST OPTIONS ---
+function togglePostOptions(event, postId) {
+    event.stopPropagation();
+    const modal = document.getElementById('modal-post-options');
+    const panel = modal.querySelector('.glass-panel');
+    
+    panel.style.top = (event.clientY + 10) + 'px';
+    panel.style.left = (event.clientX - 180) + 'px';
+    
+    const posts = LocalDB.get('social_posts');
+    const post = posts.find(p => p.id === postId);
+    
+    document.getElementById('opt-delete').style.display = post.user === sessionProject ? 'block' : 'none';
+    document.getElementById('opt-edit').style.display = post.user === sessionProject ? 'block' : 'none';
+    
+    document.getElementById('opt-delete').onclick = () => deletePost(postId);
+    
+    modal.style.display = 'block';
+}
+window.togglePostOptions = togglePostOptions;
+
+function deletePost(postId) {
+    if(!confirm('Deseja excluir esta publicação?')) return;
+    let posts = LocalDB.get('social_posts');
+    posts = posts.filter(p => p.id !== postId);
+    LocalDB.set('social_posts', posts);
+    renderFeed();
+    toast('Publicação removida.');
+}
 
 // --- FRIENDS & REQUESTS ENGINE ---
 function renderFriendsList(filter = '') {
@@ -144,23 +286,17 @@ function renderFriendsList(filter = '') {
     const userObj = dbUsers.find(x => x.u === currentUser) || {};
     const myFriends = userObj.friends || [];
 
-    // Update Badge
-    const receivedCount = requests.filter(r => r.to === currentUser && r.status === 'pending').length;
     const badge = document.getElementById('badge-received');
-    if(badge) {
-        badge.innerText = receivedCount;
-        badge.style.display = receivedCount > 0 ? 'inline-block' : 'none';
-    }
+    const receivedCount = requests.filter(r => r.to === currentUser && r.status === 'pending').length;
+    if(badge) { badge.innerText = receivedCount; badge.style.display = receivedCount > 0 ? 'inline-block' : 'none'; }
 
     let list = [];
     if(currentFriendsSubTab === 'all') {
         list = dbUsers.filter(u => u.u !== currentUser && u.u !== 'admin' && (u.name || u.u).toLowerCase().includes(filter.toLowerCase()));
     } else if(currentFriendsSubTab === 'received') {
-        const receivedReqs = requests.filter(r => r.to === currentUser && r.status === 'pending');
-        list = receivedReqs.map(r => ({ ...dbUsers.find(u => u.u === r.from), requestId: r.id }));
+        list = requests.filter(r => r.to === currentUser && r.status === 'pending').map(r => ({ ...dbUsers.find(u => u.u === r.from), requestId: r.id }));
     } else if(currentFriendsSubTab === 'sent') {
-        const sentReqs = requests.filter(r => r.from === currentUser && r.status === 'pending');
-        list = sentReqs.map(r => ({ ...dbUsers.find(u => u.u === r.to), requestId: r.id }));
+        list = requests.filter(r => r.from === currentUser && r.status === 'pending').map(r => ({ ...dbUsers.find(u => u.u === r.to), requestId: r.id }));
     }
 
     container.innerHTML = list.map(u => {
@@ -171,12 +307,10 @@ function renderFriendsList(filter = '') {
 
         let actionBtn = '';
         if(currentFriendsSubTab === 'received') {
-            actionBtn = `
-                <div style="display:flex; gap:5px;">
-                    <button class="btn-royal" onclick="handleFriendRequest(${u.requestId}, 'accept')" style="background:#4ade8022; border-color:#4ade80; color:#4ade80;"><i class="fa-solid fa-check"></i></button>
-                    <button class="btn-royal" onclick="handleFriendRequest(${u.requestId}, 'refuse')" style="background:#ef444422; border-color:#ef4444; color:#ef4444;"><i class="fa-solid fa-xmark"></i></button>
-                </div>
-            `;
+            actionBtn = `<div style="display:flex; gap:5px;"><button class="btn-royal" onclick="handleFriendRequest(${u.requestId}, 'accept')" style="background:#4ade8022; border-color:#4ade80; color:#4ade80;"><i class="fa-solid fa-check"></i></button><button class="btn-royal" onclick="handleFriendRequest(${u.requestId}, 'refuse')" style="background:#ef444422; border-color:#ef4444; color:#ef4444;"><i class="fa-solid fa-xmark"></i></button></div>`;
+        } else if(currentFriendsSubTab === 'sent') {
+            const req = requests.find(r => r.from === currentUser && r.to === u.u && r.status === 'pending');
+            actionBtn = `<button class="btn-royal" onclick="handleFriendRequest(${req.id}, 'refuse')" style="background:#ef444422; border-color:#ef4444; color:#ef4444; font-size:0.65rem;">CANCELAR</button>`;
         } else if(isFriend) {
             actionBtn = `<span style="color:#4ade80; font-size:0.75rem;"><i class="fa-solid fa-user-check"></i> AMIGO</span>`;
         } else if(hasSent) {
@@ -187,32 +321,14 @@ function renderFriendsList(filter = '') {
             actionBtn = `<button class="btn-royal" onclick="sendFriendRequest('${u.u}')"><i class="fa-solid fa-user-plus"></i></button>`;
         }
 
-        return `
-            <div class="friend-item">
-                <div style="display:flex; align-items:center; gap:12px;">
-                    <img src="${u.avatar || '../imgs/logo-state.png'}" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:1px solid var(--border-glass);">
-                    <div>
-                        <strong style="font-size:0.9rem; color:#fff;">${(u.name || u.u).toUpperCase()}</strong><br>
-                        <small style="color:var(--brand-yellow); font-size:0.65rem;">${u.isVIP ? 'MEMBRO VIP' : 'MEMBRO PADRÃO'}</small>
-                    </div>
-                </div>
-                ${actionBtn}
-            </div>
-        `;
-    }).join('') || `<p style="text-align:center; padding:40px; opacity:0.5; font-size:0.85rem;">Nenhum usuário em "${currentFriendsSubTab.toUpperCase()}".</p>`;
+        return `<div class="friend-item"><div style="display:flex; align-items:center; gap:12px;"><img src="${u.avatar || '../imgs/logo-state.png'}" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:1px solid var(--border-glass);"><div><strong style="font-size:0.9rem; color:#fff;">${(u.name || u.u).toUpperCase()}</strong><br><small style="color:var(--brand-yellow); font-size:0.65rem;">${u.isVIP ? 'MEMBRO VIP' : 'MEMBRO PADRÃO'}</small></div></div>${actionBtn}</div>`;
+    }).join('') || `<p style="text-align:center; padding:40px; opacity:0.5; font-size:0.85rem;">Vazio em "${currentFriendsSubTab.toUpperCase()}".</p>`;
 }
 
 function sendFriendRequest(toUser) {
     const requests = LocalDB.get('friend_requests');
     if(requests.some(r => r.from === sessionProject && r.to === toUser && r.status === 'pending')) return;
-    
-    requests.push({
-        id: Date.now(),
-        from: sessionProject,
-        to: toUser,
-        status: 'pending',
-        time: new Date().toISOString()
-    });
+    requests.push({ id: Date.now(), from: sessionProject, to: toUser, status: 'pending', time: new Date().toISOString() });
     LocalDB.set('friend_requests', requests);
     toast('Solicitação enviada!');
     renderFriendsList();
@@ -227,21 +343,17 @@ function handleFriendRequest(reqId, action) {
     if(action === 'accept') {
         const req = requests[idx];
         const dbUsers = JSON.parse(localStorage.getItem('state_users')) || [];
-        
-        // Add to both users friend lists
         dbUsers.forEach(u => {
             if(u.u === req.from) { u.friends = u.friends || []; if(!u.friends.includes(req.to)) u.friends.push(req.to); }
             if(u.u === req.to) { u.friends = u.friends || []; if(!u.friends.includes(req.from)) u.friends.push(req.from); }
         });
-        
         localStorage.setItem('state_users', JSON.stringify(dbUsers));
-        requests.splice(idx, 1); // Remove request
+        requests.splice(idx, 1);
         toast('Agora vocês são amigos!', 'success');
     } else {
         requests.splice(idx, 1);
-        toast('Solicitação recusada.');
+        toast('Solicitação removida.');
     }
-
     LocalDB.set('friend_requests', requests);
     renderFriendsList();
 }
@@ -267,43 +379,8 @@ function renderGroups() {
     if(!container) return;
     const groups = LocalDB.get('groups');
     const myGroups = groups.filter(g => g.leader === sessionProject || (g.members && g.members.includes(sessionProject)));
-
-    container.innerHTML = myGroups.map(g => `
-        <div class="glass-panel" style="padding:15px; border-left:3px solid var(--brand-yellow); margin-bottom:10px;">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <strong style="color:var(--brand-yellow); font-family:var(--font-head);">${g.name.toUpperCase()}</strong>
-                <span style="font-size:0.65rem; background:rgba(255,255,255,0.05); padding:2px 8px; border-radius:10px;">${g.members?.length || 1} MEMBROS</span>
-            </div>
-            <p style="font-size:0.8rem; margin-top:8px; opacity:0.8; line-height:1.4;">${g.desc || 'Sem descrição definida para este grupo estratégico.'}</p>
-        </div>
-    `).join('') || `
-        <div style="text-align:center; padding:30px; background:rgba(255,255,255,0.02); border-radius:12px; border:1px dashed var(--border-glass);">
-            <p style="font-size:0.8rem; opacity:0.5; margin-bottom:15px;">Você ainda não participa de nenhum grupo estratégico.</p>
-            <button class="btn-primary btn-sm" onclick="alert('Funcionalidade de criação de grupos em liberação gradual...')">INGRESSAR EM GRUPO</button>
-        </div>
-    `;
+    container.innerHTML = myGroups.map(g => `<div class="glass-panel" style="padding:15px; border-left:3px solid var(--brand-yellow); margin-bottom:10px;"><div style="display:flex; justify-content:space-between; align-items:center;"><strong style="color:var(--brand-yellow); font-family:var(--font-head);">${g.name.toUpperCase()}</strong><span style="font-size:0.65rem; background:rgba(255,255,255,0.05); padding:2px 8px; border-radius:10px;">${g.members?.length || 1} MEMBROS</span></div><p style="font-size:0.8rem; margin-top:8px; opacity:0.8; line-height:1.4;">${g.desc || 'Sem descrição definida.'}</p></div>`).join('') || `<div style="text-align:center; padding:30px; background:rgba(255,255,255,0.02); border-radius:12px; border:1px dashed var(--border-glass);"><p style="font-size:0.8rem; opacity:0.5; margin-bottom:15px;">Você ainda não participa de nenhum grupo estratégico.</p><button class="btn-primary btn-sm" onclick="alert('Funcionalidade de criação de grupos em liberação gradual...')">INGRESSAR EM GRUPO</button></div>`;
 }
-
-// --- IMAGE PREVIEW ---
-async function previewPostImage(input) {
-    if (input.files[0]) {
-        const reader = new FileReader();
-        reader.readAsDataURL(input.files[0]);
-        reader.onload = () => {
-            const previewImg = document.getElementById('post-preview-img');
-            const previewContainer = document.getElementById('post-preview-img-container');
-            if(previewImg && previewContainer) {
-                previewImg.src = reader.result;
-                previewContainer.style.display = 'block';
-            }
-        };
-    }
-}
-window.previewPostImage = previewPostImage;
-window.clearPostImage = () => {
-    document.getElementById('post-preview-img-container').style.display = 'none';
-    document.getElementById('post-img-input').value = '';
-};
 
 // --- INITIALIZATION ---
 function initDashboard() {
@@ -311,7 +388,11 @@ function initDashboard() {
     const userObj = db.find(x => x.u === sessionProject) || {};
     document.getElementById('dash-client-name').innerText = (userObj.name || sessionProject).toUpperCase();
     
-    // Default Tab
+    // Clear Upload Cache on login
+    currentPostImages = [];
+    const preview = document.getElementById('post-images-preview');
+    if(preview) preview.innerHTML = '';
+
     switchSocialTab('feed');
     switchView('dashboard');
 }
@@ -328,7 +409,7 @@ function toast(msg, type = 'success') {
     setTimeout(() => { div.style.opacity = '0'; setTimeout(() => div.remove(), 300); }, 3000);
 }
 
-// Friends Sub-Navigation Logic (Re-added)
+// Friends Sub-Navigation Logic
 let currentFriendsSubTab = 'all';
 function switchFriendsSubTab(sub) {
     currentFriendsSubTab = sub;
@@ -336,7 +417,6 @@ function switchFriendsSubTab(sub) {
         b.classList.toggle('active', b.innerText.toLowerCase().includes(sub.toLowerCase()) || (sub === 'all' && b.innerText === 'TODOS'));
         b.style.background = b.classList.contains('active') ? 'var(--brand-yellow-glow)' : 'transparent';
     });
-    
     const searchArea = document.getElementById('friends-search-area');
     if(searchArea) searchArea.style.display = (sub === 'all') ? 'block' : 'none';
     renderFriendsList();
