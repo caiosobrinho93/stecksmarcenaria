@@ -68,14 +68,22 @@ if (loginForm) {
 }
 
 function logout() {
+    localStorage.removeItem('state_admin_session');
+    localStorage.removeItem('state_current_user');
     sessionStorage.removeItem('clubstate_session');
     sessionProject = null;
-    const form = document.getElementById('login-form');
-    if(form) form.reset();
-    switchView('login');
-    toast('Sessão encerrada com segurança.', 'success');
+    window.location.href = '../admin/login.html'; 
 }
 window.logout = logout;
+
+function checkAuth() {
+    const session = localStorage.getItem('state_admin_session');
+    const user = localStorage.getItem('state_current_user');
+    if (session !== 'active' || !user) {
+        logout();
+    }
+}
+setInterval(checkAuth, 5000); // Continuous security check
 
 // --- GLOBAL STATE ---
 let currentPostImages = [];
@@ -124,7 +132,7 @@ function renderFeed(append = false) {
                     <div><strong style="color:var(--brand-yellow); font-size:1rem;">${(u.name || p.user).toUpperCase()}</strong><br><small style="opacity:0.5; font-size:0.75rem;">${p.time || 'Agora'}</small></div>
                 </div>
                 
-                ${p.text ? `<div style="padding:12px; font-size:1rem; line-height:1.5;">${p.text}</div>` : ''}
+                ${p.text ? `<div class="post-text-content" style="padding:12px; font-size:1rem; line-height:1.5;">${p.text}</div>` : ''}
                 
                 ${p.images && p.images.length > 0 ? `
                     <div style="display:flex; flex-wrap:wrap; gap:5px; padding:0 12px 12px 12px;">${imagesHtml}</div>
@@ -151,6 +159,25 @@ function renderFeed(append = false) {
     if(end < allPosts.length) {
         setupInfiniteScroll();
     }
+}
+
+function renderComments() {
+    const list = document.getElementById('comment-list');
+    if(!list) return;
+    
+    const posts = LocalDB.get('social_posts');
+    const p = posts.find(x => x.id == activeCommentPostId);
+    if(!p) return;
+
+    list.innerHTML = (p.comments || []).map(c => `
+        <div style="background:rgba(255,255,255,0.05); padding:12px; border-radius:8px; border:1px solid var(--border-glass);">
+            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                <strong style="color:var(--brand-yellow); font-size:0.8rem;">${c.user === sessionProject ? 'VOCÊ' : c.user.toUpperCase()}</strong>
+                <small style="opacity:0.4; font-size:0.7rem;">${c.time || ''}</small>
+            </div>
+            <div style="font-size:0.85rem; color:#fff; white-space: pre-wrap;">${c.text}</div>
+        </div>
+    `).join('') || '<p style="text-align:center; opacity:0.5; font-size:0.8rem; padding:20px;">Nenhuma interação ainda.</p>';
 }
 
 function setupInfiniteScroll() {
@@ -200,24 +227,27 @@ function handlePostSubmit() {
     const text = textEl.value.trim();
     if(!text && currentPostImages.length === 0) return toast('Escreva algo ou adicione fotos!', 'error');
 
+    // Clone images to ensure they are captured correctly
+    const finalImages = [...currentPostImages];
+    
     const posts = LocalDB.get('social_posts');
     posts.unshift({
         id: Date.now(),
         user: sessionProject,
         text,
-        images: Array.from(currentPostImages),
+        images: finalImages,
         time: new Date().toLocaleString('pt-BR'),
         likes: [],
         comments: []
     });
     LocalDB.set('social_posts', posts);
     
-    // Hard Clear
+    // Clear
     textEl.value = '';
     const preview = document.getElementById('post-images-preview');
     if(preview) preview.innerHTML = '';
     const fileInput = document.getElementById('post-img-input');
-    if(fileInput) fileInput.value = ''; // CRITICAL: Reset the input to allow re-selection
+    if(fileInput) fileInput.value = '';
     
     currentPostImages = [];
     renderFeed();

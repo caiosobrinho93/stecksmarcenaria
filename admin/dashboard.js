@@ -26,6 +26,16 @@ const DB = {
         return all;
     },
     set: (key, val) => localStorage.setItem(DB_PREFIX + key, JSON.stringify(val)),
+    checkSession: () => {
+        const session = localStorage.getItem('state_admin_session');
+        const user = localStorage.getItem('state_current_user');
+        if (session !== 'active' || !user) {
+            localStorage.removeItem('state_admin_session');
+            localStorage.removeItem('state_current_user');
+            sessionStorage.removeItem('clubstate_session');
+            window.location.href = 'login.html';
+        }
+    },
     saveItem: (key, id, data) => {
         const all = DB._getAll(key);
         const currentUser = localStorage.getItem('state_current_user') || 'admin';
@@ -140,7 +150,7 @@ function renderClients(filter = '') {
     if(!tbody) return;
     const filtered = clients.filter(c => c.name.toLowerCase().includes(filter.toLowerCase()));
     tbody.innerHTML = filtered.map(c => `
-        <tr onclick="openClientDetail('${c.id}')">
+        <tr onclick="event.stopPropagation(); openClientDetail('${c.id}')" style="cursor:pointer;">
             <td>
                 <div style="display:flex; align-items:center; gap:12px">
                     <div class="avatar" style="width:40px; height:40px;">${c.photo ? `<img src="${c.photo}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">` : c.name[0]}</div>
@@ -157,7 +167,7 @@ function renderProjects(filter = '') {
     if(!tbody) return;
     const filtered = projects.filter(p => p.title.toLowerCase().includes(filter.toLowerCase()) || p.client.toLowerCase().includes(filter.toLowerCase()));
     tbody.innerHTML = filtered.map(p => `
-        <tr onclick="openProjectDetail('${p.id}')">
+        <tr onclick="event.stopPropagation(); openProjectDetail('${p.id}')" style="cursor:pointer;">
             <td>
                 <div style="display:flex; align-items:center; gap:16px">
                     <div style="width:40px; height:40px; background:rgba(255,255,255,0.05); border-radius:50%; display:flex; align-items:center; justify-content:center; overflow:hidden;">
@@ -306,11 +316,25 @@ function renderAdminSettings() {
             <td><span class="badge ${u.isVIP ? 'badge-success' : 'badge-ghost'}">${u.isVIP ? 'VIP' : 'PADRÃO'}</span></td>
             <td>
                 <button class="btn btn-primary btn-sm" onclick="toggleUserVIP('${u.u}')">VIP</button>
+                <button class="btn btn-primary btn-sm" style="background:var(--brand-yellow); color:#000;" onclick="addGemsPrompt('${u.u}')"><i class="fa-solid fa-gem"></i> +100</button>
                 <button class="btn btn-danger btn-sm" onclick="deleteUser('${u.u}')">BAN</button>
             </td>
         </tr>
     `).join('');
 }
+
+function addGemsPrompt(uname) {
+    let users = JSON.parse(localStorage.getItem('state_users')) || [];
+    const idx = users.findIndex(x => x.u === uname);
+    if(idx > -1) {
+        users[idx].gems = (users[idx].gems || 0) + 100;
+        localStorage.setItem('state_users', JSON.stringify(users));
+        renderAdminSettings();
+        notify(`+100 Gemas adicionadas para ${uname}`);
+    }
+}
+window.addGemsPrompt = addGemsPrompt;
+
 
 function toggleUserVIP(uname) {
     let users = JSON.parse(localStorage.getItem('state_users')) || [];
@@ -406,6 +430,8 @@ function saveProfile(e) {
 
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
+    DB.checkSession();
+    setInterval(DB.checkSession, 5000); // Recurring security check
     updateTopbarProfile();
     switchModule('home');
 

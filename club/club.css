@@ -241,9 +241,11 @@ body {
 .comment-bubble {
     padding: 12px 18px; border-radius: 12px; font-size: 0.95rem;
     background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass);
+    white-space: pre-wrap;
 }
 .comment-bubble strong { color: var(--brand-yellow); margin-right: 8px; }
 .btn-icon i + span, .btn-icon i + b, .btn-icon i { margin-right: 5px; }
-.post-card .btn-icon { display: flex; align-items: center; gap: 8px; }
+.post-card .btn-icon { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.post-text-content { white-space: pre-wrap; word-break: break-word; }
 
 @keyframes slideInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
