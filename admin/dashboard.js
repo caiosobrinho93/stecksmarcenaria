@@ -165,7 +165,7 @@ function renderProjects(filter = '') {
             <td>
                 <div style="display:flex; align-items:center; gap:16px">
                     <div style="width:40px; height:40px; background:rgba(255,255,255,0.05); border-radius:50%; display:flex; align-items:center; justify-content:center; overflow:hidden;">
-                        ${p.images && p.images[0] ? `<img src="${p.images[0]}" style="width:100%;height:100%;object-fit:cover;">` : '<i class="fa-solid fa-drafting-dot" style="opacity:0.2;"></i>'}
+                        ${(p.images && p.images[0]) ? `<img src="${p.images[0]}" style="width:100%;height:100%;object-fit:cover;">` : '<i class="fa-solid fa-drafting-dot" style="opacity:0.2;"></i>'}
                     </div>
                     <div><strong style="color:var(--brand-yellow); text-transform:uppercase;">${p.title}</strong><br><small style="color:var(--text-muted)">${p.client}</small></div>
                 </div>
