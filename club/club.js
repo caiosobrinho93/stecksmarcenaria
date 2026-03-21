@@ -42,8 +42,10 @@ window.switchView = switchView;
 
 // Initialization
 document.addEventListener('DOMContentLoaded', () => {
-    if (sessionProject) {
+    const isAdminActive = localStorage.getItem('state_admin_session') === 'active';
+    if (sessionProject || isAdminActive) {
         initDashboard();
+        switchView('dashboard');
     } else {
         switchView('login');
     }
@@ -87,11 +89,13 @@ window.logout = logout;
 function checkAuth() {
     const session = localStorage.getItem('state_admin_session');
     const user = localStorage.getItem('state_current_user');
-    if (session !== 'active' || !user) {
+    // If we're on login view, don't force logout
+    const isLoginActive = document.getElementById('view-login')?.classList.contains('active');
+    if (!isLoginActive && (session !== 'active' || !user)) {
         logout();
     }
 }
-setInterval(checkAuth, 5000); // Continuous security check
+setInterval(checkAuth, 5000);
 
 // --- GLOBAL STATE ---
 let currentPostImages = [];
