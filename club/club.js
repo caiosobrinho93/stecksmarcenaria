@@ -195,7 +195,8 @@ function removePreviewImage(btn, src) {
 window.removePreviewImage = removePreviewImage;
 
 function handlePostSubmit() {
-    const text = document.getElementById('post-text').value.trim();
+    const textEl = document.getElementById('post-text');
+    const text = textEl.value.trim();
     if(!text && currentPostImages.length === 0) return toast('Escreva algo ou adicione fotos!', 'error');
 
     const posts = LocalDB.get('social_posts');
@@ -203,16 +204,20 @@ function handlePostSubmit() {
         id: Date.now(),
         user: sessionProject,
         text,
-        images: [...currentPostImages],
+        images: Array.from(currentPostImages),
         time: new Date().toLocaleString('pt-BR'),
         likes: [],
         comments: []
     });
     LocalDB.set('social_posts', posts);
     
-    // Clear
-    document.getElementById('post-text').value = '';
-    document.getElementById('post-images-preview').innerHTML = '';
+    // Hard Clear
+    textEl.value = '';
+    const preview = document.getElementById('post-images-preview');
+    if(preview) preview.innerHTML = '';
+    const fileInput = document.getElementById('post-img-input');
+    if(fileInput) fileInput.value = ''; // CRITICAL: Reset the input to allow re-selection
+    
     currentPostImages = [];
     renderFeed();
     toast('Publicado no Feed VIP!');
