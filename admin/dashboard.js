@@ -105,26 +105,39 @@ function switchModule(modId) {
     if(modId === 'providers') renderProviders();
     if(modId === 'gallery') renderGallery();
     if(modId === 'profile') loadProfile();
+    if(modId === 'admsettings') renderAdminUsers();
 
     document.getElementById('sidebar')?.classList.remove('open');
 }
 
 function renderDashboardHome() {
-    const container = document.getElementById('mod-home');
-    if(!container) return;
-    container.innerHTML = `
-        <h2 class="topbar-title">OPERADOR: ${localStorage.getItem('state_current_user')?.toUpperCase()}</h2>
-        <div class="card-grid" style="margin-top:20px;">
-            <div class="card">
-                <h4 style="color:var(--brand-yellow); margin-bottom:15px;"><i class="fa-solid fa-bullhorn"></i> SISTEMA V6.9</h4>
-                <div style="display:grid; gap:12px;">
-                    <div style="padding:10px; border-left:3px solid var(--brand-yellow); background:rgba(255,255,255,0.02);">
-                        <strong>ESTABILIDADE TOTAL</strong><br><small>Navegação e Profile otimizados.</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
+    const revenueEl = document.getElementById('stat-revenue');
+    const projectsEl = document.getElementById('stat-projects');
+    const clientsEl = document.getElementById('stat-clients');
+    const inventoryEl = document.getElementById('stat-inventory');
+    const pendingEl = document.getElementById('stat-pending');
+    const providersEl = document.getElementById('stat-providers');
+    
+    if(!revenueEl) return;
+
+    const finance = DB.get('finance');
+    const totalRev = finance.filter(f => f.type === 'in' && f.status === 'paid').reduce((acc, curr) => acc + parseFloat(curr.amount || 0), 0);
+    const totalPending = finance.filter(f => f.type === 'in' && f.status !== 'paid').reduce((acc, curr) => acc + parseFloat(curr.amount || 0), 0);
+    
+    revenueEl.innerText = totalRev.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    pendingEl.innerText = totalPending.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    
+    const projects = DB.get('projects');
+    projectsEl.innerText = projects.filter(p => parseInt(p.progress) < 100).length;
+
+    const clients = DB.get('clients');
+    clientsEl.innerText = clients.length;
+
+    const inventory = DB.get('inventory');
+    inventoryEl.innerText = inventory.length;
+
+    const providers = DB.get('providers');
+    providersEl.innerText = providers.length;
 }
 
 // --- Modals ---
@@ -281,7 +294,53 @@ function renderFinance() {
     const data = DB.get('finance');
     const tbody = document.querySelector('#table-finance tbody');
     if(!tbody) return;
-    tbody.innerHTML = data.map(f => `<tr><td><strong style="color:${f.type === 'entrada' ? '#4ade80' : '#ef4444'}">${f.type.toUpperCase()}</strong></td><td>${f.desc}</td><td><strong>${f.val}</strong></td><td><small>${f.date}</small></td></tr>`).join('');
+    tbody.innerHTML = data.map(f => {
+        const isPaid = f.status === 'paid';
+        const typeStr = f.type === 'income' ? 'RECEBER' : 'PAGAR';
+        const color = f.type === 'income' ? '#4ade80' : '#ef4444';
+        const statusBtn = isPaid 
+            ? `<span style="color:#10b981; font-size:0.75rem;"><i class="fa-solid fa-check-circle"></i> PAGO</span>`
+            : `<button onclick="toggleFinanceStatus('${f.id}')" class="btn btn-primary" style="padding:4px 8px; font-size:0.7rem;">MARCAR PAGO</button>`;
+            
+        return `<tr>
+            <td><strong style="color:${color}">${typeStr.toUpperCase()}</strong></td>
+            <td>${f.desc}</td>
+            <td><strong>R$ ${f.amount || '0,00'}</strong></td>
+            <td><small>${f.date || '---'}</small></td>
+            <td>${statusBtn}</td>
+        </tr>`;
+    }).join('') || '<tr><td colspan="5" style="text-align:center; opacity:0.5; padding:20px;">Nenhum lançamento.</td></tr>';
+}
+
+function toggleFinanceStatus(id) {
+    const data = DB._getAll('finance');
+    const idx = data.findIndex(f => f.id === id);
+    if(idx > -1) {
+        data[idx].status = 'paid';
+        DB.set('finance', data);
+        renderFinance();
+        renderDashboardHome(); // refresh overall numbers
+        notify('Status alterado para Pago!', 'success');
+    }
+}
+window.toggleFinanceStatus = toggleFinanceStatus;
+
+function renderProviders() {
+    const providers = DB.get('providers');
+    const container = document.getElementById('providers-grid');
+    if(!container) return;
+    container.innerHTML = providers.map(p => `
+        <div class="card" style="display:flex; gap:15px; align-items:center;">
+            <div style="width:50px; height:50px; background:rgba(255,255,255,0.05); border-radius:50%; overflow:hidden; flex-shrink:0;">
+                <i class="fa-solid fa-users" style="display:flex; justify-content:center; align-items:center; width:100%; height:100%; opacity:0.3; font-size:1.5rem;"></i>
+            </div>
+            <div>
+                <strong style="color:var(--brand-yellow); text-transform:uppercase;">${p.name}</strong><br>
+                <small style="color:var(--text-muted);">${p.service || 'Parceiro Geral'}</small><br>
+                ${p.phone ? `<a href="https://wa.me/55${p.phone.replace(/\D/g,'')}" target="_blank" style="color:#10b981; font-size:0.75rem; text-decoration:none;"><i class="fa-brands fa-whatsapp"></i> ${p.phone}</a>` : ''}
+            </div>
+        </div>
+    `).join('') || '<p style="text-align:center; padding:40px; opacity:0.5; grid-column:1/-1;">Nenhum parceiro cadastrado.</p>';
 }
 
 function renderGallery() {
@@ -310,6 +369,54 @@ function updateTopbarProfile() {
         }
     }
 }
+
+function renderAdminUsers() {
+    const users = JSON.parse(localStorage.getItem('state_users')) || [];
+    const tbody = document.getElementById('admin-users-list');
+    if(!tbody) return;
+    
+    tbody.innerHTML = users.map(u => `
+        <tr>
+            <td>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <img src="${u.avatar || '../imgs/logo-state.png'}" style="width:30px; height:30px; border-radius:50%; object-fit:cover;">
+                    <strong style="color:var(--brand-yellow)">${u.u}</strong>
+                </div>
+            </td>
+            <td><small>${u.name || '---'}</small></td>
+            <td>${u.isVIP ? '<span style="color:#10b981; font-weight:bold;">VIP <i class="fa-solid fa-gem"></i></span>' : '<span style="color:var(--text-muted);">Padrão</span>'}</td>
+            <td>
+                ${u.u !== 'admin' ? `
+                    <button onclick="toggleUserVIP('${u.u}')" class="btn btn-ghost" style="padding:4px 8px; font-size:0.7rem; border:1px solid var(--border-glass);">Alternar VIP</button>
+                    <button onclick="deleteUser('${u.u}')" class="btn btn-danger" style="padding:4px 8px; font-size:0.7rem;"><i class="fa-solid fa-trash"></i></button>
+                ` : '<span style="opacity:0.5; font-size:0.7rem;">MASTER</span>'}
+            </td>
+        </tr>
+    `).join('') || '<tr><td colspan="4" style="text-align:center; opacity:0.5; padding:20px;">Nenhum usuário cadastrado.</td></tr>';
+}
+
+function toggleUserVIP(username) {
+    let users = JSON.parse(localStorage.getItem('state_users')) || [];
+    const idx = users.findIndex(x => x.u === username);
+    if(idx > -1) {
+        users[idx].isVIP = !users[idx].isVIP;
+        localStorage.setItem('state_users', JSON.stringify(users));
+        renderAdminUsers();
+        notify(`Status VIP de ${username} alterado!`);
+    }
+}
+window.toggleUserVIP = toggleUserVIP;
+
+function deleteUser(username) {
+    if(username === 'admin') return alert('Não é possível excluir o root.');
+    if(!confirm(`Deseja EXCLUIR o usuário ${username}?`)) return;
+    let users = JSON.parse(localStorage.getItem('state_users')) || [];
+    users = users.filter(x => x.u !== username);
+    localStorage.setItem('state_users', JSON.stringify(users));
+    renderAdminUsers();
+    notify('Usuário deletado com sucesso.', 'success');
+}
+window.deleteUser = deleteUser;
 
 function loadProfile() {
     const user = localStorage.getItem('state_current_user') || 'admin';
@@ -379,21 +486,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     if(inp) data[field] = inp.value;
                 });
                 // Fallbacks for specific forms where IDs don't perfectly match
+                // Fallbacks for specific forms where IDs don't perfectly match
                 const formPrefix = f.id.split('-')[0];
                 if(f.id === 'finance-form-el'){
-                    data.id = document.getElementById('fin-id').value;
-                    data.desc = document.getElementById('fin-desc').value;
-                    data.amount = document.getElementById('fin-amount').value;
-                    data.type = document.getElementById('fin-type').value;
-                    data.status = document.getElementById('fin-status').value;
-                    data.date = document.getElementById('fin-date').value;
+                    data.id = document.getElementById('trans-id')?.value;
+                    data.desc = document.getElementById('trans-desc')?.value;
+                    data.amount = document.getElementById('trans-val')?.value;
+                    data.type = document.getElementById('trans-type')?.value;
+                    data.status = 'pending';
+                    data.date = document.getElementById('trans-date')?.value;
                 }
                 if(f.id === 'provider-form-el'){
-                    data.id = document.getElementById('prov-id').value;
-                    data.name = document.getElementById('prov-name').value;
-                    data.service = document.getElementById('prov-service').value;
-                    data.phone = document.getElementById('prov-phone').value;
-                    data.rating = document.getElementById('prov-rating').value;
+                    data.id = document.getElementById('prov-id')?.value;
+                    data.name = document.getElementById('prov-name')?.value;
+                    data.service = document.getElementById('prov-skill')?.value;
+                    data.phone = document.getElementById('prov-phone')?.value;
+                    data.rating = 5;
                 }
                 if(f.id === 'inventory-form-el') {
                     data.photo = document.getElementById('item-photo-preview')?.querySelector('img')?.src || '';

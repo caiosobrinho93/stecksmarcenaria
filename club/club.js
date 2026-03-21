@@ -103,22 +103,7 @@ let activeCommentPostId = null;
 let feedPage = 0;
 const postsPerPage = 6;
 let feedObserver = null;
-let currentFeedFilter = 'all';
-
-function setFeedFilter(type) {
-    currentFeedFilter = type;
-    document.querySelectorAll('#tab-feed .sub-tab-btn').forEach(btn => {
-        btn.classList.remove('active');
-        btn.style.background = 'transparent';
-    });
-    const activeBtn = document.getElementById('filter-' + type);
-    if(activeBtn) {
-        activeBtn.classList.add('active');
-        activeBtn.style.background = 'rgba(255,255,255,0.1)';
-    }
-    renderFeed();
-}
-window.setFeedFilter = setFeedFilter;
+// Filters removed
 
 function openLightbox(src) {
     document.getElementById('lightbox-img').src = src;
@@ -145,12 +130,7 @@ function renderFeed(append = false) {
     }
 
     const allPosts = LocalDB.get('social_posts');
-    const filteredPosts = allPosts.filter(p => {
-        if(currentFeedFilter === 'all') return true;
-        if(currentFeedFilter === 'text') return (!p.images || p.images.length === 0) && p.text;
-        if(currentFeedFilter === 'image') return p.images && p.images.length > 0;
-        return true;
-    });
+    const filteredPosts = allPosts;
 
     const start = feedPage * postsPerPage;
     const end = start + postsPerPage;
@@ -183,7 +163,7 @@ function renderFeed(append = false) {
                 
                 ${p.text ? `
                     <div class="post-text-content" style="padding:12px; font-size:1rem; line-height:1.5; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; white-space: pre-wrap;">${p.text}</div>
-                    ${p.text.length > 200 ? `<button class="btn-ver-mais" onclick="toggleVerMais(this)" style="margin-left:12px; margin-bottom:12px; color:var(--brand-yellow); background:transparent; border:none; cursor:pointer; font-weight:700; font-size:0.85rem;">Ver mais</button>` : ''}
+                    ${(p.text.length > 200 || p.text.split('\n').length > 4) ? `<button class="btn-ver-mais" onclick="toggleVerMais(this)" style="margin-left:12px; margin-bottom:12px; color:var(--brand-yellow); background:transparent; border:none; cursor:pointer; font-weight:700; font-size:0.85rem;">Ver mais</button>` : ''}
                 ` : ''}
                 
                 ${p.images && p.images.length > 0 ? `
@@ -548,6 +528,141 @@ function renderGroups() {
     const myGroups = groups.filter(g => g.leader === sessionProject || (g.members && g.members.includes(sessionProject)));
     container.innerHTML = myGroups.map(g => `<div class="glass-panel" style="padding:15px; border-left:3px solid var(--brand-yellow); margin-bottom:10px;"><div style="display:flex; justify-content:space-between; align-items:center;"><strong style="color:var(--brand-yellow); font-family:var(--font-head);">${g.name.toUpperCase()}</strong><span style="font-size:0.65rem; background:rgba(255,255,255,0.05); padding:2px 8px; border-radius:10px;">${g.members?.length || 1} MEMBROS</span></div><p style="font-size:0.8rem; margin-top:8px; opacity:0.8; line-height:1.4;">${g.desc || 'Sem descrição definida.'}</p></div>`).join('') || `<div style="text-align:center; padding:30px; background:rgba(255,255,255,0.02); border-radius:12px; border:1px dashed var(--border-glass);"><p style="font-size:0.8rem; opacity:0.5; margin-bottom:15px;">Você ainda não participa de nenhum grupo estratégico.</p><button class="btn-primary btn-sm" onclick="alert('Funcionalidade de criação de grupos em liberação gradual...')">INGRESSAR EM GRUPO</button></div>`;
 }
+
+function openCreateGroup() {
+    const dbUsers = JSON.parse(localStorage.getItem('state_users')) || [];
+    const currentUserObj = dbUsers.find(x => x.u === sessionProject) || {};
+    if(!currentUserObj.isVIP) return toast('Criação de grupos exclusiva para membros VIP.', 'error');
+    
+    document.getElementById('modal-create-group').style.display = 'flex';
+}
+window.openCreateGroup = openCreateGroup;
+
+function saveNewGroup(e) {
+    if(e) e.preventDefault();
+    const name = document.getElementById('new-group-name').value.trim();
+    const desc = document.getElementById('new-group-desc').value.trim();
+    if(!name) return toast('Nome do grupo é obrigatório', 'error');
+    
+    let groups = LocalDB.get('groups');
+    groups.push({
+        id: 'GRP_' + Date.now(),
+        name,
+        desc,
+        leader: sessionProject,
+        members: [sessionProject]
+    });
+    LocalDB.set('groups', groups);
+    
+    document.getElementById('modal-create-group').style.display = 'none';
+    document.getElementById('new-group-name').value = '';
+    document.getElementById('new-group-desc').value = '';
+    
+    renderGroups();
+    toast('Grupo VIP criado com sucesso!', 'success');
+}
+window.saveNewGroup = saveNewGroup;
+
+// --- CHAT ENGINE ---
+let currentChatPartner = null;
+
+function toggleChat() {
+    const w = document.getElementById('social-chat-widget');
+    if(!w) return;
+    if(w.style.display === 'none' || w.style.display === '') {
+        w.style.display = 'flex';
+        populateChatSelector();
+    } else {
+        w.style.display = 'none';
+    }
+}
+window.toggleChat = toggleChat;
+
+function populateChatSelector() {
+    const sel = document.getElementById('chat-friend-selector');
+    if(!sel) return;
+    
+    const dbUsers = JSON.parse(localStorage.getItem('state_users')) || [];
+    const u = dbUsers.find(x => x.u === sessionProject) || {};
+    const friends = u.friends || [];
+    
+    let options = '<option value="" style="color:#000;">Conversar com amizades...</option>';
+    friends.forEach(f => {
+        const friendObj = dbUsers.find(x => x.u === f);
+        if(friendObj) {
+            options += `<option value="${f}" style="color:#000;">${friendObj.name || f}</option>`;
+        }
+    });
+
+    // Fallback if no friends
+    if(friends.length === 0) {
+        options = '<option value="" style="color:#000;">Você não tem conexões ainda.</option>';
+    }
+
+    sel.innerHTML = options;
+}
+
+function loadChatWith(partnerUser) {
+    currentChatPartner = partnerUser;
+    renderChatMessages();
+}
+window.loadChatWith = loadChatWith;
+
+function renderChatMessages() {
+    const container = document.getElementById('social-chat-messages');
+    if(!container) return;
+    
+    if(!currentChatPartner) {
+        container.innerHTML = '<div style="text-align:center; opacity:0.5; padding:20px; font-size:0.8rem;">Selecione uma conexão parceira.</div>';
+        return;
+    }
+    
+    const chats = LocalDB.get('social_chats') || [];
+    const msgs = chats.filter(c => 
+        (c.from === sessionProject && c.to === currentChatPartner) ||
+        (c.from === currentChatPartner && c.to === sessionProject)
+    ).sort((a,b) => a.timeMs - b.timeMs);
+    
+    if(msgs.length === 0) {
+        container.innerHTML = `<div style="text-align:center; opacity:0.5; padding:20px; font-size:0.8rem;">Inicie a conversa corporativa com ${currentChatPartner}!</div>`;
+        return;
+    }
+    
+    container.innerHTML = msgs.map(m => {
+        const isMe = m.from === sessionProject;
+        return `
+            <div style="display:flex; flex-direction:column; align-items:${isMe ? 'flex-end' : 'flex-start'};">
+                <div style="background:${isMe ? 'var(--brand-yellow-glow)' : 'rgba(255,255,255,0.05)'}; color:${isMe ? 'var(--brand-yellow)' : '#fff'}; border:1px solid ${isMe ? 'var(--brand-yellow)' : 'var(--border-glass)'}; padding:8px 12px; border-radius:12px; max-width:85%; font-size:0.85rem; word-wrap:break-word; margin-bottom:2px;">
+                    ${m.text}
+                </div>
+                <small style="opacity:0.4; font-size:0.6rem;">${new Date(m.timeMs).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}</small>
+            </div>
+        `;
+    }).join('');
+    
+    container.scrollTop = container.scrollHeight;
+}
+
+function sendMessage() {
+    const input = document.getElementById('chat-input-text');
+    if(!input || !currentChatPartner) return;
+    const text = input.value.trim();
+    if(!text) return;
+    
+    let chats = LocalDB.get('social_chats') || [];
+    chats.push({
+        id: Date.now(),
+        from: sessionProject,
+        to: currentChatPartner,
+        text: text,
+        timeMs: Date.now()
+    });
+    LocalDB.set('social_chats', chats);
+    
+    input.value = '';
+    renderChatMessages();
+}
+window.sendMessage = sendMessage;
 
 // --- INITIALIZATION ---
 function initDashboard() {
