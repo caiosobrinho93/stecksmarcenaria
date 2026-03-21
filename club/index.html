@@ -36,11 +36,21 @@
                     <i class="fa-solid fa-key"></i>
                     <input type="password" id="access-pass" placeholder="Senha Corporativa State..." required autocomplete="off">
                 </div>
-                <button type="submit" class="btn-primary" id="btn-login">
+                <button type="submit" class="btn-primary" id="btn-login" style="margin-bottom:15px;">
                     <span>ACESSAR HUB</span>
                     <i class="fa-solid fa-arrow-right"></i>
                 </button>
             </form>
+            
+            <div style="display:flex; gap:10px; justify-content:center; margin-top:20px;">
+                <button onclick="window.location.href='../admin/dashboard.html'" class="btn-icon" style="flex:1; border-radius:8px; font-size:0.8rem; background:rgba(0,0,0,0.4); border:1px solid var(--border-glass); color:var(--text-secondary); cursor:pointer; padding:10px; transition:0.3s;">
+                    <i class="fa-solid fa-gauge"></i> PAINEL ADMIN
+                </button>
+                <button onclick="window.location.href='../index.html'" class="btn-icon" style="flex:1; border-radius:8px; font-size:0.8rem; background:rgba(0,0,0,0.4); border:1px solid var(--border-glass); color:var(--text-secondary); cursor:pointer; padding:10px; transition:0.3s;">
+                    <i class="fa-solid fa-globe"></i> VER SITE
+                </button>
+            </div>
+            
             <div class="login-footer">Protegido com criptografia end-to-end.</div>
         </div>
     </main>
@@ -54,7 +64,7 @@
                     <img src="../imgs/logo-state.png" alt="STATE" class="header-logo">
                     <span class="header-title">CLUB<span>STATE</span></span>
                 </div>
-                <button class="btn-icon" id="btn-logout" title="Sair"><i class="fa-solid fa-power-off"></i></button>
+                <button class="btn-icon" onclick="logout()" id="btn-logout" title="Sair"><i class="fa-solid fa-power-off"></i></button>
             </div>
         </header>
 
@@ -84,10 +94,10 @@
                 </div>
             </section>
 
-            <!-- Diary / Timeline -->
-            <h3 class="section-title">Novidades do Hub</h3>
+            <!-- Franchise Tools / Extras -->
+            <h3 class="section-title">Vantagens VIP</h3>
             <div class="glass-panel finance-card">
-                <div id="diary-list">
+                <div id="diary-list" style="display:grid; grid-template-columns:1fr 1fr; gap:15px; grid-auto-rows:minmax(100px, auto);">
                     <!-- Gerado via JS -->
                 </div>
             </div>

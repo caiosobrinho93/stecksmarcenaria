@@ -118,7 +118,7 @@ body {
     content: ''; position: absolute; top:0; left:0; width: 2px; height: 100%;
     background: transparent; transition: var(--transition);
 }
-.card:hover { border-color: var(--border-yellow); transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+.card:hover { border-color: var(--border-yellow); filter: brightness(1.05); }
 .card:hover::before { background: var(--brand-yellow); }
 
 .stat-icon { color: var(--brand-yellow); font-size: 1.5rem; opacity: 0.8; }

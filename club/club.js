@@ -89,12 +89,27 @@ function initDashboard() {
         if (progress === 100) circle.style.stroke = '#4ade80';
     }
 
-    // Resumo
+    // Benefícios VIP
     document.getElementById('diary-list').innerHTML = `
-        <div style="background:rgba(234, 179, 8, 0.1); padding:15px; border-radius:12px; border:1px solid var(--brand-yellow); text-align:center; color:var(--brand-yellow);">
-            <i class="fa-solid fa-star" style="font-size:2rem; margin-bottom:10px;"></i>
-            <h4 style="margin-bottom:8px;">A Marcenaria está no clubSTATE</h4>
-            <p style="font-size:0.85rem; color:#fff;">Você faz parte do ecossistema de marcenarias de elite.\n\nSeu Volume Declarado de Receitas: <strong style="color:#4ade80;">${totalRevenue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong>.</p>
+        <div style="background:rgba(255,255,255,0.02); padding:15px; border-radius:12px; border:1px solid var(--border-glass); text-align:center; transition:0.3s; cursor:pointer;" onmouseover="this.style.filter='brightness(1.2)'" onmouseout="this.style.filter='brightness(1)'">
+            <i class="fa-solid fa-bullhorn" style="font-size:1.8rem; color:var(--brand-yellow); margin-bottom:10px;"></i>
+            <h4 style="font-size:0.9rem; margin-bottom:5px; color:#fff;">Marketing</h4>
+            <p style="font-size:0.75rem; color:var(--text-muted);">Materiais de Venda</p>
+        </div>
+        <div style="background:rgba(255,255,255,0.02); padding:15px; border-radius:12px; border:1px solid var(--border-glass); text-align:center; transition:0.3s; cursor:pointer;" onmouseover="this.style.filter='brightness(1.2)'" onmouseout="this.style.filter='brightness(1)'">
+            <i class="fa-solid fa-boxes-packing" style="font-size:1.8rem; color:var(--brand-yellow); margin-bottom:10px;"></i>
+            <h4 style="font-size:0.9rem; margin-bottom:5px; color:#fff;">Fornecedores</h4>
+            <p style="font-size:0.75rem; color:var(--text-muted);">Descontos VIP</p>
+        </div>
+        <div style="background:rgba(255,255,255,0.02); padding:15px; border-radius:12px; border:1px solid var(--border-glass); text-align:center; transition:0.3s; cursor:pointer;" onmouseover="this.style.filter='brightness(1.2)'" onmouseout="this.style.filter='brightness(1)'">
+            <i class="fa-solid fa-graduation-cap" style="font-size:1.8rem; color:var(--brand-yellow); margin-bottom:10px;"></i>
+            <h4 style="font-size:0.9rem; margin-bottom:5px; color:#fff;">Academy</h4>
+            <p style="font-size:0.75rem; color:var(--text-muted);">Treinamentos</p>
+        </div>
+        <div style="background:rgba(255,255,255,0.02); padding:15px; border-radius:12px; border:1px solid var(--border-glass); text-align:center; transition:0.3s; cursor:pointer;" onmouseover="this.style.filter='brightness(1.2)'" onmouseout="this.style.filter='brightness(1)'">
+            <i class="fa-solid fa-chart-line" style="font-size:1.8rem; color:var(--brand-yellow); margin-bottom:10px;"></i>
+            <h4 style="font-size:0.9rem; margin-bottom:5px; color:#fff;">Relatórios</h4>
+            <p style="font-size:0.75rem; color:var(--text-muted);">Análise Avançada</p>
         </div>
     `;
 

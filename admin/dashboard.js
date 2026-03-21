@@ -650,6 +650,11 @@ window.runAdvancedCalc = () => {
     document.getElementById('calc-adv-result').style.display = 'block';
 };
 
+window.logout = () => {
+    localStorage.removeItem('state_admin_session');
+    window.location.href = 'login.html';
+};
+
 // Global Helpers
 window.deleteItem = (key, id, callback) => {
     if(confirm('Confirmar exclusão deste registro?')) {
