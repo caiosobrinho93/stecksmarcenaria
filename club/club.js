@@ -270,6 +270,11 @@ function handlePostSubmit() {
     if(fileInput) fileInput.value = '';
     
     currentPostImages = [];
+    const preview = document.getElementById('post-images-preview');
+    if(preview) preview.innerHTML = '';
+    const fileInput = document.getElementById('post-img-input');
+    if(fileInput) fileInput.value = '';
+    
     renderFeed();
     toast('Publicado no Feed VIP!');
 }
