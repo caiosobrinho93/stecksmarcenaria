@@ -164,8 +164,10 @@ function switchModule(modId) {
     navLinks.forEach(l => l.classList.remove('active'));
     const target = document.getElementById('mod-' + modId);
     const link = document.querySelector(`.nav-link[data-mod="${modId}"]`);
-    if (target && link) {
+    if (target) {
         target.classList.add('active');
+    }
+    if (link) {
         link.classList.add('active');
         const span = link.querySelector('span');
         if(span) document.getElementById('current-mod-name').innerText = span.innerText;
