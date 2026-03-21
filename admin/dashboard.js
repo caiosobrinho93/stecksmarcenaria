@@ -5,15 +5,43 @@
 
 const DB_PREFIX = 'state_db_';
 const DB = {
-    get: (key, defaultVal = []) => {
+    _getAll: (key, defaultVal = []) => {
         try {
             const data = localStorage.getItem(DB_PREFIX + key);
             return data ? JSON.parse(data) : defaultVal;
         } catch(e) { console.error("DB Error", e); return defaultVal; }
     },
+    get: (key, defaultVal = []) => {
+        const all = DB._getAll(key, defaultVal);
+        const currentUser = localStorage.getItem('state_current_user');
+        if (!currentUser || currentUser === 'admin') return all;
+        if (['projects', 'clients', 'finance', 'gallery', 'providers', 'inventory'].includes(key)) {
+            return all.filter(x => x.owner === currentUser || !x.owner);
+        }
+        return all;
+    },
     set: (key, val) => localStorage.setItem(DB_PREFIX + key, JSON.stringify(val)),
+    saveItem: (key, id, data) => {
+        const all = DB._getAll(key);
+        const currentUser = localStorage.getItem('state_current_user') || 'admin';
+        if (!id) {
+            data.id = Date.now().toString();
+            data.owner = currentUser;
+            all.push(data);
+        } else {
+            const idx = all.findIndex(x => x.id === id);
+            if (idx > -1) {
+                data.owner = all[idx].owner || currentUser;
+                all[idx] = data;
+            } else {
+                data.owner = currentUser;
+                all.push(data);
+            }
+        }
+        DB.set(key, all);
+    },
     log: (msg) => {
-        const logs = DB.get('logs', []);
+        const logs = DB._getAll('logs', []);
         logs.unshift({ time: new Date().toLocaleTimeString(), msg });
         DB.set('logs', logs.slice(0, 50));
     }
@@ -250,7 +278,7 @@ window.editClient = (id) => {
 
 // --- MODULE: PROJECTS ---
 function renderProjects(filter = '') {
-    const projects = DB.get('projects');
+    const projects = DB._getAll('projects');
     const tbody = document.querySelector('#table-projects tbody');
     if(!tbody) return;
     const filtered = projects.filter(p => p.title.toLowerCase().includes(filter.toLowerCase()) || p.client.toLowerCase().includes(filter.toLowerCase()));
@@ -350,7 +378,7 @@ window.openProjectDetail = (id) => {
 
 window.addProjectMedia = async (id, input) => {
     if(!input.files[0]) return;
-    const projects = DB.get('projects');
+    const projects = DB._getAll('projects');
     const pIdx = projects.findIndex(x => x.id === id);
     if(pIdx === -1) return;
     const base64 = await toBase64(input.files[0]);
@@ -364,7 +392,7 @@ window.addProjectMedia = async (id, input) => {
 window.addProjectComment = (id) => {
     const text = document.getElementById('new-comment-text').value;
     if(!text) return;
-    const projects = DB.get('projects');
+    const projects = DB._getAll('projects');
     const pIdx = projects.findIndex(x => x.id === id);
     if(pIdx === -1) return;
     if(!projects[pIdx].comments) projects[pIdx].comments = [];
@@ -569,7 +597,7 @@ window.clearNotifications = () => {
 
 function renderNotifications() {
     const fin = DB.get('finance');
-    const projects = DB.get('projects');
+    const projects = DB._getAll('projects');
     const dismissed = DB.get('dismissed_alerts', []);
     const alerts = [];
     const today = new Date();
@@ -610,7 +638,7 @@ function renderNotifications() {
 
 window.finishProject = (id) => {
     if(!confirm('Deseja marcar esta obra como concluída antecipadamente?')) return;
-    const projects = DB.get('projects');
+    const projects = DB._getAll('projects');
     const pIdx = projects.findIndex(p => p.id === id);
     if(pIdx > -1) {
         projects[pIdx].status = 'finalizado';
@@ -658,7 +686,7 @@ window.logout = () => {
 // Global Helpers
 window.deleteItem = (key, id, callback) => {
     if(confirm('Confirmar exclusão deste registro?')) {
-        let items = DB.get(key);
+        let items = DB._getAll(key);
         items = items.filter(x => String(x.id).trim() !== String(id).trim());
         DB.set(key, items);
         if(callback) callback();
@@ -667,7 +695,7 @@ window.deleteItem = (key, id, callback) => {
 };
 
 function updateStats() {
-    const projects = DB.get('projects');
+    const projects = DB._getAll('projects');
     const clients = DB.get('clients');
     const finance = DB.get('finance');
     const inventory = DB.get('inventory');
@@ -720,10 +748,7 @@ async function handleClientSubmit(e) {
         photo 
     };
 
-    if(id) clients[clients.findIndex(c => c.id === id)] = data;
-    else clients.push(data);
-    
-    DB.set('clients', clients);
+    DB.saveItem('clients', id, data);
     renderClients();
     switchModule('clients');
     notify('Cliente salvo com sucesso.');
@@ -732,7 +757,7 @@ async function handleClientSubmit(e) {
 function handleProjectSubmit(e) {
     e.preventDefault();
     const id = document.getElementById('project-id').value;
-    const projects = DB.get('projects');
+    const projects = DB._getAll('projects');
     const existing = id ? projects.find(x => x.id === id) : null;
 
     const data = { 
@@ -748,10 +773,7 @@ function handleProjectSubmit(e) {
         comments: existing ? (existing.comments || []) : [] 
     };
 
-    if(id) projects[projects.findIndex(p => p.id === id)] = data;
-    else projects.push(data);
-
-    DB.set('projects', projects);
+    DB.saveItem('projects', id, data);
     renderProjects();
     switchModule('projects');
     notify('Projeto atualizado.');
@@ -772,10 +794,7 @@ async function handleInventorySubmit(e) {
         photo 
     };
 
-    if(id) inv[inv.findIndex(i => i.id === id)] = data;
-    else inv.push(data);
-
-    DB.set('inventory', inv);
+    DB.saveItem('inventory', id, data);
     renderInventory();
     switchModule('inventory');
     notify('Estoque atualizado.');
@@ -793,10 +812,7 @@ function handleFinanceSubmit(e) {
         date: document.getElementById('trans-date').value 
     };
 
-    if(id) fin[fin.findIndex(f => f.id === id)] = data;
-    else fin.push(data);
-
-    DB.set('finance', fin);
+    DB.saveItem('finance', id, data);
     renderFinance();
     renderNotifications();
     switchModule('finance');
@@ -819,10 +835,7 @@ async function handleProviderSubmit(e) {
         photo 
     };
 
-    if(id) ps[ps.findIndex(p => p.id === id)] = data;
-    else ps.push(data);
-
-    DB.set('providers', ps);
+    DB.saveItem('providers', id, data);
     renderProviders();
     switchModule('providers');
     notify('Parceiro salvo.');
@@ -843,14 +856,63 @@ async function handleGallerySubmit(e) {
         photo 
     };
 
-    if(id) gallery[gallery.findIndex(g => g.id === id)] = data;
-    else gallery.push(data);
-
-    DB.set('gallery', gallery);
+    DB.saveItem('gallery', id, data);
     renderGallery();
     switchModule('gallery');
     notify('Imagem publicada na web.');
 }
+
+
+// --- PROFILE SYSTEM ---
+function loadProfile() {
+    const currentUser = localStorage.getItem('state_current_user') || 'admin';
+    document.getElementById('profile-email').value = currentUser;
+    
+    let db = JSON.parse(localStorage.getItem('state_users')) || [];
+    const userObj = db.find(x => x.u === currentUser);
+    
+    if (userObj) {
+        document.getElementById('profile-name').value = userObj.name || currentUser;
+        document.getElementById('profile-bio').value = userObj.bio || '';
+        document.getElementById('profile-avatar').value = userObj.avatar || '';
+        document.getElementById('profile-name-display').innerText = (userObj.name || currentUser).toUpperCase();
+        
+        const avatarDisplay = document.getElementById('profile-avatar-display');
+        const avatarPlaceholder = document.getElementById('profile-avatar-placeholder');
+        
+        if (userObj.avatar) {
+            avatarDisplay.src = userObj.avatar;
+            avatarDisplay.style.display = 'block';
+            avatarPlaceholder.style.display = 'none';
+        } else {
+            avatarDisplay.style.display = 'none';
+            avatarPlaceholder.style.display = 'block';
+            avatarPlaceholder.innerText = (userObj.name || currentUser).charAt(0).toUpperCase();
+        }
+    } else {
+        document.getElementById('profile-name').value = 'ADMIN';
+        document.getElementById('profile-name-display').innerText = 'ADMINISTRADOR';
+    }
+}
+
+window.saveProfile = (e) => {
+    e.preventDefault();
+    const currentUser = localStorage.getItem('state_current_user') || 'admin';
+    let db = JSON.parse(localStorage.getItem('state_users')) || [];
+    const idx = db.findIndex(x => x.u === currentUser);
+    
+    if (idx > -1) {
+        db[idx].name = document.getElementById('profile-name').value;
+        db[idx].bio = document.getElementById('profile-bio').value;
+        db[idx].avatar = document.getElementById('profile-avatar').value;
+        localStorage.setItem('state_users', JSON.stringify(db));
+        notify('Perfil corporativo atualizado.', 'success');
+        loadProfile();
+    } else {
+        notify('Operador não encontrado no banco de dados local.', 'error');
+    }
+};
+
 
 // --- Initialization ---
 function updateHomeGreeting() {
@@ -871,6 +933,8 @@ function updateHomeGreeting() {
 document.addEventListener('DOMContentLoaded', () => {
     initSeedData();
     updateHomeGreeting();
+    loadProfile();
+    updateTopbarProfile();
     
     // Notifications Dropdown Toggle
     const notifTrigger = document.getElementById('notifications-trigger');
@@ -950,3 +1014,17 @@ document.addEventListener('DOMContentLoaded', () => {
     
     renderClients(); renderProjects(); renderInventory(); renderFinance(); renderProviders(); renderGallery(); renderNotifications(); updateStats();
 });
+
+
+function updateTopbarProfile() {
+    const currentUser = localStorage.getItem('state_current_user') || 'admin';
+    let db = JSON.parse(localStorage.getItem('state_users')) || [];
+    const userObj = db.find(x => x.u === currentUser);
+    
+    document.getElementById('topbar-greeting').innerHTML = `OPERADOR: <strong>${(userObj?.name || currentUser).toUpperCase()}</strong>`;
+    const av = document.querySelector('.topbar-right .avatar');
+    if(av) {
+        av.innerHTML = (userObj?.name || currentUser).charAt(0).toUpperCase();
+        if(userObj?.avatar) av.innerHTML = `<img src="${userObj.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+    }
+}

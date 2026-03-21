@@ -157,9 +157,13 @@
         </div>
 
         <form id="login-form">
+            <div class="form-group" id="group-name" style="display:none;">
+                <label>Nome Completo</label>
+                <input type="text" id="name" placeholder="Seu nome">
+            </div>
             <div class="form-group">
-                <label>Operador</label>
-                <input type="text" id="user" required autocomplete="username" placeholder="Seu usuário corporativo">
+                <label>Operador (Login)</label>
+                <input type="text" id="user" required autocomplete="username" placeholder="Seu e-mail corporativo">
             </div>
             <div class="form-group">
                 <label>Chave de Segurança</label>
@@ -193,6 +197,7 @@
             document.getElementById('title-login').innerText = isRegisterMode ? 'Cadastro Corporativo' : 'Acesso Restrito';
             document.getElementById('btn-submit-main').innerHTML = isRegisterMode ? 'VINCULAR CREDENCIAL <i class="fa-solid fa-user-plus" style="margin-left: 5px;"></i>' : 'AUTENTICAR <i class="fa-solid fa-chevron-right" style="margin-left: 5px;"></i>';
             document.getElementById('btn-toggle').innerText = isRegisterMode ? 'Já tem acesso? Retornar ao Login Seguro' : 'Novo Líder? Criar Conta Administrativa';
+            document.getElementById('group-name').style.display = isRegisterMode ? 'block' : 'none';
         }
 
         function showError(msg, success = false) {
@@ -209,8 +214,10 @@
             e.preventDefault();
             const u = document.getElementById('user').value.trim();
             const p = document.getElementById('pass').value.trim();
+            const n = document.getElementById('name').value.trim();
             
             if(!u || !p) return;
+            if(isRegisterMode && !n) { showError('Informe o Nome Completo.'); return; }
 
             let db = JSON.parse(localStorage.getItem('state_users')) || [];
 
@@ -221,7 +228,7 @@
                     return;
                 }
                 // Add new user
-                db.push({ u, p });
+                db.push({ u, p, name: n, isVIP: false, avatar: '', bio: '' });
                 localStorage.setItem('state_users', JSON.stringify(db));
                 showError('Membro autorizado com sucesso! Entrando...', true);
                 

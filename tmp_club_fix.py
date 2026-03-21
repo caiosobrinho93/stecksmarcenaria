@@ -1,65 +1,22 @@
-const LocalDB = {
-    get: (key, def = []) => JSON.parse(localStorage.getItem('state_db_' + key)) || def,
-    set: (key, val) => localStorage.setItem('state_db_' + key, JSON.stringify(val))
-};
+import re
 
-// State
-let sessionProject = localStorage.getItem('state_current_user') || sessionStorage.getItem('clubstate_session') || null;
+with open('c:/Users/caio/Documents/Antigravity/site-marcenaria/club/club.js', 'r', encoding='utf-8') as f:
+    js = f.read()
 
-// Routing
-const viewLogin = document.getElementById('view-login');
-const viewDashboard = document.getElementById('view-dashboard');
+# 1. Update session getter
+js = js.replace(
+    "let sessionProject = sessionStorage.getItem('clubstate_session') || null;",
+    "let sessionProject = localStorage.getItem('state_current_user') || sessionStorage.getItem('clubstate_session') || null;"
+)
 
-function switchView(view) {
-    viewLogin.classList.remove('active');
-    viewDashboard.classList.remove('active');
-    document.getElementById('view-' + view).classList.add('active');
-}
+# 2. Update initialization check 
+js = js.replace(
+    "if (sessionProject === 'admin') {",
+    "if (sessionProject) {"
+)
 
-// Initialization
-document.addEventListener('DOMContentLoaded', () => {
-    if (sessionProject) {
-        initDashboard();
-    } else {
-        switchView('login');
-    }
-});
-
-// Login Handlers
-const loginForm = document.getElementById('login-form');
-if (loginForm) {
-    loginForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const u = document.getElementById('access-user').value.trim();
-        const p = document.getElementById('access-pass').value.trim();
-        
-        const db = JSON.parse(localStorage.getItem('state_users')) || [];
-        const validUser = db.find(x => x.u === u && x.p === p);
-        
-        if (validUser) {
-            sessionStorage.setItem('clubstate_session', validUser.u);
-            sessionProject = validUser.u;
-            toast(`Conectado ao Hub Corporativo!`, 'success');
-            setTimeout(() => {
-                initDashboard();
-            }, 800);
-        } else {
-            toast('Credenciais corporativas inválidas.', 'error');
-        }
-    });
-}
-
-function logout() {
-    sessionStorage.removeItem('clubstate_session');
-    sessionProject = null;
-    document.getElementById('login-form').reset();
-    switchView('login');
-    toast('Sessão encerrada com segurança.', 'success');
-}
-window.logout = logout;
-
-// Dashboard Hydration
-
+# 3. Completely Rewrite initDashboard
+new_init = """
 function initDashboard() {
     const db = JSON.parse(localStorage.getItem('state_users')) || [];
     const userObj = db.find(x => x.u === sessionProject) || {};
@@ -158,17 +115,12 @@ function initDashboard() {
 
     switchView('dashboard');
 }
+"""
 
-// UI Utilities
-function toast(msg, type = 'success') {
-    const container = document.getElementById('toast-container');
-    if(!container) return;
-    const div = document.createElement('div');
-    div.className = 'toast';
-    if(type === 'error') div.style.borderLeft = '4px solid #ef4444';
-    else div.style.borderLeft = '4px solid #4ade80';
-    
-    div.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-check-circle' : 'fa-circle-xmark'}" style="color:${type === 'success' ? '#4ade80' : '#ef4444'}; margin-right:8px;"></i> ${msg}`;
-    container.appendChild(div);
-    setTimeout(() => { div.style.opacity = '0'; setTimeout(() => div.remove(), 300); }, 3000);
-}
+# Replace initDashboard function
+js = re.sub(r'function initDashboard\(\) \{.*?\n// UI Utilities', new_init + '\n// UI Utilities', js, flags=re.DOTALL)
+
+with open('c:/Users/caio/Documents/Antigravity/site-marcenaria/club/club.js', 'w', encoding='utf-8') as f:
+    f.write(js)
+
+print("club.js refactored successfully.")
