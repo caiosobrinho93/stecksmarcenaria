@@ -170,6 +170,72 @@ function renderProjects(filter = '') {
     `).join('');
 }
 
+function openProjectDetail(id) {
+    const projects = DB.get('projects');
+    const p = projects.find(x => x.id === id);
+    if (!p) return;
+
+    document.getElementById('det-project-id').value = p.id;
+    document.getElementById('det-project-title').innerText = p.title.toUpperCase();
+    document.getElementById('det-project-client').innerText = p.client;
+    document.getElementById('det-project-status').innerText = (p.status || 'Em Aberto').toUpperCase();
+    document.getElementById('det-project-obs').innerText = p.obs || 'Nenhuma observação.';
+    
+    // Render Images
+    const container = document.getElementById('det-project-images');
+    container.innerHTML = (p.images || []).map(img => `
+        <div class="project-img-card">
+            <img src="${img}" onclick="window.open('${img}')">
+        </div>
+    `).join('');
+
+    openModal('modal-project-detail');
+}
+
+function openClientDetail(id) {
+    const clients = DB.get('clients');
+    const c = clients.find(x => x.id === id);
+    if (!c) return;
+
+    document.getElementById('det-client-id').value = c.id;
+    document.getElementById('det-client-name').innerText = c.name.toUpperCase();
+    document.getElementById('det-client-phone').innerText = c.phone || 'Não informado';
+    document.getElementById('det-client-insta').innerText = c.insta || 'Não informado';
+    
+    const photo = document.getElementById('det-client-photo');
+    if(c.photo) {
+        photo.src = c.photo;
+        photo.style.display = 'block';
+    } else {
+        photo.style.display = 'none';
+    }
+
+    // WA Link
+    const wa = document.getElementById('btn-wa-client');
+    if(wa && c.phone) {
+        const num = c.phone.replace(/\D/g, '');
+        wa.onclick = () => window.open(`https://wa.me/55${num}`);
+    }
+
+    openModal('modal-client-detail');
+}
+
+function likePost(id) {
+    const posts = DB._getAll('social_posts', []);
+    const idx = posts.findIndex(p => p.id == id);
+    const currentUser = localStorage.getItem('state_current_user') || 'admin';
+    
+    if(idx > -1) {
+        if(posts[idx].likes.includes(currentUser)) {
+            posts[idx].likes = posts[idx].likes.filter(u => u !== currentUser);
+        } else {
+            posts[idx].likes.push(currentUser);
+        }
+        DB.set('social_posts', posts);
+        renderFeed();
+    }
+}
+
 // --- SOCIAL FEED ---
 function renderFeed() {
     const container = document.getElementById('social-feed-list');
@@ -329,4 +395,9 @@ window.handlePostSubmit = handlePostSubmit;
 window.previewPostImage = previewPostImage;
 window.toggleUserVIP = toggleUserVIP;
 window.formatBRL = formatBRL;
+window.openProjectDetail = openProjectDetail;
+window.openClientDetail = openClientDetail;
+window.likePost = likePost;
+window.openModal = openModal;
+window.closeModal = closeModal;
 window.logout = () => { localStorage.removeItem('state_admin_session'); window.location.href='login.html'; };

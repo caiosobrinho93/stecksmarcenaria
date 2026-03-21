@@ -76,34 +76,61 @@
                 <div class="status-badge" id="dash-status-badge"><i class="fa-solid fa-circle-notch fa-spin"></i> Sincronizando dados</div>
             </section>
 
-            <!-- Progress Ring & Timeline -->
-            <section class="progress-section">
-                <div class="glass-panel progress-card">
-                    <div class="progress-info">
-                        <h3>Desempenho (Taxa de Conclusão)</h3>
-                        <h4 id="dash-project-title">Análise de Entregas</h4>
-                        <p id="dash-deadline" class="deadline-text"><i class="fa-solid fa-chart-pie"></i> Sucesso de execução</p>
+            <!-- SOCIAL HUB SECTION -->
+            <div class="social-tabs" style="display:flex; gap:10px; margin-bottom:20px;">
+                <button class="tab-btn active" onclick="switchSocialTab('feed')"><i class="fa-solid fa-rss"></i> FEED</button>
+                <button class="tab-btn" onclick="switchSocialTab('friends')"><i class="fa-solid fa-user-group"></i> AMIGOS</button>
+                <button class="tab-btn" onclick="switchSocialTab('groups')"><i class="fa-solid fa-users-viewfinder"></i> GRUPOS</button>
+            </div>
+
+            <!-- FEED TAB -->
+            <section id="tab-feed" class="social-tab-content active">
+                <div class="glass-panel" style="margin-bottom:20px; padding:15px;">
+                    <textarea id="post-text" placeholder="Compartilhe seu progresso VIP..." style="width:100%; height:80px; background:rgba(0,0,0,0.3); border:1px solid var(--border-glass); border-radius:8px; padding:12px; color:#fff; margin-bottom:10px; resize:none;"></textarea>
+                    <div id="post-preview-img-container" style="display:none; margin-bottom:10px; position:relative;">
+                        <img id="post-preview-img" style="width:100%; max-height:200px; object-fit:cover; border-radius:8px;">
+                        <button onclick="clearPostImage()" style="position:absolute; top:5px; right:5px; background:rgba(0,0,0,0.6); border:none; color:#fff; border-radius:50%; width:24px; height:24px; cursor:pointer;">&times;</button>
                     </div>
-                    <div class="progress-circle-wrapper">
-                        <svg class="progress-ring" width="120" height="120">
-                            <circle class="progress-ring-track" stroke-width="8" fill="transparent" r="52" cx="60" cy="60"/>
-                            <circle id="dash-progress-circle" class="progress-ring-fill" stroke-width="8" fill="transparent" r="52" cx="60" cy="60" stroke-dasharray="326.72" stroke-dashoffset="326.72"/>
-                        </svg>
-                        <div class="progress-text" id="dash-progress-text">0%</div>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <label class="btn-icon" style="cursor:pointer; font-size:0.9rem; color:var(--text-secondary);"><i class="fa-solid fa-image"></i> FOTO <input type="file" id="post-img-input" accept="image/*" style="display:none;" onchange="previewPostImage(this)"></label>
+                        <button class="btn-primary" style="padding:8px 20px; font-size:0.8rem;" onclick="handlePostSubmit()">POSTAR</button>
                     </div>
+                </div>
+                <div id="social-feed-list" style="display:grid; gap:15px;">
+                    <!-- JS -->
                 </div>
             </section>
 
-            <!-- Franchise Tools / Extras -->
-            <h3 class="section-title">Vantagens VIP</h3>
-            <div class="glass-panel finance-card">
-                <div id="diary-list" style="display:grid; grid-template-columns:1fr 1fr; gap:15px; grid-auto-rows:minmax(100px, auto);">
-                    <!-- Gerado via JS -->
+            <!-- FRIENDS TAB -->
+            <section id="tab-friends" class="social-tab-content" style="display:none;">
+                <div class="glass-panel" style="padding:15px; margin-bottom:15px;">
+                    <input type="text" id="search-friends" placeholder="Buscar parceiros na rede..." style="width:100%; background:rgba(0,0,0,0.3); border:1px solid var(--border-glass); border-radius:8px; padding:12px; color:#fff;" oninput="renderFriendsList(this.value)">
                 </div>
-            </div>
+                <div id="friends-list" style="display:grid; gap:10px;"></div>
+            </section>
+
+            <!-- GROUPS TAB -->
+            <section id="tab-groups" class="social-tab-content" style="display:none;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <h3 style="color:#fff;">MEUS GRUPOS</h3>
+                    <button class="btn-primary btn-sm" onclick="openCreateGroup()"><i class="fa-solid fa-plus"></i> CRIAR</button>
+                </div>
+                <div id="groups-list" style="display:grid; gap:10px;"></div>
+            </section>
+
+            <!-- Progress Ring & Portfolio (Hidden in Social Mode but kept for logic) -->
+            <section class="progress-section" style="display:none;">
+                <div class="glass-panel progress-card">
+                    <div class="progress-info">
+                        <h3>Portfólio VIP</h3>
+                        <h4 id="dash-project-title">Análise de Entregas</h4>
+                    </div>
+                    <div id="dash-progress-text">⭐</div>
+                </div>
+            </section>
 
             <!-- Need Help -->
-            <div class="contact-card">
+            <div class="contact-card" style="margin-top:30px;">
                 <div class="contact-info">
                     <i class="fa-solid fa-briefcase"></i>
                     <div>

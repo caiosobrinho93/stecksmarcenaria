@@ -58,104 +58,158 @@ function logout() {
 }
 window.logout = logout;
 
-// Dashboard Hydration
+// Dashboard Hydration// Social Navigation
+function switchSocialTab(tabId) {
+    document.querySelectorAll('.social-tab-content').forEach(t => t.style.display = 'none');
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    
+    document.getElementById('tab-' + tabId).style.display = 'block';
+    const btn = document.querySelector(`.tab-btn[onclick*="${tabId}"]`);
+    if(btn) btn.classList.add('active');
 
+    if(tabId === 'feed') renderFeed();
+    if(tabId === 'friends') renderFriendsList();
+    if(tabId === 'groups') renderGroups();
+}
+window.switchSocialTab = switchSocialTab;
+
+// --- FEED ENGINE ---
+function renderFeed() {
+    const container = document.getElementById('social-feed-list');
+    if(!container) return;
+    const posts = LocalDB.get('social_posts');
+    const dbUsers = JSON.parse(localStorage.getItem('state_users')) || [];
+    const currentUser = sessionProject;
+
+    container.innerHTML = posts.map(p => {
+        const u = dbUsers.find(x => x.u === p.user) || { name: p.user };
+        const isLiked = (p.likes || []).includes(currentUser);
+        return `
+            <div class="glass-panel post-card" style="padding:0; overflow:hidden; border:1px solid var(--border-glass);">
+                <div style="padding:12px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border-glass);">
+                    <img src="${u.avatar || '../imgs/logo-state.png'}" style="width:35px; height:35px; border-radius:50%; object-fit:cover;">
+                    <div><strong style="color:var(--brand-yellow); font-size:0.9rem;">${(u.name || p.user).toUpperCase()}</strong><br><small style="opacity:0.5; font-size:0.7rem;">${p.time || 'Agora'}</small></div>
+                </div>
+                ${p.text ? `<div style="padding:12px; font-size:0.85rem; line-height:1.4;">${p.text}</div>` : ''}
+                ${p.image ? `<img src="${p.image}" style="width:100%; max-height:300px; object-fit:cover;">` : ''}
+                <div style="padding:8px 12px; display:flex; gap:15px; background:rgba(255,255,255,0.02);">
+                    <button class="btn-icon" onclick="likePost(${p.id})" style="color:${isLiked ? '#ef4444' : 'var(--text-secondary)'}; font-size:0.8rem;">
+                        <i class="fa-${isLiked ? 'solid' : 'regular'} fa-heart"></i> ${p.likes?.length || 0}
+                    </button>
+                    <button class="btn-icon" style="font-size:0.8rem; color:var(--text-secondary);"><i class="fa-regular fa-comment"></i> ${p.comments?.length || 0}</button>
+                </div>
+            </div>
+        `;
+    }).join('') || '<p style="text-align:center; padding:30px; opacity:0.5; font-size:0.8rem;">Nenhuma atividade no feed VIP ainda.</p>';
+}
+
+function handlePostSubmit() {
+    const text = document.getElementById('post-text').value.trim();
+    const img = document.getElementById('post-preview-img-container').style.display === 'block' ? document.getElementById('post-preview-img').src : null;
+    
+    if(!text && !img) return toast('Escreva algo para postar!', 'error');
+
+    const posts = LocalDB.get('social_posts');
+    posts.unshift({
+        id: Date.now(),
+        user: sessionProject,
+        text,
+        image: img,
+        time: new Date().toLocaleString('pt-BR'),
+        likes: [],
+        comments: []
+    });
+    LocalDB.set('social_posts', posts);
+    
+    document.getElementById('post-text').value = '';
+    document.getElementById('post-preview-img-container').style.display = 'none';
+    renderFeed();
+    toast('Publicado no Feed VIP!');
+}
+window.handlePostSubmit = handlePostSubmit;
+
+function likePost(id) {
+    const posts = LocalDB.get('social_posts');
+    const idx = posts.findIndex(x => x.id == id);
+    if(idx > -1) {
+        if(!posts[idx].likes) posts[idx].likes = [];
+        const uIdx = posts[idx].likes.indexOf(sessionProject);
+        if(uIdx > -1) posts[idx].likes.splice(uIdx, 1);
+        else posts[idx].likes.push(sessionProject);
+        LocalDB.set('social_posts', posts);
+        renderFeed();
+    }
+}
+window.likePost = likePost;
+
+// --- FRIENDS ENGINE ---
+function renderFriendsList(filter = '') {
+    const container = document.getElementById('friends-list');
+    if(!container) return;
+    const dbUsers = JSON.parse(localStorage.getItem('state_users')) || [];
+    const currentUser = sessionProject;
+    
+    const others = dbUsers.filter(u => u.u !== currentUser && u.u !== 'admin' && (u.name || u.u).toLowerCase().includes(filter.toLowerCase()));
+    
+    container.innerHTML = others.map(u => `
+        <div class="glass-panel" style="padding:10px; display:flex; align-items:center; justify-content:space-between;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <img src="${u.avatar || '../imgs/logo-state.png'}" style="width:35px; height:35px; border-radius:50%; object-fit:cover;">
+                <div><strong style="font-size:0.85rem;">${(u.name || u.u).toUpperCase()}</strong><br><small style="color:var(--brand-yellow); font-size:0.65rem;">${u.isVIP ? 'MEMBRO VIP' : 'MEMBRO PADRÃO'}</small></div>
+            </div>
+            <button class="btn-royal" style="padding:5px 10px; font-size:0.7rem;"><i class="fa-solid fa-user-plus"></i></button>
+        </div>
+    `).join('') || '<p style="text-align:center; padding:20px; font-size:0.8rem; opacity:0.5;">Nenhum usuário encontrado.</p>';
+}
+
+// --- GROUPS ENGINE ---
+function renderGroups() {
+    const container = document.getElementById('groups-list');
+    if(!container) return;
+    const groups = LocalDB.get('groups');
+    const myGroups = groups.filter(g => g.leader === sessionProject || (g.members && g.members.includes(sessionProject)));
+
+    container.innerHTML = myGroups.map(g => `
+        <div class="glass-panel" style="padding:12px; border-left:3px solid var(--brand-yellow);">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <strong style="color:var(--brand-yellow);">${g.name.toUpperCase()}</strong>
+                <span style="font-size:0.6rem; opacity:0.6;">${g.members?.length || 1} MEMBROS</span>
+            </div>
+            <p style="font-size:0.75rem; margin-top:5px; opacity:0.8;">${g.desc || 'Sem descrição.'}</p>
+        </div>
+    `).join('') || `
+        <div style="text-align:center; padding:30px; background:rgba(255,255,255,0.02); border-radius:12px; border:1px dashed var(--border-glass);">
+            <p style="font-size:0.8rem; opacity:0.5; margin-bottom:15px;">Você ainda não participa de nenhum grupo estratégico.</p>
+            <button class="btn-primary btn-sm" onclick="alert('Funcionalidade de criação de grupos em liberação gradual...')">INGRESSAR EM GRUPO</button>
+        </div>
+    `;
+}
+
+// --- IMAGE PREVIEW ---
+async function previewPostImage(input) {
+    if (input.files[0]) {
+        const reader = new FileReader();
+        reader.readAsDataURL(input.files[0]);
+        reader.onload = () => {
+            document.getElementById('post-preview-img').src = reader.result;
+            document.getElementById('post-preview-img-container').style.display = 'block';
+        };
+    }
+}
+window.previewPostImage = previewPostImage;
+window.clearPostImage = () => {
+    document.getElementById('post-preview-img-container').style.display = 'none';
+    document.getElementById('post-img-input').value = '';
+};
+
+// --- INITIALIZATION ---
 function initDashboard() {
     const db = JSON.parse(localStorage.getItem('state_users')) || [];
     const userObj = db.find(x => x.u === sessionProject) || {};
-    const isVIP = userObj.isVIP || sessionProject === 'admin';
-
-    const allProjects = LocalDB.get('projects');
-    // Filter projects belonging to this user that are 'finalizado'
-    const userProjects = (sessionProject === 'admin') 
-        ? allProjects.filter(p => p.status === 'finalizado')
-        : allProjects.filter(p => p.owner === sessionProject && p.status === 'finalizado');
-
-    const completedProjects = userProjects.length;
-
-    // Common UI Updates
     document.getElementById('dash-client-name').innerText = (userObj.name || sessionProject).toUpperCase();
-
-    const circle = document.getElementById('dash-progress-circle');
-    if (circle) circle.style.display = 'none';
-    document.querySelector('.progress-ring').style.display = 'none';
     
-    // Avatar section styling trick inside the client-name wrapper
-    let avatarHTML = '';
-    if (userObj.avatar) {
-        avatarHTML = `<img src="${userObj.avatar}" style="width:60px; height:60px; border-radius:50%; object-fit:cover; border:2px solid var(--brand-yellow); display:block; margin-bottom:10px;">`;
-    }
-
-    if (!isVIP) {
-        // NON-VIP RESTRICTED MODE
-        document.getElementById('dash-project-title').innerText = "Conta Padrão (Sem Portfólio Oculto)";
-        const statusBadge = document.getElementById('dash-status-badge');
-        statusBadge.innerHTML = `<i class="fa-solid fa-lock"></i> ACESSO RESTRITO`;
-        statusBadge.style.borderColor = '#ef4444';
-        statusBadge.style.color = '#ef4444';
-        statusBadge.style.background = 'rgba(239, 68, 68, 0.1)';
-        
-        document.getElementById('dash-progress-text').innerText = "🔒";
-        
-        document.getElementById('diary-list').innerHTML = `
-            <div style="grid-column: 1 / -1; background:rgba(234, 179, 8, 0.1); border:1px solid var(--brand-yellow); padding:30px; text-align:center; border-radius:12px; margin-top:20px;">
-                <i class="fa-solid fa-crown" style="font-size:3rem; color:var(--brand-yellow); margin-bottom:15px;"></i>
-                <h3 style="color:var(--brand-yellow); font-family:var(--font-head); font-size:1.5rem; margin-bottom:10px;">TORNE-SE VIP</h3>
-                <p style="color:#fff; font-size:0.9rem; margin-bottom:20px;">Seus projetos incríveis merecem ser vistos. Ao ativar o ClubSTATE VIP, seus trabalhos finalizados tornam-se um portfólio público incrível na Rede State global para clientes!</p>
-                <button class="btn-primary" onclick="alert('Entre em contato com o Admin para habilitar o status VIP!')">ASSINAR AGORA</button>
-            </div>
-            <div style="grid-column: 1 / -1; text-align:left; margin-top:30px; padding:20px; background:rgba(255,255,255,0.02); border:1px solid var(--border-glass); border-radius:12px;">
-                <h4 style="color:var(--brand-yellow); font-family:var(--font-head); margin-bottom:10px;">SUA BIOGRAFIA</h4>
-                <p style="color:var(--text-secondary); font-size:0.9rem; white-space:pre-wrap;">${userObj.bio || 'Edite sua biografia no Dashboard...'}</p>
-            </div>
-        `;
-    } else {
-        // VIP MODE: PORTFOLIO FEED
-        document.getElementById('dash-project-title').innerText = `${completedProjects} Projetos em Exposição`;
-        const statusBadge = document.getElementById('dash-status-badge');
-        statusBadge.innerHTML = `<i class="fa-solid fa-crown"></i> ASSINANTE VIP`;
-        statusBadge.style.borderColor = 'var(--brand-yellow)';
-        statusBadge.style.color = 'var(--brand-yellow)';
-        statusBadge.style.background = 'rgba(234, 179, 8, 0.1)';
-        
-        document.getElementById('dash-progress-text').innerText = "⭐";
-
-        // Render Portfolio Galery
-        let feedHTML = `
-            <div style="grid-column: 1 / -1; text-align:left; padding:20px; background:rgba(255,255,255,0.02); border:1px solid var(--border-glass); border-radius:12px; margin-bottom:20px;">
-                <div style="display:flex; align-items:center; gap:15px;">
-                    ${avatarHTML}
-                    <div>
-                        <h4 style="color:var(--brand-yellow); font-family:var(--font-head); margin-bottom:5px;">${(userObj.name || sessionProject).toUpperCase()}</h4>
-                        <p style="color:var(--text-secondary); font-size:0.85rem; white-space:pre-wrap; max-width:600px;">${userObj.bio || 'Edite sua biografia no Dashboard...'}</p>
-                    </div>
-                </div>
-            </div>
-            <div style="grid-column: 1 / -1;"><h3 style="font-family:var(--font-head); font-size:1.3rem; margin-bottom:10px; color:var(--text-primary);">SUA VITRINE DE OBRAS CONCLUÍDAS</h3></div>
-        `;
-
-        if (userProjects.length === 0) {
-            feedHTML += `
-                <div style="grid-column: 1 / -1; text-align:center; padding:40px; color:var(--text-muted); border:1px dashed var(--border-glass); border-radius:12px;">
-                    Nenhum projeto finalizado no seu nome ainda. Finalize um projeto no Dashboard para ele aparecer aqui!
-                </div>
-            `;
-        } else {
-            feedHTML += userProjects.map(p => `
-                <div style="grid-column: 1 / -1; background:rgba(0,0,0,0.4); border:1px solid var(--border-glass); border-radius:12px; overflow:hidden; margin-bottom:15px; display:flex; flex-direction:column; md:flex-row;">
-                    ${p.images && p.images[0] ? `<img src="${p.images[0]}" style="width:100%; height:250px; object-fit:cover; border-bottom:1px solid var(--border-glass);">` : `<div style="width:100%; height:150px; background:rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:center;"><i class="fa-solid fa-camera-retro" style="font-size:3rem; opacity:0.2;"></i></div>`}
-                    <div style="padding:20px;">
-                        <span style="font-size:0.7rem; color:var(--brand-yellow); text-transform:uppercase; letter-spacing:2px; font-weight:700;">PROJETO FINALIZADO</span>
-                        <h4 style="font-family:var(--font-head); font-size:1.3rem; margin:10px 0; color:#fff;">${p.title}</h4>
-                        <div style="color:var(--text-muted); font-size:0.85rem;"><i class="fa-regular fa-calendar" style="margin-right:5px;"></i>${p.date} &nbsp;|&nbsp; <i class="fa-regular fa-user" style="margin-right:5px;"></i>Cliente: ${p.client}</div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        document.getElementById('diary-list').innerHTML = feedHTML;
-    }
-
+    // Default Tab
+    switchSocialTab('feed');
     switchView('dashboard');
 }
 
@@ -165,10 +219,8 @@ function toast(msg, type = 'success') {
     if(!container) return;
     const div = document.createElement('div');
     div.className = 'toast';
-    if(type === 'error') div.style.borderLeft = '4px solid #ef4444';
-    else div.style.borderLeft = '4px solid #4ade80';
-    
-    div.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-check-circle' : 'fa-circle-xmark'}" style="color:${type === 'success' ? '#4ade80' : '#ef4444'}; margin-right:8px;"></i> ${msg}`;
+    div.style.cssText = `background:#161311; border-left:4px solid ${type === 'success' ? '#4ade80' : '#ef4444'}; padding:12px 20px; color:#fff; margin-bottom:10px; border-radius:4px; box-shadow:0 10px 40px rgba(0,0,0,0.8); font-size:0.8rem; z-index:9999; display:flex; align-items:center; gap:10px;`;
+    div.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-check-circle' : 'fa-circle-xmark'}" style="color:${type === 'success' ? '#4ade80' : '#ef4444'};"></i> ${msg}`;
     container.appendChild(div);
     setTimeout(() => { div.style.opacity = '0'; setTimeout(() => div.remove(), 300); }, 3000);
 }
