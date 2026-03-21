@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>clubSTATE | Portal do Cliente VIP</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@300;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Styles -->
+    <link rel="stylesheet" href="club.css?v=1.0">
+</head>
+<body>
+    <!-- Background Elements -->
+    <div class="bg-glow"></div>
+    <div class="bg-grid"></div>
+
+    <div id="toast-container"></div>
+
+    <!-- APP VIEW: LOGIN -->
+    <main id="view-login" class="view-section active">
+        <div class="glass-panel login-box fade-in">
+            <img src="../imgs/logo-state.png" alt="STATE" class="login-logo">
+            <h1 class="login-title">CLUB<span>STATE</span></h1>
+            <p class="login-sub">Insira o código exclusivo da sua obra para acompanhar o progresso em tempo real.</p>
+            
+            <form id="login-form">
+                <div class="input-group">
+                    <i class="fa-solid fa-key"></i>
+                    <input type="text" id="access-code" placeholder="Código de Acesso (ID da Obra)" required autocomplete="off">
+                </div>
+                <button type="submit" class="btn-primary" id="btn-login">
+                    <span>ACESSAR PORTAL</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </form>
+            <div class="login-footer">Protegido com criptografia end-to-end.</div>
+        </div>
+    </main>
+
+    <!-- APP VIEW: DASHBOARD -->
+    <main id="view-dashboard" class="view-section">
+        <!-- Floating Header -->
+        <header class="glass-header slide-down">
+            <div class="header-inner">
+                <div class="header-brand">
+                    <img src="../imgs/logo-state.png" alt="STATE" class="header-logo">
+                    <span class="header-title">CLUB<span>STATE</span></span>
+                </div>
+                <button class="btn-icon" id="btn-logout" title="Sair"><i class="fa-solid fa-power-off"></i></button>
+            </div>
+        </header>
+
+        <div class="dashboard-content fade-in-up">
+            <!-- Welcome Area -->
+            <section class="welcome-section">
+                <p class="greeting" id="dash-greeting">Bem-vindo(a),</p>
+                <h2 class="client-name" id="dash-client-name">Carregando...</h2>
+                <div class="status-badge" id="dash-status-badge"><i class="fa-solid fa-circle-notch fa-spin"></i> Sincronizando dados</div>
+            </section>
+
+            <!-- Progress Ring & Timeline -->
+            <section class="progress-section">
+                <div class="glass-panel progress-card">
+                    <div class="progress-info">
+                        <h3>Gestão do Projeto</h3>
+                        <h4 id="dash-project-title">Sistema de Marcenaria</h4>
+                        <p id="dash-deadline" class="deadline-text"><i class="fa-regular fa-calendar"></i> Previsão Inicial: --/--/----</p>
+                    </div>
+                    <div class="progress-circle-wrapper">
+                        <svg class="progress-ring" width="120" height="120">
+                            <circle class="progress-ring-track" stroke-width="8" fill="transparent" r="52" cx="60" cy="60"/>
+                            <circle id="dash-progress-circle" class="progress-ring-fill" stroke-width="8" fill="transparent" r="52" cx="60" cy="60" stroke-dasharray="326.72" stroke-dashoffset="326.72"/>
+                        </svg>
+                        <div class="progress-text" id="dash-progress-text">0%</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Diary / Timeline -->
+            <h3 class="section-title">Diário da Obra</h3>
+            <div class="glass-panel finance-card">
+                <div id="diary-list">
+                    <!-- Gerado via JS -->
+                </div>
+                <p style="font-size:0.75rem; color:var(--text-muted); margin-top:15px; border-top:1px solid var(--border-glass); padding-top:15px; text-align:center;">
+                    <i class="fa-solid fa-shield-halved"></i> Os lançamentos desta timeline refletem com exatidão os diários e eventos corporativos da obra.
+                </p>
+            </div>
+
+            <!-- Need Help -->
+            <div class="contact-card">
+                <div class="contact-info">
+                    <i class="fa-brands fa-whatsapp"></i>
+                    <div>
+                        <h4>Dúvidas sobre o projeto?</h4>
+                        <p>Fale diretamente com o arquiteto ou líder de obras via WhatsApp corporativo.</p>
+                    </div>
+                </div>
+                <a href="https://api.whatsapp.com/send?phone=5517999999999&text=Ol%C3%A1%21%20Gostaria%20de%20falar%20sobre%20meu%20projeto." target="_blank" class="btn-whatsapp">CHAMAR NO WHATSAPP</a>
+            </div>
+            
+            <div style="text-align:center; padding: 20px 0; color:var(--text-muted); font-size:0.75rem; font-family:var(--font-mono);">
+                STATE MARCENARIA © <span id="current-year">2026</span><br>CLUBSTATE SYSTEM
+            </div>
+        </div>
+    </main>
+
+    <script src="club.js?v=1.0"></script>
+</body>
+</html>
