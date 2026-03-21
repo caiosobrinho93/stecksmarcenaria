@@ -34,14 +34,17 @@
             
             <nav class="nav-list">
                 <div class="nav-link active" data-mod="home"><i class="fa-solid fa-house-chimney-window"></i> <span>Início</span></div>
-                <div class="nav-link" data-mod="clients"><i class="fa-solid fa-users"></i> <span>CLIENTES</span></div>
                 <div class="nav-link" data-mod="projects"><i class="fa-solid fa-list-check"></i> <span>PROJETOS</span></div>
-                <div class="nav-link" data-mod="friends"><i class="fa-solid fa-user-group"></i> <span>REDE MENTAL</span></div>
+                <div class="nav-link" data-mod="clients"><i class="fa-solid fa-users"></i> <span>CLIENTES</span></div>
+                <div class="nav-link" data-mod="friends"><i class="fa-solid fa-user-group"></i> <span>REDE SOCIAL</span></div>
                 <div class="nav-link" data-mod="groups"><i class="fa-solid fa-comments"></i> <span>MEUS GRUPOS</span></div>
-                <div class="nav-link" data-mod="inventory"><i class="fa-solid fa-layer-group"></i> <span>ESTOQUE</span></div>
-                <div class="nav-link" data-mod="finance"><i class="fa-solid fa-vault"></i> <span>Pagar/Receber</span></div>
-                <div class="nav-link" data-mod="providers"><i class="fa-solid fa-handshake"></i> <span>Parceiros</span></div>
-                <div class="nav-link" data-mod="gallery"><i class="fa-solid fa-images"></i> <span>Galeria Web</span></div>
+                <div id="nav-admin-only" style="display:none;">
+                    <div class="nav-link" data-mod="admsettings"><i class="fa-solid fa-gears"></i> <span>GESTÃO ADMIN</span></div>
+                    <div class="nav-link" data-mod="inventory"><i class="fa-solid fa-layer-group"></i> <span>ESTOQUE</span></div>
+                    <div class="nav-link" data-mod="finance"><i class="fa-solid fa-vault"></i> <span>FINANCEIRO</span></div>
+                    <div class="nav-link" data-mod="providers"><i class="fa-solid fa-handshake"></i> <span>PARCEIROS</span></div>
+                    <div class="nav-link" data-mod="gallery"><i class="fa-solid fa-images"></i> <span>GALERIA WEB</span></div>
+                </div>
                 
                 <div class="nav-link" data-mod="profile" style="margin-top:20px; border-top:1px solid var(--border); padding-top:15px;"><i class="fa-solid fa-user-gear"></i> <span>Meu Perfil</span></div>
             </nav>
@@ -61,6 +64,7 @@
                 
                 <div class="topbar-right">
                     <span style="font-size: 0.7rem; font-weight: 800; color: var(--text-muted);" class="hide-mobile" id="topbar-greeting">OPERADOR: <strong>ADMIN</strong></span>
+                    <button class="btn-royal" onclick="window.location.href='../club/index.html'" title="Ver Portfólio VIP clubSTATE"><i class="fa-solid fa-crown"></i></button>
                     <div id="notifications-trigger" style="position:relative; cursor:pointer; font-size:1.2rem; color:var(--text-muted); margin-right:10px; transition:color 0.3s; display:flex; align-items:center;">
                         <i class="fa-solid fa-bell" id="bell-icon" onmouseover="this.style.color='var(--brand-yellow)'" onmouseout="this.style.color=''"></i>
                         <span id="notif-badge" style="position:absolute; top:-5px; right:-8px; background:#ef4444; color:#fff; font-size:0.6rem; font-weight:bold; border-radius:50%; width:16px; height:16px; display:flex; align-items:center; justify-content:center; display:none;"></span>
@@ -81,60 +85,40 @@
                 
                 <!-- HOME MODULE -->
                 <section id="mod-home" class="module-section active">
-                    <!-- Dashboard Summary -->
-                    <div style="margin-bottom: 24px; padding: 20px; background: linear-gradient(135deg, rgba(234, 179, 8, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid var(--border-yellow); border-radius: 4px;">
-                        <h3 id="home-greeting-title" style="font-family: var(--font-head); color: var(--brand-yellow); margin-bottom: 5px;">BOM DIA, ADMIN</h3>
-                        <p id="home-greeting-date" style="font-size: 0.85rem; color: var(--text-secondary);">Carregando data...</p>
-                    </div>
-
-                    <div id="home-summary-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 15px; margin-bottom: 24px;">
-                        <div class="card" style="text-align:center; padding:15px; border-left:4px solid var(--brand-yellow);">
-                            <label style="margin-bottom:5px">SISTEMAS</label>
-                            <div id="st-projects" style="font-size:1.8rem; font-family:var(--font-head); font-weight:900;">0</div>
-                        </div>
-                        <div class="card" style="text-align:center; padding:15px; border-left:4px solid var(--brand-yellow);">
-                            <label style="margin-bottom:5px">CARTEIRA</label>
-                            <div id="st-clients" style="font-size:1.8rem; font-family:var(--font-head); font-weight:900;">0</div>
-                        </div>
-                        <div class="card" style="text-align:center; padding:15px; border-left:4px solid var(--text-secondary);">
-                            <label style="margin-bottom:5px">RECEITAS</label>
-                            <div id="st-income" style="font-size:1.2rem; font-family:var(--font-mono); font-weight:800; color:var(--text-primary);">R$ 0</div>
-                        </div>
-                        <div class="card" style="text-align:center; padding:15px; border-left:4px solid var(--text-muted);">
-                            <label style="margin-bottom:5px">ALERTAS</label>
-                            <div id="st-alerts" style="font-size:1.8rem; font-family:var(--font-head); font-weight:900; color:var(--text-muted);">0</div>
+                    <div id="home-admin-stats" style="display:none;">
+                        <h2 class="topbar-title">VISÃO GERAL DO ECOSSISTEMA</h2>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="icon" style="background: rgba(234, 179, 8, 0.1); color: var(--brand-yellow);"><i class="fa-solid fa-wallet"></i></div>
+                                <div class="info"><h3>RECEITA TOTAL</h3><p id="stat-revenue">R$ 0,00</p></div>
+                            </div>
+                            <!-- ... rest of stats ... -->
                         </div>
                     </div>
 
-                    <!-- Action Grids -->
-                    <div class="card-grid">
-                        <!-- Price Engine Action -->
-                        <div class="card" style="display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; border: 2px dashed var(--border-yellow);">
-                            <i class="fa-solid fa-calculator" style="font-size:2.5rem; color:var(--brand-yellow); margin-bottom:15px;"></i>
-                            <h3 style="font-family:var(--font-head); font-size:1rem; margin-bottom:10px;">ENGENHARIA DE PREÇO</h3>
-                            <button class="btn btn-primary" onclick="openPriceModal()"><i class="fa-solid fa-play"></i> INICIAR CÁLCULO</button>
+                    <div id="home-social-feed">
+                        <h2 class="topbar-title">COMUNIDADE STATE</h2>
+                        <div class="card" style="margin-bottom:24px; padding:20px;">
+                            <div style="display:flex; gap:15px; align-items:flex-start;">
+                                <div class="avatar" style="width:50px; height:50px; flex-shrink:0;" id="feed-user-avatar">?</div>
+                                <div style="flex:1;">
+                                    <textarea id="post-text" placeholder="No que você está trabalhando hoje, parceiro?" style="width:100%; border:none; background:rgba(0,0,0,0.2); border-radius:12px; padding:15px; margin-bottom:10px; resize:none;"></textarea>
+                                    <div id="post-preview-img-container" style="display:none; margin-bottom:10px; position:relative;">
+                                        <img id="post-preview-img" style="width:100%; max-height:300px; object-fit:cover; border-radius:8px;">
+                                        <button onclick="clearPostImage()" style="position:absolute; top:5px; right:5px; background:rgba(0,0,0,0.6); border:none; color:#fff; border-radius:50%; width:24px; height:24px; cursor:pointer;">&times;</button>
+                                    </div>
+                                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                                        <label class="btn btn-ghost btn-sm" style="cursor:pointer;">
+                                            <i class="fa-solid fa-image"></i> ANEXAR FOTO
+                                            <input type="file" id="post-img-input" accept="image/*" style="display:none;" onchange="previewPostImage(this)">
+                                        </label>
+                                        <button class="btn btn-primary" onclick="handlePostSubmit()">POSTAR AGORA</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-
-                        <!-- Upcoming Deadlines -->
-                        <div class="card">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                                <h3 style="font-family:var(--font-head); font-size:0.9rem; letter-spacing:1px;">CRONOGRAMA DE ENTREGAS</h3>
-                                <i class="fa-solid fa-calendar-check" style="color:var(--brand-yellow)"></i>
-                            </div>
-                            <div id="upcoming-deadlines-home" style="max-height: 180px; overflow-y: auto; display:grid; gap:8px;">
-                                <div class="prod-placeholder" style="padding:10px; font-size:0.8rem;">Carregando cronograma...</div>
-                            </div>
-                        </div>
-
-                        <!-- clubSTATE Integration -->
-                        <div class="card" style="border:1px solid var(--border-yellow); border-left:4px solid var(--brand-yellow);">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                                <h3 style="font-family:var(--font-head); font-size:1.1rem; color:var(--brand-yellow); text-transform:uppercase;">clubSTATE <i class="fa-solid fa-star"></i></h3>
-                            </div>
-                            <div style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:15px; line-height:1.4;">
-                                Programa exclusivo para interligar nossa marcenaria com clientes finais, fornecendo transparência e acompanhamento de obras em tempo real.
-                            </div>
-                            <button class="btn btn-primary" onclick="window.open('../club/index.html', '_blank')" style="width:100%; border-radius:20px; font-weight:800;"><i class="fa-solid fa-crown"></i> ACESSAR MEU CLUBSTATE</button>
+                        <div id="social-feed-list" style="display:grid; gap:20px;">
+                            <!-- JS -->
                         </div>
                     </div>
                 </section>
@@ -526,8 +510,12 @@
                                 <textarea id="profile-bio" rows="3" placeholder="Fale sobre seus projetos e expertise..."></textarea>
                             </div>
                             <div class="group">
-                                <label>LINK PARA FOTO DE PERFIL</label>
-                                <input type="text" id="profile-avatar" placeholder="https://exemplo.com/minhafoto.jpg">
+                                <label>AVATAR (CLIQUE PARA FAZER UPLOAD)</label>
+                                <div style="display:flex; align-items:center; gap:15px;">
+                                    <div class="avatar" id="avatar-preview-box" style="width:60px; height:60px; cursor:pointer;" onclick="document.getElementById('profile-avatar-file').click()">?</div>
+                                    <input type="file" id="profile-avatar-file" accept="image/*" style="display:none;" onchange="handleAvatarUpload(this)">
+                                    <input type="text" id="profile-avatar" placeholder="https://... ou faça o upload ao lado" style="flex:1;">
+                                </div>
                             </div>
                             <div style="display:flex; gap:10px;">
                                 <button type="submit" class="btn btn-primary" style="flex:1;"><i class="fa-solid fa-floppy-disk"></i> SALVAR PERFIL</button>
@@ -609,59 +597,53 @@
                             </div>
                         </div>
                     </div>
+                <!-- ADMIN SETTINGS MODULE -->
+                <section id="mod-admsettings" class="module-section">
+                    <h2 class="topbar-title">GESTÃO DE USUÁRIOS (SISTEMA)</h2>
+                    <div class="card">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>USUÁRIO</th>
+                                    <th>NOME/BIO</th>
+                                    <th>STATUS VIP</th>
+                                    <th>AÇÕES</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-users-list">
+                                <!-- JS -->
+                            </tbody>
+                        </table>
+                    </div>
                 </section>
 
             </div>
         </main>
     </div>
 
-    <!-- Detail modals removed, replaced by static sections -->
-
-    <!-- MODAL FIND FRIENDS -->
-    <div class="modal-overlay" id="modal-find-friends">
-        <div class="modal-box" style="max-width:500px;">
-            <span class="modal-close" onclick="closeAllModals()">&times;</span>
-            <h3 style="color:var(--brand-yellow); margin-bottom:20px;">BUSCAR PARCEIROS</h3>
-            <input type="text" id="search-global-users" placeholder="Pesquisar por nome ou login..." style="width:100%; margin-bottom:20px;" oninput="renderGlobalSearch(this.value)">
-            <div id="global-search-results" style="display:grid; gap:15px; max-height:400px; overflow-y:auto;">
-                <!-- JS -->
-            </div>
+    <div id="chat-min-btn" onclick="toggleChat()"><i class="fa-solid fa-comments"></i></div>
+    <div id="social-chat-widget">
+        <div class="chat-header">
+            <span id="chat-target-name">CHAT SOCIAL</span>
+            <i class="fa-solid fa-times" onclick="toggleChat()"></i>
         </div>
-    </div>
-
-    <!-- MODAL CREATE GROUP -->
-    <div class="modal-overlay" id="modal-create-group">
-        <div class="modal-box" style="max-width:450px;">
-            <span class="modal-close" onclick="closeAllModals()">&times;</span>
-            <h3 style="color:var(--brand-yellow); margin-bottom:20px;">NOVO GRUPO COLABORATIVO</h3>
-            <div id="vip-only-group-msg" style="display:none; color:#ef4444; font-size:0.9rem; margin-bottom:15px; padding:10px; background:rgba(239,68,68,0.1); border:1px solid #ef4444;">
-                <i class="fa-solid fa-crown"></i> RECURSO VIP: Você precisa ser VIP e ter gemas para criar grupos.
-            </div>
-            <form id="form-create-group-el">
-                <div class="group">
-                    <label>NOME DO GRUPO</label>
-                    <input type="text" id="new-group-name" required placeholder="Ex: Marceneiros Elite SP">
-                </div>
-                <p style="font-size:0.8rem; color:var(--text-muted); margin:15px 0;">Custo: 10 Gemas / Status VIP ativo.</p>
-                <button type="submit" class="btn btn-primary" style="width:100%;">CRIAR AGORA</button>
-            </form>
+        <div style="padding:10px; border-bottom:1px solid var(--border); display:flex; gap:10px; background:rgba(0,0,0,0.2);">
+            <select id="chat-friend-selector" style="flex:1; font-size:0.75rem;" onchange="loadChatWith(this.value)">
+                <option value="">Conversar com...</option>
+            </select>
         </div>
-    </div>
-
-    <!-- MODAL INVITE TO GROUP -->
-    <div class="modal-overlay" id="modal-invite-group">
-        <div class="modal-box" style="max-width:450px;">
-            <span class="modal-close" onclick="closeAllModals()">&times;</span>
-            <h3 style="color:var(--brand-yellow); margin-bottom:20px;">CONVIDAR AMIGOS</h3>
-            <div id="group-invite-list" style="display:grid; gap:10px; max-height:400px; overflow-y:auto;">
-                <!-- JS -->
-            </div>
+        <div class="chat-body" id="social-chat-messages">
+            <!-- JS -->
+        </div>
+        <div class="chat-form">
+            <input type="text" id="chat-input" placeholder="Diga algo..." style="flex:1; height:35px; border-radius:8px;">
+            <button class="btn btn-primary" onclick="sendMessage()" style="padding:0 15px;"><i class="fa-solid fa-paper-plane"></i></button>
         </div>
     </div>
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>
-    <script src="dashboard.js?v=6.3.0"></script>
+    <script src="dashboard.js?v=6.5.0"></script>
 </body>
 </html>
