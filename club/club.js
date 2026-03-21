@@ -31,8 +31,50 @@ function switchSocialTab(tabId) {
     if(tabId === 'friends') renderFriendsList();
     if(tabId === 'groups') renderGroups();
 }
-window.switchSocialTab = switchSocialTab;
 window.switchView = switchView;
+
+// Initialization
+document.addEventListener('DOMContentLoaded', () => {
+    if (sessionProject) {
+        initDashboard();
+    } else {
+        switchView('login');
+    }
+});
+
+// Login Handlers
+const loginForm = document.getElementById('login-form');
+if (loginForm) {
+    loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const u = document.getElementById('access-user').value.trim();
+        const p = document.getElementById('access-pass').value.trim();
+        
+        const db = JSON.parse(localStorage.getItem('state_users')) || [];
+        const validUser = db.find(x => x.u === u && x.p === p);
+        
+        if (validUser) {
+            sessionStorage.setItem('clubstate_session', validUser.u);
+            sessionProject = validUser.u;
+            toast(`Conectado ao Hub Corporativo!`, 'success');
+            setTimeout(() => {
+                initDashboard();
+            }, 800);
+        } else {
+            toast('Credenciais corporativas inválidas.', 'error');
+        }
+    });
+}
+
+function logout() {
+    sessionStorage.removeItem('clubstate_session');
+    sessionProject = null;
+    const form = document.getElementById('login-form');
+    if(form) form.reset();
+    switchView('login');
+    toast('Sessão encerrada com segurança.', 'success');
+}
+window.logout = logout;
 
 // --- FEED ENGINE ---
 function renderFeed() {
