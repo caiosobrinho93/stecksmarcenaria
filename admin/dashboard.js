@@ -1535,7 +1535,8 @@ document.addEventListener('DOMContentLoaded', () => {
     loadProfile();
     updateTopbarProfile();
     
-    renderFeed();\n// Notifications Dropdown Toggle
+    renderFeed();
+// Notifications
     const notifTrigger = document.getElementById('notifications-trigger');
     const notifDropdown = document.getElementById('notif-dropdown');
     if(notifTrigger && notifDropdown) {
@@ -1677,7 +1678,7 @@ function switchModule(modId) {
 
     // Select target
     const target = document.getElementById('mod-' + modId);
-    const nav = document.querySelector(`.nav-link[data-mod="${modId}"]`);
+    const nav = document.querySelector(`.nav-link[data-mod="${modId
     
     if(target) target.classList.add('active');
     if(nav) nav.classList.add('active');
