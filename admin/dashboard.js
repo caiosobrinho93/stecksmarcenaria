@@ -192,11 +192,7 @@ function closeAllModals() {
 // --- Navigation ---
 let navLinks, sections;
 
-function switchModule(modId) {
-    sections.forEach(s => s.classList.remove('active'));
-    navLinks.forEach(l => l.classList.remove('active'));
-    const target = document.getElementById('mod-' + modId);
-    const link = document.querySelector(`.nav-link[data-mod="${modId}"]`);
+"]`);
     if (target) {
         target.classList.add('active');
     }
@@ -1634,10 +1630,27 @@ function updateTopbarProfile() {
     // Role-Based Access Control (RBAC) UI Hiding
     const restrictedMods = ['inventory', 'finance', 'gallery', 'providers'];
     const adminOnlyNav = document.getElementById('nav-admin-only');
+    const isVIP = userObj?.isVIP || currentUser === 'admin';
+
     if (currentUser !== 'admin') {
         if(adminOnlyNav) adminOnlyNav.style.display = 'none';
     } else {
         if(adminOnlyNav) adminOnlyNav.style.display = 'block';
+    }
+
+    // VIP Crown & Upsell
+    const crown = document.getElementById('crown-vip-btn');
+    const upsell = document.getElementById('vip-upsell-tag');
+    if(crown) {
+        if(isVIP) {
+            crown.style.opacity = '1';
+            crown.style.filter = 'drop-shadow(0 0 10px var(--brand-yellow))';
+            if(upsell) upsell.style.display = 'none';
+        } else {
+            crown.style.opacity = '0.3';
+            crown.style.filter = 'grayscale(1)';
+            if(upsell) upsell.style.display = 'block';
+        }
     }
 }
 
@@ -1653,3 +1666,48 @@ window.changePass = () => {
         notify('Senha alterada com sucesso!', 'success');
     }
 };
+
+
+function switchModule(modId) {
+    const currentUser = localStorage.getItem('state_current_user') || 'admin';
+    
+    // Hide all
+    sections.forEach(s => s.classList.remove('active'));
+    navLinks.forEach(l => l.classList.remove('active'));
+
+    // Select target
+    const target = document.getElementById('mod-' + modId);
+    const nav = document.querySelector(`.nav-link[data-mod="${modId}"]`);
+    
+    if(target) target.classList.add('active');
+    if(nav) nav.classList.add('active');
+
+    // Update Topbar Name
+    const span = nav?.querySelector('span');
+    if(span && document.getElementById('current-mod-name')) {
+        document.getElementById('current-mod-name').innerText = span.innerText;
+    }
+
+    // Special Module Logic
+    if(modId === 'home') {
+        const adminStats = document.getElementById('home-admin-stats');
+        const socialFeed = document.getElementById('home-social-feed');
+        if(currentUser === 'admin') {
+            if(adminStats) adminStats.style.display = 'block';
+            if(socialFeed) socialFeed.style.display = 'block';
+        } else {
+            if(adminStats) adminStats.style.display = 'none';
+            if(socialFeed) socialFeed.style.display = 'block';
+        }
+        renderFeed();
+        updateStats();
+    }
+    
+    if(modId === 'admsettings') renderAdminSettings();
+    if(modId === 'friends') renderFriends();
+    if(modId === 'groups') renderGroups();
+    
+    // Auto-close sidebar on mobile
+    const sidebar = document.getElementById('sidebar');
+    if(sidebar) sidebar.classList.remove('open');
+}
