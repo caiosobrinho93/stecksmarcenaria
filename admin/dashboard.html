@@ -36,8 +36,7 @@
                 <div class="nav-link active" data-mod="home"><i class="fa-solid fa-house-chimney-window"></i> <span>Início</span></div>
                 <div class="nav-link" data-mod="projects"><i class="fa-solid fa-list-check"></i> <span>PROJETOS</span></div>
                 <div class="nav-link" data-mod="clients"><i class="fa-solid fa-users"></i> <span>CLIENTES</span></div>
-                <div class="nav-link" data-mod="friends"><i class="fa-solid fa-user-group"></i> <span>REDE SOCIAL</span></div>
-                <div class="nav-link" data-mod="groups"><i class="fa-solid fa-comments"></i> <span>MEUS GRUPOS</span></div>
+                <div class="nav-link" data-mod="groups"><i class="fa-solid fa-users-viewfinder"></i> <span>EQUIPES / GRUPOS</span></div>
                 <div id="nav-admin-only" style="display:none;">
                     <div class="nav-link" data-mod="admsettings"><i class="fa-solid fa-gears"></i> <span>GESTÃO ADMIN</span></div>
                     <div class="nav-link" data-mod="inventory"><i class="fa-solid fa-layer-group"></i> <span>ESTOQUE</span></div>
@@ -45,8 +44,6 @@
                     <div class="nav-link" data-mod="providers"><i class="fa-solid fa-handshake"></i> <span>PARCEIROS</span></div>
                     <div class="nav-link" data-mod="gallery"><i class="fa-solid fa-images"></i> <span>GALERIA WEB</span></div>
                 </div>
-                
-                <div class="nav-link" data-mod="profile" style="margin-top:20px; border-top:1px solid var(--border); padding-top:15px;"><i class="fa-solid fa-user-gear"></i> <span>Meu Perfil</span></div>
             </nav>
 
             <div style="padding: 16px;">
@@ -621,39 +618,83 @@
 
     <!-- PROJECT DETAIL MODAL -->
     <div id="modal-project-detail" class="modal-overlay" style="display:none;">
-        <div class="card" style="width:100%; max-width:600px; max-height:90vh; overflow-y:auto; position:relative; background:var(--bg-card); border:1px solid var(--border);">
-            <button onclick="closeModal('modal-project-detail')" style="position:absolute; top:20px; right:20px; background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:1.5rem;"><i class="fa-solid fa-times"></i></button>
-            <h3 style="color:var(--brand-yellow); margin-bottom:20px;"><i class="fa-solid fa-list-check"></i> DETALHES DO PROJETO</h3>
+        <div class="card" style="width:100%; max-width:650px; max-height:90vh; overflow-y:auto; position:relative; background:rgba(10,10,9,0.95); backdrop-filter:blur(20px); border:1px solid rgba(234, 179, 8, 0.2); box-shadow:0 20px 60px rgba(0,0,0,0.8); border-radius:16px;">
+            <div style="position:absolute; top:0; left:0; width:100%; height:4px; background:linear-gradient(90deg, transparent, var(--brand-yellow), transparent);"></div>
+            <button onclick="closeModal('modal-project-detail')" style="position:absolute; top:20px; right:20px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; color:#fff; cursor:pointer; font-size:1.1rem; transition:0.3s;"><i class="fa-solid fa-times"></i></button>
+            <h3 style="color:var(--brand-yellow); margin-bottom:25px; font-family:var(--font-head); font-size:1.4rem; letter-spacing:1px; display:flex; align-items:center; gap:10px;"><i class="fa-solid fa-list-check"></i> PROJETO OPERACIONAL</h3>
             <input type="hidden" id="det-project-id">
-            <div style="margin-bottom:15px; font-size:0.95rem;"><strong>TÍTULO:</strong> <span id="det-project-title" style="color:#fff;"></span></div>
-            <div style="margin-bottom:15px; font-size:0.95rem;"><strong>CLIENTE:</strong> <span id="det-project-client" style="color:#fff;"></span></div>
-            <div style="margin-bottom:15px; font-size:0.95rem;"><strong>STATUS:</strong> <span id="det-project-status" style="color:var(--brand-yellow);"></span></div>
-            <div style="margin-bottom:15px; font-size:0.95rem;"><strong>OBSERVAÇÕES:</strong> <p id="det-project-obs" style="margin-top:5px; font-size:0.9rem; color:var(--text-muted); padding:10px; background:rgba(255,255,255,0.02); border-radius:8px;"></p></div>
-            <div style="margin-top:20px;">
-                <strong style="display:block; margin-bottom:10px; font-size:0.95rem;">IMAGENS DO PROJETO:</strong>
-                <div id="det-project-images" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); gap:10px;"></div>
+            
+            <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-glass); border-radius:12px; padding:20px; margin-bottom:20px;">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+                    <div>
+                        <span style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; font-weight:700;">TÍTULO DO SISTEMA</span>
+                        <div id="det-project-title" style="color:#fff; font-size:1.1rem; font-weight:600; margin-top:5px; font-family:var(--font-head);"></div>
+                    </div>
+                    <div>
+                        <span style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; font-weight:700;">PROPRIETÁRIO (CLIENTE)</span>
+                        <div id="det-project-client" style="color:#fff; font-size:1.1rem; font-weight:600; margin-top:5px;"></div>
+                    </div>
+                </div>
+                <div style="margin-top:20px;">
+                    <span style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; font-weight:700;">STATUS ATUAL</span>
+                    <div id="det-project-status" style="display:inline-block; margin-top:5px; background:var(--brand-yellow-glow); color:var(--brand-yellow); border:1px solid var(--brand-yellow); padding:4px 10px; border-radius:6px; font-size:0.8rem; font-weight:800;"></div>
+                </div>
             </div>
-            <div style="margin-top:30px; display:flex; gap:10px;">
-                <button class="btn btn-primary" onclick="window.editProjectFromDetail()" style="flex:1;"><i class="fa-solid fa-pen-to-square"></i> EDITAR</button>
-                <button class="btn btn-danger" onclick="window.deleteProjectFromDetail()" style="flex:1; background:rgba(239, 68, 68, 0.1); color:#ef4444; border:1px solid rgba(239, 68, 68, 0.3);"><i class="fa-solid fa-trash"></i> EXCLUIR</button>
+
+            <div style="margin-bottom:25px;">
+                <span style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; font-weight:700; display:block; margin-bottom:8px;">DESCRITIVO TÉCNICO</span>
+                <p id="det-project-obs" style="font-size:0.95rem; color:#d1ccc0; line-height:1.6; padding:15px; background:rgba(0,0,0,0.4); border:1px solid var(--border-glass); border-radius:8px;"></p>
+            </div>
+            
+            <div style="margin-top:20px;">
+                <span style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; font-weight:700; display:block; margin-bottom:10px;">ANEXOS VISUAIS</span>
+                <div id="det-project-images" style="display:flex; flex-wrap:wrap; gap:12px;"></div>
+            </div>
+            
+            <div style="margin-top:35px; display:flex; gap:15px; border-top:1px solid var(--border-glass); padding-top:20px;">
+                <button class="btn btn-primary" onclick="window.editProjectFromDetail()" style="flex:1; border-radius:8px; font-weight:800; letter-spacing:1px;"><i class="fa-solid fa-pen-to-square"></i> MODIFICAR</button>
+                <button class="btn btn-danger" onclick="window.deleteProjectFromDetail()" style="flex:1; background:rgba(239, 68, 68, 0.05); color:#ef4444; border:1px solid rgba(239, 68, 68, 0.2); border-radius:8px; font-weight:800; letter-spacing:1px; transition:0.3s;"><i class="fa-solid fa-trash"></i> DESCARTAR</button>
             </div>
         </div>
     </div>
 
     <!-- CLIENT DETAIL MODAL -->
     <div id="modal-client-detail" class="modal-overlay" style="display:none;">
-        <div class="card" style="width:100%; max-width:400px; max-height:90vh; overflow-y:auto; position:relative; background:var(--bg-card); border:1px solid var(--border); text-align:center;">
-            <button onclick="closeModal('modal-client-detail')" style="position:absolute; top:20px; right:20px; background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:1.5rem;"><i class="fa-solid fa-times"></i></button>
-            <img id="det-client-photo" src="" style="width:100px; height:100px; border-radius:50%; object-fit:cover; margin:0 auto 20px auto; display:none; border:2px solid var(--brand-yellow);">
-            <div id="det-client-photo-placeholder" style="width:100px; height:100px; border-radius:50%; margin:0 auto 20px auto; display:flex; align-items:center; justify-content:center; background:var(--brand-yellow); color:#000; font-size:3rem; font-weight:800; display:none;">C</div>
-            <h3 id="det-client-name" style="color:var(--brand-yellow); margin-bottom:15px; font-size:1.5rem;"></h3>
-            <div style="margin-bottom:15px; font-size:0.9rem;"><i class="fa-solid fa-phone" style="color:var(--text-muted); margin-right:8px;"></i> <span id="det-client-phone" style="color:#fff;"></span></div>
-            <div style="margin-bottom:25px; font-size:0.9rem;"><i class="fa-brands fa-instagram" style="color:var(--text-muted); margin-right:8px;"></i> <span id="det-client-insta" style="color:#fff;"></span></div>
-            <button id="btn-wa-client" class="btn btn-primary" style="width:100%; margin-bottom:15px; background:#25D366; color:#000; border:none; font-weight:800;"><i class="fa-brands fa-whatsapp"></i> Falar no WhatsApp</button>
+        <div class="card" style="width:100%; max-width:420px; max-height:90vh; overflow-y:auto; position:relative; background:rgba(10,10,9,0.95); backdrop-filter:blur(20px); border:1px solid rgba(234, 179, 8, 0.2); box-shadow:0 20px 60px rgba(0,0,0,0.8); border-radius:16px; text-align:center;">
+            <div style="position:absolute; top:0; left:0; width:100%; height:4px; background:linear-gradient(90deg, transparent, var(--brand-yellow), transparent);"></div>
+            <button onclick="closeModal('modal-client-detail')" style="position:absolute; top:20px; right:20px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; color:#fff; cursor:pointer; font-size:1.1rem; transition:0.3s;"><i class="fa-solid fa-times"></i></button>
+            
+            <div style="margin-top:20px; margin-bottom:20px; position:relative; display:inline-block;">
+                <img id="det-client-photo" src="" style="width:110px; height:110px; border-radius:50%; object-fit:cover; display:none; border:3px solid var(--brand-yellow); box-shadow:0 0 20px var(--brand-yellow-glow);">
+                <div id="det-client-photo-placeholder" style="width:110px; height:110px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:linear-gradient(45deg, var(--brand-yellow), #856604); color:#000; font-size:3.5rem; font-weight:900; margin:0 auto; box-shadow:0 0 20px var(--brand-yellow-glow); display:none;">C</div>
+            </div>
+            
+            <h3 id="det-client-name" style="color:#fff; margin-bottom:5px; font-size:1.6rem; font-family:var(--font-head); font-weight:800; letter-spacing:-0.02em;">NOME DO CLIENTE</h3>
+            <span style="display:block; font-size:0.8rem; color:var(--brand-yellow); font-weight:700; letter-spacing:2px; text-transform:uppercase; margin-bottom:25px;">Perfil de Cliente Premium</span>
+            
+            <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-glass); border-radius:12px; padding:20px; margin-bottom:25px; text-align:left;">
+                <div style="display:flex; align-items:center; gap:15px; margin-bottom:15px;">
+                    <div style="width:36px; height:36px; border-radius:8px; background:rgba(255,255,255,0.05); color:var(--text-muted); display:flex; align-items:center; justify-content:center; font-size:1.1rem;"><i class="fa-solid fa-phone"></i></div>
+                    <div>
+                        <span style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; display:block;">TELEFONE (WHATSAPP)</span>
+                        <span id="det-client-phone" style="color:#fff; font-size:1.05rem; font-weight:600;"></span>
+                    </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:15px;">
+                    <div style="width:36px; height:36px; border-radius:8px; background:rgba(255,255,255,0.05); color:var(--text-muted); display:flex; align-items:center; justify-content:center; font-size:1.1rem;"><i class="fa-brands fa-instagram"></i></div>
+                    <div>
+                        <span style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; display:block;">LINK DO INSTAGRAM</span>
+                        <span id="det-client-insta" style="color:#fff; font-size:1.05rem; font-weight:600;"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <button id="btn-wa-client" class="btn btn-primary" style="width:100%; margin-bottom:20px; background:linear-gradient(135deg, #25D366, #128C7E); color:#fff; border:none; font-weight:800; letter-spacing:1px; border-radius:8px; padding:16px; box-shadow:0 10px 20px rgba(37, 211, 102, 0.2);"><i class="fa-brands fa-whatsapp" style="font-size:1.2rem;"></i> CONECTAR NO WHATSAPP</button>
             <input type="hidden" id="det-client-id">
-            <div style="display:flex; gap:10px;">
-                <button class="btn btn-ghost" onclick="window.editClientFromDetail()" style="flex:1; border:1px solid var(--border-glass);"><i class="fa-solid fa-pen-to-square"></i> EDITAR</button>
-                <button class="btn btn-danger" onclick="window.deleteClientFromDetail()" style="flex:1; background:rgba(239, 68, 68, 0.1); color:#ef4444; border:1px solid rgba(239, 68, 68, 0.3);"><i class="fa-solid fa-trash"></i></button>
+            
+            <div style="display:flex; gap:10px; border-top:1px solid var(--border-glass); padding-top:20px;">
+                <button class="btn btn-ghost" onclick="window.editClientFromDetail()" style="flex:1; border:1px solid var(--border-glass); border-radius:8px; font-weight:700;"><i class="fa-solid fa-pen-to-square"></i> EDITAR</button>
+                <button class="btn btn-danger" onclick="window.deleteClientFromDetail()" style="width:50px; flex-shrink:0; background:rgba(239, 68, 68, 0.05); color:#ef4444; border:1px solid rgba(239, 68, 68, 0.2); border-radius:8px; transition:0.3s;" title="Deletar permanentemente"><i class="fa-solid fa-trash"></i></button>
             </div>
         </div>
     </div>

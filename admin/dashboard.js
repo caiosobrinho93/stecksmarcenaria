@@ -344,6 +344,13 @@ window.saveProfile = saveProfile;
 document.addEventListener('DOMContentLoaded', () => {
     DB.checkSession();
     updateTopbarProfile();
+    
+    const currentUser = localStorage.getItem('state_current_user') || 'admin';
+    if(currentUser === 'admin') {
+        const adOnly = document.getElementById('nav-admin-only');
+        if(adOnly) adOnly.style.display = 'block';
+    }
+
     switchModule('home');
 
     document.getElementById('menu-toggle').onclick = () => document.getElementById('sidebar').classList.toggle('open');
@@ -351,25 +358,59 @@ document.addEventListener('DOMContentLoaded', () => {
     navLinks = document.querySelectorAll('.nav-link[data-mod]');
     navLinks.forEach(l => l.onclick = () => switchModule(l.dataset.mod));
 
+    // Form Event Listeners (Restored)
+    const formsToHandle = [
+        { id: 'client-form-el', table: 'clients', fields: ['id','name','phone','insta','address'], refresh: 'clients' },
+        { id: 'project-form-el', table: 'projects', fields: ['id','title','client','status','deadline','progress'], refresh: 'projects' },
+        { id: 'inventory-form-el', table: 'inventory', fields: ['id','name','qty'], refresh: 'inventory' },
+        { id: 'finance-form-el', table: 'finance', fields: ['id','desc','amount','type','status','date'], refresh: 'finance' },
+        { id: 'provider-form-el', table: 'providers', fields: ['id','name','service','phone','rating'], refresh: 'providers' }
+    ];
+
+    formsToHandle.forEach(f => {
+        const el = document.getElementById(f.id);
+        if(el) {
+            el.onsubmit = (e) => {
+                e.preventDefault();
+                const data = {};
+                f.fields.forEach(field => {
+                    const inp = document.getElementById(`${f.table.replace(/s$/,'')}-${field}`) || document.getElementById(`${f.table}-${field}`) || document.getElementById(`item-${field}`);
+                    // Mapping standard IDs because prefixes vary
+                    if(inp) data[field] = inp.value;
+                });
+                // Fallbacks for specific forms where IDs don't perfectly match
+                const formPrefix = f.id.split('-')[0];
+                if(f.id === 'finance-form-el'){
+                    data.id = document.getElementById('fin-id').value;
+                    data.desc = document.getElementById('fin-desc').value;
+                    data.amount = document.getElementById('fin-amount').value;
+                    data.type = document.getElementById('fin-type').value;
+                    data.status = document.getElementById('fin-status').value;
+                    data.date = document.getElementById('fin-date').value;
+                }
+                if(f.id === 'provider-form-el'){
+                    data.id = document.getElementById('prov-id').value;
+                    data.name = document.getElementById('prov-name').value;
+                    data.service = document.getElementById('prov-service').value;
+                    data.phone = document.getElementById('prov-phone').value;
+                    data.rating = document.getElementById('prov-rating').value;
+                }
+                if(f.id === 'inventory-form-el') {
+                    data.photo = document.getElementById('item-photo-preview')?.querySelector('img')?.src || '';
+                }
+                
+                // Fallback ID generation if empty
+                if(!data.id) data.id = 'ID_' + Date.now();
+                
+                DB.saveItem(f.table, data.id, data);
+                notify("Registro salvo com sucesso!", "success");
+                switchModule(f.refresh);
+            };
+        }
+    });
+
     const pF = document.getElementById('profile-form');
     if(pF) pF.onsubmit = (e) => saveProfile(e);
-
-    // Form Inventory Save Fix
-    const invF = document.getElementById('inventory-form-el');
-    if(invF) {
-        invF.onsubmit = (e) => {
-            e.preventDefault();
-            const data = {
-                id: document.getElementById('item-id').value,
-                name: document.getElementById('item-name').value,
-                qty: document.getElementById('item-qty').value,
-                photo: document.getElementById('item-photo-preview')?.querySelector('img')?.src || ''
-            };
-            DB.saveItem('inventory', data.id, data);
-            notify("Material Salvo!");
-            switchModule('inventory');
-        };
-    }
 });
 
 // Exports

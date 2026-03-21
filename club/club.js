@@ -103,6 +103,36 @@ let activeCommentPostId = null;
 let feedPage = 0;
 const postsPerPage = 6;
 let feedObserver = null;
+let currentFeedFilter = 'all';
+
+function setFeedFilter(type) {
+    currentFeedFilter = type;
+    document.querySelectorAll('#tab-feed .sub-tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+        btn.style.background = 'transparent';
+    });
+    const activeBtn = document.getElementById('filter-' + type);
+    if(activeBtn) {
+        activeBtn.classList.add('active');
+        activeBtn.style.background = 'rgba(255,255,255,0.1)';
+    }
+    renderFeed();
+}
+window.setFeedFilter = setFeedFilter;
+
+function openLightbox(src) {
+    document.getElementById('lightbox-img').src = src;
+    document.getElementById('modal-lightbox').style.display = 'flex';
+}
+window.openLightbox = openLightbox;
+
+function closeLightbox(e) {
+    if(!e || e.target.id === 'modal-lightbox') {
+        document.getElementById('modal-lightbox').style.display = 'none';
+        document.getElementById('lightbox-img').src = '';
+    }
+}
+window.closeLightbox = closeLightbox;
 
 // --- FEED ENGINE ---
 function renderFeed(append = false) {
@@ -115,9 +145,16 @@ function renderFeed(append = false) {
     }
 
     const allPosts = LocalDB.get('social_posts');
+    const filteredPosts = allPosts.filter(p => {
+        if(currentFeedFilter === 'all') return true;
+        if(currentFeedFilter === 'text') return (!p.images || p.images.length === 0) && p.text;
+        if(currentFeedFilter === 'image') return p.images && p.images.length > 0;
+        return true;
+    });
+
     const start = feedPage * postsPerPage;
     const end = start + postsPerPage;
-    const posts = allPosts.slice(start, end);
+    const posts = filteredPosts.slice(start, end);
     
     const dbUsers = JSON.parse(localStorage.getItem('state_users')) || [];
     const currentUser = sessionProject;
@@ -133,7 +170,7 @@ function renderFeed(append = false) {
     const html = posts.map(p => {
         const u = dbUsers.find(x => x.u === p.user) || { name: p.user };
         const isLiked = (p.likes || []).includes(currentUser);
-        const imagesHtml = (p.images || []).map(img => `<img src="${img}" class="feed-img-small" style="width:100px; height:100px; object-fit:cover; border-radius:8px; border:1px solid var(--border-glass);">`).join('');
+        const imagesHtml = (p.images || []).map(img => `<img src="${img}" class="feed-img-small" style="width:100px; height:100px; object-fit:cover; border-radius:8px; border:1px solid var(--border-glass); cursor:pointer;" onclick="openLightbox('${img}')">`).join('');
         
         return `
             <div class="glass-panel post-card" style="padding:0; overflow:hidden; position:relative;">
@@ -277,8 +314,13 @@ function handlePostSubmit() {
     textEl.value = '';
     const preview = document.getElementById('post-images-preview');
     if(preview) preview.innerHTML = '';
+    
     const fileInput = document.getElementById('post-img-input');
-    if(fileInput) fileInput.value = '';
+    if(fileInput) { 
+        fileInput.value = ''; 
+        fileInput.type = 'text'; 
+        fileInput.type = 'file'; 
+    }
 
     renderFeed();
     toast('Publicado no Feed VIP!');
@@ -587,3 +629,51 @@ function toggleVerMais(btn) {
     }
 }
 window.toggleVerMais = toggleVerMais;
+
+// --- PROFILE EDIT LOGIC ---
+function toggleEditProfile() {
+    const view = document.getElementById('profile-view-mode');
+    const edit = document.getElementById('profile-edit-mode');
+    if(view.style.display === 'none') {
+        view.style.display = 'block';
+        edit.style.display = 'none';
+        renderInstagramProfile();
+    } else {
+        view.style.display = 'none';
+        edit.style.display = 'block';
+        
+        const users = JSON.parse(localStorage.getItem('state_users')) || [];
+        const u = users.find(x => x.u === sessionProject);
+        if(u) {
+            document.getElementById('edit-profile-name').value = u.name || '';
+            document.getElementById('edit-profile-bio').value = u.bio || '';
+            document.getElementById('edit-profile-avatar').value = u.avatar || '';
+        }
+    }
+}
+window.toggleEditProfile = toggleEditProfile;
+
+function saveClubProfile(e) {
+    e.preventDefault();
+    const name = document.getElementById('edit-profile-name').value;
+    const bio = document.getElementById('edit-profile-bio').value;
+    const avatar = document.getElementById('edit-profile-avatar').value;
+    
+    let users = JSON.parse(localStorage.getItem('state_users')) || [];
+    const idx = users.findIndex(x => x.u === sessionProject);
+    if(idx > -1) {
+        users[idx].name = name;
+        users[idx].bio = bio;
+        users[idx].avatar = avatar || '../imgs/logo-state.png';
+        localStorage.setItem('state_users', JSON.stringify(users));
+        
+        toast('Perfil VIP Atualizado!', 'success');
+        
+        // Also update local variables globally if needed
+        renderFeed();
+        renderComments();
+        
+        toggleEditProfile(); // go back to view mode
+    }
+}
+window.saveClubProfile = saveClubProfile;
