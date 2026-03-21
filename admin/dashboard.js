@@ -311,6 +311,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const notifDropdown = document.getElementById('notif-dropdown');
     if(notifTrigger) notifTrigger.onclick = () => notifDropdown.style.display = notifDropdown.style.display === 'none' ? 'flex' : 'none';
 
+    // Navigation Links
+    navLinks = document.querySelectorAll('.nav-link[data-mod]');
+    sections = document.querySelectorAll('.module-section');
+    navLinks.forEach(l => {
+        l.onclick = () => switchModule(l.dataset.mod);
+    });
+
     // Global Search Attachments
     const sC = document.getElementById('search-clients'); if(sC) sC.oninput = (e) => renderClients(e.target.value);
     const sP = document.getElementById('search-projects'); if(sP) sP.oninput = (e) => renderProjects(e.target.value);
