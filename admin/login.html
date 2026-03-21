@@ -11,97 +11,135 @@
     <style>
         :root {
             --state-gold: #EAB308;
-            --state-gold-dark: #b68b06;
-            --bg: #050506;
-            --surface: rgba(12, 12, 14, 0.98);
-            --border: rgba(234, 179, 8, 0.2);
+            --state-gold-glow: rgba(234, 179, 8, 0.2);
+            --bg-main: #0a0a09;
+            --bg-glass: rgba(15, 15, 14, 0.7);
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --text-primary: #f0ebe1;
+            --text-muted: #807e7a;
+            --font-main: 'Inter', sans-serif;
+            --font-head: 'Outfit', sans-serif;
         }
 
         body {
             margin: 0;
-            background: var(--bg);
-            color: #fff;
-            font-family: 'Inter', sans-serif;
+            padding: 0;
+            background: var(--bg-main);
+            color: var(--text-primary);
+            font-family: var(--font-main);
             height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
+            position: relative;
         }
 
-        /* Scanline Overlay */
-        body::after {
-            content: "";
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(0deg, rgba(234, 179, 8, 0.03) 0%, transparent 50%, rgba(234, 179, 8, 0.03) 100%);
-            background-size: 100% 4px;
-            pointer-events: none;
-            z-index: 1000;
+        /* Ambient Background */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 50%; transform: translateX(-50%);
+            width: 800px; height: 500px;
+            background: radial-gradient(circle, var(--state-gold-glow) 0%, transparent 70%);
+            z-index: -1;
+            opacity: 0.5;
         }
 
         .login-box {
-            background: var(--surface);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--border);
-            padding: 50px;
+            background: var(--bg-glass);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--border-glass);
+            border-radius: 24px;
+            padding: 50px 40px;
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
             position: relative;
-            box-shadow: 0 0 50px rgba(234, 179, 8, 0.1);
+            text-align: center;
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .login-box::before {
-            content: "STATE_CONSOLE_V5.0";
-            position: absolute;
-            top: -20px; left: 0;
-            font-family: monospace;
-            font-size: 0.6rem;
-            color: var(--state-gold);
-            letter-spacing: 2px;
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .logo {
-            display: block;
-            margin: 0 auto 30px;
-            height: 40px;
-            filter: drop-shadow(0 0 10px var(--state-gold));
+            width: 80px;
+            margin-bottom: 25px;
+            filter: drop-shadow(0 0 15px rgba(234, 179, 8, 0.3));
         }
 
         h1 {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.1rem;
-            text-align: center;
-            letter-spacing: 3px;
-            margin-bottom: 30px;
-            color: var(--state-gold);
+            font-family: var(--font-head);
+            font-weight: 900;
+            font-size: 2.2rem;
+            letter-spacing: -0.02em;
+            margin: 0 0 10px 0;
+            background: linear-gradient(135deg, #fff 0%, #a1a1aa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
-        .form-group { margin-bottom: 25px; }
+        .subtitle {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin-bottom: 35px;
+            font-weight: 700;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+            text-align: left;
+        }
 
         label {
             display: block;
-            font-size: 0.65rem;
+            font-size: 0.75rem;
+            font-weight: 700;
             color: var(--state-gold);
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
             margin-bottom: 8px;
+            margin-left: 4px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.9rem;
         }
 
         input {
             width: 100%;
-            background: rgba(0,0,0,0.5);
-            border: 1px solid var(--border);
-            padding: 14px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-glass);
+            border-radius: 14px;
+            padding: 16px 16px 16px 48px;
             color: #fff;
+            font-size: 1rem;
+            font-family: var(--font-main);
+            transition: 0.3s;
             outline: none;
             box-sizing: border-box;
-            font-family: monospace;
         }
 
         input:focus {
             border-color: var(--state-gold);
-            box-shadow: 0 0 15px rgba(234, 179, 8, 0.2);
+            background: rgba(0, 0, 0, 0.5);
+            box-shadow: 0 0 0 4px var(--state-gold-glow);
         }
 
         .btn-submit {
@@ -109,48 +147,79 @@
             background: var(--state-gold);
             color: #000;
             border: none;
-            padding: 16px;
+            border-radius: 14px;
+            padding: 18px;
+            font-size: 1rem;
             font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
             cursor: pointer;
             transition: 0.3s;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
 
         .btn-submit:hover {
-            box-shadow: 0 0 30px var(--state-gold);
-            transform: scale(1.02);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px var(--state-gold-glow);
+            filter: brightness(1.1);
         }
+
+        .btn-submit:active { transform: translateY(0); }
 
         .error {
             background: rgba(239, 68, 68, 0.1);
             color: #ef4444;
-            border: 1px solid #ef4444;
-            padding: 12px;
-            font-size: 0.7rem;
-            text-align: center;
-            margin-bottom: 20px;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 25px;
             display: none;
+            animation: shake 0.4s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .footer-links {
+            margin-top: 35px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
         .footer-link {
-            display: block;
-            text-align: center;
-            margin-top: 30px;
-            color: rgba(255,255,255,0.3);
-            font-size: 0.7rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
             text-decoration: none;
+            transition: 0.3s;
+            font-weight: 500;
         }
 
         .footer-link:hover { color: var(--state-gold); }
+        
+        .footer-link.highlight {
+            color: var(--state-gold);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
     </style>
 </head>
 <body>
 
     <div class="login-box">
         <img src="../imgs/logo-state.png" alt="State Marcenaria" class="logo">
-        <h1 id="title-login">Acesso Restrito</h1>
-        <span class="subtitle">CONSOLE_MANAGEMENT_V4.0</span>
+        <h1 id="title-login">Acesso VIP</h1>
+        <span class="subtitle">Console v6.9</span>
 
         <div id="error-box" class="error">
             <i class="fa-solid fa-triangle-exclamation"></i> ACESSO NEGADO: CREDENCIAIS INVÁLIDAS
@@ -159,27 +228,38 @@
         <form id="login-form">
             <div class="form-group" id="group-name" style="display:none;">
                 <label>Nome Completo</label>
-                <input type="text" id="name" placeholder="Seu nome">
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-id-card"></i>
+                    <input type="text" id="name" placeholder="Seu nome">
+                </div>
             </div>
             <div class="form-group">
                 <label>Operador (Login)</label>
-                <input type="text" id="user" required autocomplete="username" placeholder="Seu e-mail corporativo">
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-user"></i>
+                    <input type="text" id="user" required autocomplete="username" placeholder="Seu e-mail corporativo">
+                </div>
             </div>
             <div class="form-group">
                 <label>Chave de Segurança</label>
-                <input type="password" id="pass" required autocomplete="current-password" placeholder="••••••••">
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" id="pass" required autocomplete="current-password" placeholder="••••••••">
+                </div>
             </div>
             <button type="submit" class="btn-submit" id="btn-submit-main">
-                AUTENTICAR <i class="fa-solid fa-chevron-right" style="margin-left: 5px;"></i>
+                AUTENTICAR <i class="fa-solid fa-chevron-right"></i>
             </button>
         </form>
 
-        <a href="#" onclick="toggleRegister()" id="btn-toggle" class="footer-link" style="color:var(--state-gold); font-weight:800; margin-top:20px;">
-            Novo Líder? Criar Conta Administrativa
-        </a>
-        <a href="../index.html" class="footer-link" style="margin-top:15px;">
-            <i class="fa-solid fa-arrow-left"></i> VOLTAR AO SITE
-        </a>
+        <div class="footer-links">
+            <a href="#" onclick="toggleRegister()" id="btn-toggle" class="footer-link highlight">
+                Novo Líder? Criar Conta Administrativa
+            </a>
+            <a href="../index.html" class="footer-link">
+                <i class="fa-solid fa-arrow-left"></i> VOLTAR AO SITE
+            </a>
+        </div>
     </div>
 
     <script>
