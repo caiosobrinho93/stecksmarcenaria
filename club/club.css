@@ -170,6 +170,50 @@ body {
 .slide-down { animation: slideDown 0.4s ease forwards; }
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes slideDown { from { opacity: 0; transform: translateY(-100%); } to { opacity: 1; transform: translateY(0); } }
-@keyframes slideInUp { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+/* -- SOCIAL COMPONENTS -- */
+.social-tabs { display: flex; gap: 8px; margin-bottom: 25px; border-bottom: 1px solid var(--border-glass); padding-bottom: 10px; }
+.tab-btn { 
+    background: transparent; border: none; color: var(--text-muted); 
+    padding: 10px 20px; font-family: var(--font-head); font-weight: 700; 
+    font-size: 0.85rem; cursor: pointer; transition: 0.3s; border-radius: 8px;
+    display: flex; align-items: center; gap: 8px;
+}
+.tab-btn:hover { color: var(--text-primary); background: rgba(255,255,255,0.03); }
+.tab-btn.active { color: var(--brand-yellow); background: var(--brand-yellow-glow); }
+
+.post-card { margin-bottom: 20px; transition: 0.3s; }
+.post-card:hover { border-color: rgba(234, 179, 8, 0.3); transform: translateY(-2px); }
+
+.btn-royal {
+    background: var(--brand-yellow-glow);
+    border: 1px solid var(--brand-yellow);
+    color: var(--brand-yellow);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+}
+.btn-royal:hover { background: var(--brand-yellow); color: #000; }
+
+.friend-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 15px; background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border-glass); border-radius: 12px;
+    transition: 0.3s;
+}
+.friend-item:hover { background: rgba(255,255,255,0.04); border-color: var(--brand-yellow-glow); }
+
+.request-badge {
+    background: #ef4444; color: #fff; font-size: 0.65rem; padding: 2px 6px; border-radius: 10px; margin-left: 5px;
+}
+
+/* Scrollbar Modern */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-main); }
+::-webkit-scrollbar-thumb { background: var(--border-glass); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* Animations */
+@keyframes slideInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }

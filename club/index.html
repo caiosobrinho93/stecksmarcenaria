@@ -103,8 +103,16 @@
 
             <!-- FRIENDS TAB -->
             <section id="tab-friends" class="social-tab-content" style="display:none;">
-                <div class="glass-panel" style="padding:15px; margin-bottom:15px;">
-                    <input type="text" id="search-friends" placeholder="Buscar parceiros na rede..." style="width:100%; background:rgba(0,0,0,0.3); border:1px solid var(--border-glass); border-radius:8px; padding:12px; color:#fff;" oninput="renderFriendsList(this.value)">
+                <div class="friends-nav" style="display:flex; gap:10px; margin-bottom:15px; background:rgba(0,0,0,0.2); padding:5px; border-radius:8px;">
+                    <button class="sub-tab-btn active" onclick="switchFriendsSubTab('all')" style="flex:1; padding:8px; font-size:0.75rem; border:none; background:transparent; color:#fff; cursor:pointer; border-radius:6px;">TODOS</button>
+                    <button class="sub-tab-btn" onclick="switchFriendsSubTab('received')" style="flex:1; padding:8px; font-size:0.75rem; border:none; background:transparent; color:#fff; cursor:pointer; border-radius:6px;">RECEBIDOS <span id="badge-received" class="request-badge" style="display:none;">0</span></button>
+                    <button class="sub-tab-btn" onclick="switchFriendsSubTab('sent')" style="flex:1; padding:8px; font-size:0.75rem; border:none; background:transparent; color:#fff; cursor:pointer; border-radius:6px;">ENVIADOS</button>
+                </div>
+                
+                <div id="friends-search-area">
+                    <div class="glass-panel" style="padding:15px; margin-bottom:15px;">
+                        <input type="text" id="search-friends" placeholder="Buscar parceiros na rede..." style="width:100%; background:rgba(0,0,0,0.3); border:1px solid var(--border-glass); border-radius:8px; padding:12px; color:#fff;" oninput="renderFriendsList(this.value)">
+                    </div>
                 </div>
                 <div id="friends-list" style="display:grid; gap:10px;"></div>
             </section>
