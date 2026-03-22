@@ -263,4 +263,31 @@ body {
 .insta-grid img:hover { filter: brightness(1.2); }
 
 /* Ver Mais Button */
-.btn-ver-mais { background: transparent; border: none; color: var(--brand-yellow); cursor: pointer; font-size: 0.85rem; font-weight: 700; padding: 0; margin-top: 5px; }
+
+/* --- Chat Widget Social --- */
+#chat-min-btn {
+    position: fixed; bottom: 30px; right: 30px;
+    width: 60px; height: 60px; border-radius: 50%;
+    background: var(--brand-yellow); color: #000;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.8rem; cursor: pointer; z-index: 9999;
+    box-shadow: 0 10px 30px rgba(234,179,8,0.3);
+    transition: 0.3s;
+}
+#chat-min-btn:hover { transform: scale(1.1); box-shadow: 0 0 25px var(--brand-yellow); }
+
+#social-chat-widget {
+    position: fixed; bottom: 100px; right: 30px;
+    width: 350px; max-width: calc(100vw - 60px); height: 500px; max-height: 75vh;
+    background: rgba(10,10,9,0.95); backdrop-filter: blur(20px);
+    border: 1px solid rgba(234, 179, 8, 0.4); border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.8); z-index: 9999;
+    display: none; flex-direction: column; overflow: hidden;
+    animation: slideUpSocial 0.3s ease;
+}
+@keyframes slideUpSocial { from { transform: translateY(20px); opacity:0; } to { transform: translateY(0); opacity:1; } }
+
+.chat-header { padding: 15px; border-bottom: 1px solid var(--border-glass); display: flex; justify-content: space-between; align-items: center; background: linear-gradient(90deg, rgba(234,179,8,0.1), transparent); }
+.chat-body { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: rgba(0,0,0,0.2); }
+.chat-form { padding: 15px; border-top: 1px solid var(--border-glass); display: flex; gap: 10px; background: rgba(0,0,0,0.4); }
+

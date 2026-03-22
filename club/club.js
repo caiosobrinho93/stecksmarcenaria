@@ -51,6 +51,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+function toggleVerMais(btn) {
+    const content = btn.previousElementSibling;
+    if (content.style.display === 'block') {
+        content.style.display = '-webkit-box';
+        btn.innerText = 'Ver mais';
+    } else {
+        content.style.display = 'block';
+        btn.innerText = 'Ver menos';
+    }
+}
+window.toggleVerMais = toggleVerMais;
+
 // Login Handlers
 const loginForm = document.getElementById('login-form');
 if (loginForm) {
@@ -532,10 +544,16 @@ function renderGroups() {
 function openCreateGroup() {
     const dbUsers = JSON.parse(localStorage.getItem('state_users')) || [];
     const currentUserObj = dbUsers.find(x => x.u === sessionProject) || {};
-    if(!currentUserObj.isVIP) return toast('Criação de grupos exclusiva para membros VIP.', 'error');
     
-    document.getElementById('modal-create-group').style.display = 'flex';
+    // Admin always can create groups; others must be VIP
+    if(sessionProject !== 'admin' && !currentUserObj.isVIP) {
+        return toast('Criação de grupos exclusiva para membros VIP.', 'error');
+    }
+    
+    const modal = document.getElementById('modal-create-group');
+    if(modal) modal.style.display = 'flex';
 }
+window.openCreateGroup = openCreateGroup;
 window.openCreateGroup = openCreateGroup;
 
 function saveNewGroup(e) {
@@ -608,6 +626,12 @@ function loadChatWith(partnerUser) {
 }
 window.loadChatWith = loadChatWith;
 
+function loadChatWith(partner) {
+    currentChatPartner = partner;
+    renderChatMessages();
+}
+window.loadChatWith = loadChatWith;
+
 function renderChatMessages() {
     const container = document.getElementById('social-chat-messages');
     if(!container) return;
@@ -644,7 +668,7 @@ function renderChatMessages() {
 }
 
 function sendMessage() {
-    const input = document.getElementById('chat-input-text');
+    const input = document.getElementById('chat-input-text') || document.getElementById('chat-input');
     if(!input || !currentChatPartner) return;
     const text = input.value.trim();
     if(!text) return;
@@ -662,6 +686,7 @@ function sendMessage() {
     input.value = '';
     renderChatMessages();
 }
+window.sendMessage = sendMessage;
 window.sendMessage = sendMessage;
 
 // --- INITIALIZATION ---

@@ -77,6 +77,18 @@ function notify(msg, type = 'success') {
     setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 500); }, 4000);
 }
 
+function previewImage(input, previewId) {
+    if (input.files && input.files[0]) {
+        toBase64(input.files[0]).then(base64 => {
+            const preview = document.getElementById(previewId);
+            if (preview) {
+                preview.innerHTML = `<img src="${base64}" style="width:100%; height:100%; object-fit:cover;">`;
+            }
+        });
+    }
+}
+window.previewImage = previewImage;
+
 // --- Navigation ---
 let navLinks, sections;
 function switchModule(modId) {
@@ -269,9 +281,12 @@ function editClientFromDetail() {
         document.getElementById('client-phone').value = c.phone || '';
         document.getElementById('client-instagram').value = c.insta || '';
         document.getElementById('client-address').value = c.address || '';
+        const preview = document.getElementById('photo-preview');
+        if(preview && c.photo) preview.innerHTML = `<img src="${c.photo}" style="width:100%; height:100%; object-fit:cover;">`;
         switchModule('form-client');
     }
 }
+window.editClientFromDetail = editClientFromDetail;
 window.editClientFromDetail = editClientFromDetail;
 
 
@@ -280,15 +295,36 @@ function renderInventory() {
     const container = document.getElementById('inventory-list');
     if(!container) return;
     container.innerHTML = items.map(i => `
-        <div class="card">
-            <div style="height:150px; background:rgba(255,255,255,0.05); overflow:hidden; border-radius:4px; margin-bottom:15px; display:flex; align-items:center; justify-content:center;">
-                ${i.photo ? `<img src="${i.photo}" style="width:100%;height:100%;object-fit:cover">` : '<i class="fa-solid fa-box-open" style="font-size:3rem; opacity:0.1"></i>'}
+        <div class="card" onclick="editInventoryItem('${i.id}')" style="cursor:pointer; border:1px solid rgba(255,255,255,0.05); transition:0.3s; padding:15px;">
+            <div style="height:120px; background:rgba(255,255,255,0.03); overflow:hidden; border-radius:8px; margin-bottom:12px; display:flex; align-items:center; justify-content:center;">
+                ${i.photo ? `<img src="${i.photo}" style="width:100%;height:100%;object-fit:cover">` : '<i class="fa-solid fa-box-open" style="font-size:2.5rem; opacity:0.1"></i>'}
             </div>
-            <strong style="color:var(--brand-yellow); text-transform:uppercase;">${i.name}</strong>
-            <p style="font-size:0.8rem; margin:10px 0; opacity:0.6;">QUANTIDADE: ${i.qty || 0}</p>
+            <strong style="color:var(--brand-yellow); text-transform:uppercase; font-size:0.85rem; display:block; margin-bottom:5px;">${(i.name || 'Sem Especificação').toUpperCase()}</strong>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:0.75rem; opacity:0.5;">DISPONÍVEL:</span>
+                <b style="color:#fff; font-size:1rem;">${i.qty || 0}</b>
+            </div>
+            <div style="margin-top:10px; border-top:1px solid rgba(255,255,255,0.05); padding-top:10px; text-align:right;">
+                <button onclick="editInventoryItem('${i.id}')" style="background:transparent; border:none; color:var(--brand-yellow); font-size:0.75rem; cursor:pointer;"><i class="fa-solid fa-pen-to-square"></i> EDITAR</button>
+            </div>
         </div>
-    `).join('') || '<p style="text-align:center; padding:40px; opacity:0.5; grid-column:1/-1;">Vazio.</p>';
+    `).join('') || '<p style="text-align:center; padding:40px; opacity:0.5; grid-column:1/-1;">Nenhum material cadastrado.</p>';
 }
+
+function editInventoryItem(id) {
+    const items = DB.get('inventory');
+    const i = items.find(x => x.id === id);
+    if(i) {
+        document.getElementById('inventory-form-title').innerText = 'EDITAR MATERIAL';
+        document.getElementById('item-id').value = i.id;
+        document.getElementById('item-name').value = i.name || '';
+        document.getElementById('item-qty').value = i.qty || 0;
+        const preview = document.getElementById('item-photo-preview');
+        if(preview && i.photo) preview.innerHTML = `<img src="${i.photo}" style="width:100%; height:100%; object-fit:cover;">`;
+        switchModule('form-inventory');
+    }
+}
+window.editInventoryItem = editInventoryItem;
 
 function renderFinance() {
     const data = DB.get('finance');
@@ -330,25 +366,94 @@ function renderProviders() {
     const container = document.getElementById('providers-grid');
     if(!container) return;
     container.innerHTML = providers.map(p => `
-        <div class="card" style="display:flex; gap:15px; align-items:center;">
+        <div class="card" onclick="window.openProviderDetail('${p.id}')" style="display:flex; gap:15px; align-items:center; cursor:pointer;">
             <div style="width:50px; height:50px; background:rgba(255,255,255,0.05); border-radius:50%; overflow:hidden; flex-shrink:0;">
-                <i class="fa-solid fa-users" style="display:flex; justify-content:center; align-items:center; width:100%; height:100%; opacity:0.3; font-size:1.5rem;"></i>
+                ${p.photo ? `<img src="${p.photo}" style="width:100%;height:100%;object-fit:cover">` : '<i class="fa-solid fa-users" style="display:flex; justify-content:center; align-items:center; width:100%; height:100%; opacity:0.3; font-size:1.5rem;"></i>'}
             </div>
             <div>
                 <strong style="color:var(--brand-yellow); text-transform:uppercase;">${p.name}</strong><br>
-                <small style="color:var(--text-muted);">${p.service || 'Parceiro Geral'}</small><br>
-                ${p.phone ? `<a href="https://wa.me/55${p.phone.replace(/\D/g,'')}" target="_blank" style="color:#10b981; font-size:0.75rem; text-decoration:none;"><i class="fa-brands fa-whatsapp"></i> ${p.phone}</a>` : ''}
+                <small style="color:var(--text-muted);">${p.service || 'Parceiro Geral'}</small>
             </div>
         </div>
     `).join('') || '<p style="text-align:center; padding:40px; opacity:0.5; grid-column:1/-1;">Nenhum parceiro cadastrado.</p>';
 }
 
+function openProviderDetail(id) {
+    const providers = DB.get('providers');
+    const p = providers.find(x => x.id === id);
+    if (!p) return;
+    document.getElementById('det-prov-id').value = p.id;
+    document.getElementById('det-prov-name').innerText = p.name.toUpperCase();
+    document.getElementById('det-prov-skill').innerText = (p.service || 'Parceiro').toUpperCase();
+    document.getElementById('det-prov-phone').innerText = p.phone || 'Não informado';
+    
+    const photo = document.getElementById('det-prov-photo');
+    const ph = document.getElementById('det-prov-photo-placeholder');
+    if(p.photo) {
+        if(photo) { photo.src = p.photo; photo.style.display = 'block'; }
+        if(ph) ph.style.display = 'none';
+    } else {
+        if(photo) photo.style.display = 'none';
+        if(ph) { ph.style.display = 'flex'; ph.innerText = p.name[0]; }
+    }
+    
+    const wa = document.getElementById('btn-wa-prov');
+    if(wa && p.phone) wa.onclick = () => window.open(`https://wa.me/55${p.phone.replace(/\D/g, '')}`);
+    openModal('modal-provider-detail');
+}
+window.openProviderDetail = openProviderDetail;
+
+function deleteProviderFromDetail() {
+    if(confirm('Remover parceiro da sua rede?')) {
+        const id = document.getElementById('det-prov-id').value;
+        const all = DB._getAll('providers');
+        DB.set('providers', all.filter(x => x.id !== id));
+        closeModal('modal-provider-detail');
+        renderProviders();
+        notify('Parceiro removido.');
+    }
+}
+window.deleteProviderFromDetail = deleteProviderFromDetail;
+
+function editProviderFromDetail() {
+    const id = document.getElementById('det-prov-id').value;
+    closeModal('modal-provider-detail');
+    const providers = DB.get('providers');
+    const p = providers.find(x => x.id === id);
+    if(p) {
+        document.getElementById('prov-id').value = p.id;
+        document.getElementById('prov-name').value = p.name;
+        document.getElementById('prov-skill').value = p.service || '';
+        document.getElementById('prov-phone').value = p.phone || '';
+        const preview = document.getElementById('prov-photo-preview');
+        if(preview && p.photo) preview.innerHTML = `<img src="${p.photo}" style="width:100%; height:100%; object-fit:cover;">`;
+        switchModule('form-provider');
+    }
+}
+window.editProviderFromDetail = editProviderFromDetail;
+
 function renderGallery() {
     const data = DB.get('gallery');
     const container = document.getElementById('gallery-list');
     if(!container) return;
-    container.innerHTML = data.map(g => `<div class="card" style="padding:0; overflow:hidden;"><img src="${g.photo}" style="width:100%; height:200px; object-fit:cover;"><div style="padding:15px;"><strong style="color:var(--brand-yellow);">${g.title.toUpperCase()}</strong></div></div>`).join('');
+    container.innerHTML = data.map(g => `
+        <div class="card" style="padding:0; overflow:hidden; position:relative;">
+            <button onclick="deleteGalleryItem('${g.id}')" style="position:absolute; top:10px; right:10px; background:rgba(239,68,68,0.8); color:#fff; border:none; border-radius:50%; width:25px; height:25px; cursor:pointer; z-index:10; font-size:0.7rem;"><i class="fa-solid fa-trash"></i></button>
+            <img src="${g.photo}" style="width:100%; height:200px; object-fit:cover;">
+            <div style="padding:15px;"><strong style="color:var(--brand-yellow);">${g.title.toUpperCase()}</strong></div>
+        </div>
+    `).join('') || '<p style="text-align:center; padding:40px; opacity:0.5; grid-column:1/-1;">Galeria vazia.</p>';
 }
+
+function deleteGalleryItem(id) {
+    if(confirm('Excluir esta imagem permanentemente?')) {
+        const data = DB._getAll('gallery');
+        DB.set('gallery', data.filter(x => x.id !== id));
+        renderGallery();
+        notify('Imagem removida.');
+    }
+}
+window.deleteGalleryItem = deleteGalleryItem;
 
 function updateTopbarProfile() {
     const user = localStorage.getItem('state_current_user') || 'admin';
@@ -447,6 +552,90 @@ function saveProfile(e) {
 }
 window.saveProfile = saveProfile;
 
+// --- CHAT ENGINE SOCIAL ---
+let currentChatPartner = null;
+function toggleChat() {
+    const w = document.getElementById('social-chat-widget');
+    if(!w) return;
+    if(w.style.display === 'none' || w.style.display === '') {
+        w.style.display = 'flex';
+        populateChatSelector();
+    } else {
+        w.style.display = 'none';
+    }
+}
+window.toggleChat = toggleChat;
+
+function populateChatSelector() {
+    const sel = document.getElementById('chat-friend-selector');
+    if(!sel) return;
+    const dbUsers = JSON.parse(localStorage.getItem('state_users')) || [];
+    const currentUser = localStorage.getItem('state_current_user') || 'admin';
+    const u = dbUsers.find(x => x.u === currentUser) || {};
+    const friends = u.friends || [];
+    let options = '<option value="" style="color:#000;">Conversar com...</option>';
+    friends.forEach(f => {
+        const friendObj = dbUsers.find(x => x.u === f);
+        if(friendObj) options += `<option value="${f}" style="color:#000;">${friendObj.name || f}</option>`;
+    });
+    if(friends.length === 0) options = '<option value="" style="color:#000;">Nenhuma conexão na rede.</option>';
+    sel.innerHTML = options;
+}
+
+function loadChatWith(partner) {
+    currentChatPartner = partner;
+    renderChatMessages();
+}
+window.loadChatWith = loadChatWith;
+
+function renderChatMessages() {
+    const container = document.getElementById('social-chat-messages');
+    if(!container) return;
+    const currentUser = localStorage.getItem('state_current_user') || 'admin';
+    if(!currentChatPartner) {
+        container.innerHTML = '<div style="text-align:center; opacity:0.5; padding:20px; font-size:0.8rem;">Selecione um parceiro.</div>';
+        return;
+    }
+    const chats = DB._getAll('social_chats') || [];
+    const msgs = chats.filter(c => 
+        (c.from === currentUser && c.to === currentChatPartner) ||
+        (c.from === currentChatPartner && c.to === currentUser)
+    ).sort((a,b) => a.timeMs - b.timeMs);
+    
+    container.innerHTML = msgs.map(m => {
+        const isMe = m.from === currentUser;
+        return `
+            <div style="display:flex; flex-direction:column; align-items:${isMe ? 'flex-end' : 'flex-start'};">
+                <div style="background:${isMe ? 'var(--brand-yellow-glow)' : 'rgba(255,255,255,0.05)'}; color:${isMe ? 'var(--brand-yellow)' : '#fff'}; border:1px solid ${isMe ? 'var(--border-glass)' : 'var(--border)'}; padding:8px 12px; border-radius:12px; max-width:85%; font-size:0.85rem; word-wrap:break-word;">
+                    ${m.text}
+                </div>
+                <small style="opacity:0.4; font-size:0.6rem; margin-top:2px;">${new Date(m.timeMs).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}</small>
+            </div>
+        `;
+    }).join('') || '<div style="text-align:center; padding:20px; opacity:0.3; font-size:0.75rem;">Inicie uma conversa técnica.</div>';
+    container.scrollTop = container.scrollHeight;
+}
+
+function sendMessage() {
+    const input = document.getElementById('chat-input') || document.getElementById('chat-input-text');
+    if(!input || !currentChatPartner) return;
+    const text = input.value.trim();
+    if(!text) return;
+    const currentUser = localStorage.getItem('state_current_user') || 'admin';
+    let chats = DB._getAll('social_chats') || [];
+    chats.push({
+        id: Date.now(),
+        from: currentUser,
+        to: currentChatPartner,
+        text: text,
+        timeMs: Date.now()
+    });
+    DB.set('social_chats', chats);
+    input.value = '';
+    renderChatMessages();
+}
+window.sendMessage = sendMessage;
+
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
     DB.checkSession();
@@ -467,11 +656,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Form Event Listeners (Restored)
     const formsToHandle = [
-        { id: 'client-form-el', table: 'clients', fields: ['id','name','phone','insta','address'], refresh: 'clients' },
+        { id: 'client-form-el', table: 'clients', fields: ['id','name','phone','insta','address','photo'], refresh: 'clients' },
         { id: 'project-form-el', table: 'projects', fields: ['id','title','client','status','deadline','progress'], refresh: 'projects' },
-        { id: 'inventory-form-el', table: 'inventory', fields: ['id','name','qty'], refresh: 'inventory' },
+        { id: 'inventory-form-el', table: 'inventory', fields: ['id','name','qty','photo'], refresh: 'inventory' },
         { id: 'finance-form-el', table: 'finance', fields: ['id','desc','amount','type','status','date'], refresh: 'finance' },
-        { id: 'provider-form-el', table: 'providers', fields: ['id','name','service','phone','rating'], refresh: 'providers' }
+        { id: 'provider-form-el', table: 'providers', fields: ['id','name','service','phone','rating','photo'], refresh: 'providers' }
     ];
 
     formsToHandle.forEach(f => {
@@ -480,31 +669,45 @@ document.addEventListener('DOMContentLoaded', () => {
             el.onsubmit = (e) => {
                 e.preventDefault();
                 const data = {};
+                const formPrefix = f.id.split('-')[0];
                 f.fields.forEach(field => {
-                    const inp = document.getElementById(`${f.table.replace(/s$/,'')}-${field}`) || document.getElementById(`${f.table}-${field}`) || document.getElementById(`item-${field}`);
-                    // Mapping standard IDs because prefixes vary
+                    // Try different prefixes to find the input element
+                    const inp = document.getElementById(`${formPrefix}-${field}`) || 
+                                document.getElementById(`${f.table.replace(/s$/,'')}-${field}`) || 
+                                document.getElementById(`item-${field}`) ||
+                                document.getElementById(`trans-${field}`) ||
+                                document.getElementById(`prov-${field}`);
+                    
                     if(inp) data[field] = inp.value;
                 });
-                // Fallbacks for specific forms where IDs don't perfectly match
-                // Fallbacks for specific forms where IDs don't perfectly match
-                const formPrefix = f.id.split('-')[0];
+
+                // Fallbacks and Overwrites for logic-specific fields
                 if(f.id === 'finance-form-el'){
                     data.id = document.getElementById('trans-id')?.value;
                     data.desc = document.getElementById('trans-desc')?.value;
                     data.amount = document.getElementById('trans-val')?.value;
                     data.type = document.getElementById('trans-type')?.value;
-                    data.status = 'pending';
                     data.date = document.getElementById('trans-date')?.value;
+                    data.status = data.status || 'pending';
                 }
                 if(f.id === 'provider-form-el'){
                     data.id = document.getElementById('prov-id')?.value;
                     data.name = document.getElementById('prov-name')?.value;
                     data.service = document.getElementById('prov-skill')?.value;
                     data.phone = document.getElementById('prov-phone')?.value;
-                    data.rating = 5;
+                    if(!data.rating) data.rating = 5;
                 }
+                
+                // Photo fallbacks from previews (since file inputs don't return Base64)
                 if(f.id === 'inventory-form-el') {
                     data.photo = document.getElementById('item-photo-preview')?.querySelector('img')?.src || '';
+                }
+                if(f.id === 'client-form-el') {
+                    data.photo = document.getElementById('photo-preview')?.querySelector('img')?.src || '';
+                    data.insta = document.getElementById('client-instagram')?.value || '';
+                }
+                if(f.id === 'provider-form-el') {
+                    data.photo = document.getElementById('prov-photo-preview')?.querySelector('img')?.src || '';
                 }
                 
                 // Fallback ID generation if empty
